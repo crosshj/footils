@@ -1,0 +1,23 @@
+{
+  "name": "footils",
+  "version": "1.0.0",
+  "description": "Kitchen sink utilities and framework-ish javascript for server and client.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/crosshj/footils.git"
+  },
+  "keywords": [
+    "utilities",
+    "framework"
+  ],
+  "author": "Harrison Cross",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/crosshj/footils/issues"
+  },
+  "homepage": "https://github.com/crosshj/footils#readme"
+}
