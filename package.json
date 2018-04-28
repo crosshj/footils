@@ -1,7 +1,7 @@
 {
   "name": "footils",
   "version": "1.0.0",
-  "description": "Kitchen sink utilities and framework-ish javascript for server and client.",
+  "description": "Kitchen sink utilities and framework-ish js for node and browser.",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
