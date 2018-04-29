@@ -15,12 +15,16 @@
   <script src="https://crosshj.com/footils/web-foo.js"></script>
 
   <script>
+    const clone = o => {
+      const result = undefined;
+      try { result = JSON.parse(JSON.stringify(o)); }
+      catch(e) {}
+      return result;
+    }
+    
     function rxReactReady(err, { components, dispatcher, start, React } = {}){
         if(err){
-            console.err(`Error in rxReactReady: ${err}`)
-        }
-        if ( !components || !dispatcher || !React ){
-            console.error('Something went wrong at rxReactReady!');
+            console.error(`Error in rxReactReady: ${err}`)
             return;
         }
         const { div, textarea, h1, h4, fragment } = components;
@@ -29,23 +33,31 @@
             var newState = clone(state);
             switch(action.type){
                 case 'NAME_CHANGED': {
-                newState = Object.assign({}, state, { name: action.payload });
+                    newState = Object.assign({}, state, { name: action.payload });
                 }
             }
             return newState;
         };
 
-        const changeName = e => dispatcher({  
-            type: 'NAME_CHANGED',
-            payload: e.target.value
-        });
+        const action = (type) => (e) => dispatcher({type, payload: e.target.value});
 
         const root = ({ name = '' }) => fragment([
             h1({ key: 'main-title' }, 'footils: react with rx as redux'),
             h4({ key: 'input-title' }, 'Action fired to trigger RX here:'),
-            textarea({ key: 'text-input', id: 'text-input', onChange: changeName, placeholder: 'Enter some text'}),
+            textarea({
+                key: 'text-input',
+                id: 'text-input',
+                onChange: action('NAME_CHANGED'),
+                placeholder: 'Enter some text'
+            }),
             h4({ key: 'output-title' }, 'Observable subscribe causes render here:'),
-            textarea({ key: 'output', id: 'output', readOnly: true, value: name, placeholder: 'Text shows up here' })
+            textarea({
+                key: 'output',
+                id: 'output',
+                readOnly: true,
+                value: name,
+                placeholder: 'Text shows up here'
+            })
         ]);
 
         start({

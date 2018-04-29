@@ -101,12 +101,14 @@
         const { createElement, Component } = React;
 
         const components = {
-            div: (props, children) => createElement("div", props, children),
-            textarea: (props, children) => createElement("textarea", props, children),
-            h4: (props, children) => createElement("h4", props, children),
-            h1: (props, children) => createElement("h1", props, children),
             fragment: children => createElement(React.Fragment, null, children)
         };
+        [
+            'div', 'textarea', 'input', 'h1', 'h2', 'h3', 'h4', 'h5', 'p',
+            'span', 'ul', 'li', 'img', 'svg', 'canvas'
+        ].forEach(el => {
+            components[el] = (props, children) => createElement(el, props, children);
+        });
 
         const action$ = new Subject();
         const dispatcher = function(action){
@@ -141,6 +143,10 @@
             );
         };
 
+        if( !components || !dispatcher || !start || !React || !rxjs){
+            callback(`rxReact missing one of: { components, dispatcher, start, React, rxjs }!`);
+            return;
+        }
         callback(null, { components, dispatcher, start, React, rxjs });
     };
     rxReact.init = callback => isInitedFactory(rxReact, callback);
