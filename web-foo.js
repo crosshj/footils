@@ -143,7 +143,7 @@
 
         callback(null, { components, dispatcher, start, React, rxjs });
     };
-    rxReact.init = callback => isInitedFactory(githubPages, callback);
+    rxReact.init = callback => isInitedFactory(rxReact, callback);
 
 
 
@@ -166,6 +166,9 @@
     // TODO: create utils script and host on github
     // TODO: include helpers that set everything up except the basic needs
     utils.init = callback => isInitedFactory(utils, callback);
+
+
+
 
     // TODO: there should be a way of loading multiple contexts / modules
 
