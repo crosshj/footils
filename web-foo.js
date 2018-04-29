@@ -116,7 +116,7 @@
         function RXConnector(props) {
             this.state = {};
             this.render = () => {
-                return fragment(props.render(this.state));
+                return components.fragment(props.render(this.state));
             };
             this.observable$ = props.observable$;
             this.componentWillMount = function(){
