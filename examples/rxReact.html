@@ -6,10 +6,13 @@
     <meta name="description" content="Using rxjs with react in a fluxy (reduxy) and about-as-minimal-as-can-get kind of way">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="mobile-web-app-capable" content="yes">
-  </head>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" rel="stylesheet">
+</head>
 
-  <body>
-    <div id="root"></div>
+<body>
+    <div class="container col-sm-10 col-sm-offset-1 col-md-8 col-md-offset-2 col-lg-6 col-lg-offset-3">
+        <div id="root" class="panel panel-default panel-success"></div>
+    </div>
   </body>
 
   <script src="https://crosshj.com/footils/web-foo.js"></script>
@@ -27,7 +30,7 @@
             console.error(`Error in rxReactReady: ${err}`)
             return;
         }
-        const { div, textarea, h1, h4, fragment } = components;
+        const { div, textarea, h1, h2, h4, fragment } = components;
 
         const reducer = (state, action) => {
             var newState = clone(state);
@@ -42,22 +45,28 @@
         const action = (type) => (e) => dispatcher({type, payload: e.target.value});
 
         const root = ({ name = '' }) => fragment([
-            h1({ key: 'main-title' }, 'footils: react with rx as redux'),
-            h4({ key: 'input-title' }, 'Action fired to trigger RX here:'),
-            textarea({
-                key: 'text-input',
-                id: 'text-input',
-                onChange: action('NAME_CHANGED'),
-                placeholder: 'Enter some text'
-            }),
-            h4({ key: 'output-title' }, 'Observable subscribe causes render here:'),
-            textarea({
-                key: 'output',
-                id: 'output',
-                readOnly: true,
-                value: name,
-                placeholder: 'Text shows up here'
-            })
+            div({ key: 'main-title', className: 'panel-heading'},
+                h2({ className: 'panel-text' }, 'footils: react with rx as redux')
+            ),
+            div({ key: 'form', className: 'form-group', style: {padding: '20px'}}, [
+                h4({ key: 'input-title' }, 'Action fired to trigger RX here:'),
+                textarea({
+                    key: 'text-input',
+                    id: 'text-input',
+                    onChange: action('NAME_CHANGED'),
+                    placeholder: 'Enter some text',
+                    className: 'form-control'
+                }),
+                h4({ key: 'output-title' }, 'Observable subscribe causes render here:'),
+                textarea({
+                    key: 'output',
+                    id: 'output',
+                    readOnly: true,
+                    value: name,
+                    placeholder: 'Text shows up here',
+                    className: 'form-control'
+                })
+            ])
         ]);
 
         start({
@@ -65,7 +74,7 @@
             attach: document.getElementById('root')
         });
     }
-    footils.rxReact.init(rxReactReady)
 
+    footils.rxReact.init(rxReactReady)
   </script>
 </html>

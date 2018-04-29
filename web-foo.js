@@ -100,12 +100,14 @@
         const { render } = ReactDOM;
         const { createElement, Component } = React;
 
+        //TODO: would be nice t integrate with redux dev tools!
+
         const components = {
             fragment: children => createElement(React.Fragment, null, children)
         };
         [
             'div', 'textarea', 'input', 'h1', 'h2', 'h3', 'h4', 'h5', 'p',
-            'span', 'ul', 'li', 'img', 'svg', 'canvas'
+            'span', 'ul', 'li', 'img', 'svg', 'canvas', 'label'
         ].forEach(el => {
             components[el] = (props, children) => createElement(el, props, children);
         });
