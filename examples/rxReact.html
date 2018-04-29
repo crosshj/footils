@@ -43,7 +43,7 @@
         const root = ({ name = '' }) => fragment([
             h1({ key: 'main-title' }, 'footils: react with rx as redux'),
             h4({ key: 'input-title' }, 'Action fired to trigger RX here:'),
-            textarea({ key: 'text-input', id: 'text-input', onChange: inputOnChange, placeholder: 'Enter some text'}),
+            textarea({ key: 'text-input', id: 'text-input', onChange: changeName, placeholder: 'Enter some text'}),
             h4({ key: 'output-title' }, 'Observable subscribe causes render here:'),
             textarea({ key: 'output', id: 'output', readOnly: true, value: name, placeholder: 'Text shows up here' })
         ]);

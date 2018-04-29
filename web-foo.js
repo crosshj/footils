@@ -105,7 +105,7 @@
             textarea: (props, children) => createElement("textarea", props, children),
             h4: (props, children) => createElement("h4", props, children),
             h1: (props, children) => createElement("h1", props, children),
-            fragment: children => createElement(Fragment, null, children)
+            fragment: children => createElement(React.Fragment, null, children)
         };
 
         const action$ = new Subject();
