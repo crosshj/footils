@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>rxjs + react</title>
+    <meta name="description" content="Using rxjs with react in a fluxy (reduxy) and about-as-minimal-as-can-get kind of way">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="mobile-web-app-capable" content="yes">
+  </head>
+
+  <body>
+    <div id="root"></div>
+  </body>
+
+  <script src="https://crosshj.com/footils/web-foo.js"></script>
+
+  <script>
+    function rxReactReady(err, { components, dispatcher, start, React } = {}){
+        if(err){
+            console.err(`Error in rxReactReady: ${err}`)
+        }
+        if ( !components || !dispatcher || !React ){
+            console.error('Something went wrong at rxReactReady!');
+            return;
+        }
+        const { div, textarea, h1, h4, fragment } = components;
+
+        const reducer = (state, action) => {
+            var newState = clone(state);
+            switch(action.type){
+                case 'NAME_CHANGED': {
+                newState = Object.assign({}, state, { name: action.payload });
+                }
+            }
+            return newState;
+        };
+
+        const changeName = e => dispatcher({  
+            type: 'NAME_CHANGED',
+            payload: e.target.value
+        });
+
+        const root = ({ name = '' }) => fragment([
+            h1({ key: 'main-title' }, 'footils: react with rx as redux'),
+            h4({ key: 'input-title' }, 'Action fired to trigger RX here:'),
+            textarea({ key: 'text-input', id: 'text-input', onChange: inputOnChange, placeholder: 'Enter some text'}),
+            h4({ key: 'output-title' }, 'Observable subscribe causes render here:'),
+            textarea({ key: 'output', id: 'output', readOnly: true, value: name, placeholder: 'Text shows up here' })
+        ]);
+
+        start({
+            reducer, root,
+            attach: document.getElementById('root')
+        });
+    }
+    footils.rxReact.init(rxReactReady)
+
+  </script>
+</html>
