@@ -6,7 +6,8 @@
     <meta name="description" content="Using rxjs with react in a fluxy (reduxy) and about-as-minimal-as-can-get kind of way">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="mobile-web-app-capable" content="yes">
-    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://crosshj.com/footils/web-foo.js"></script>
   </head>
 
   <body>
@@ -15,8 +16,6 @@
     </div>
   </body>
 
-  <script src="https://crosshj.com/footils/web-foo.js"></script>
-
   <script>
     const clone = o => {
       const result = undefined;
@@ -24,14 +23,44 @@
       catch(e) {}
       return result;
     }
-    
-    function rxReactReady(err, { components, dispatcher, start, React } = {}){
-        if(err){
-            console.error(`Error in rxReactReady: ${err}`)
-            return;
-        }
-        const { div, textarea, h1, h2, h4, fragment } = components;
 
+    const getRoot = (components, dispatcher) => {
+        const { div, textarea, h4, label, fragment, form } = components;
+        const action = (type) => (e) => dispatcher({type, payload: e.target.value});
+
+        const root = ({ name = '' }) => fragment([
+            div({ key: 'main-title', className: 'panel-heading'},
+                h4({ className: 'panel-text' }, 'footils: react with rx as redux')
+            ),
+            form({ className: 'form-group' }, [
+                div({ key: 'form-input', style: {padding: '20px'}}, [
+                    label({ key: 'input-title', htmlFor: 'text-input' }, 'Action fired to trigger RX here:'),
+                    textarea({
+                        key: 'text-input',
+                        id: 'text-input',
+                        onChange: action('NAME_CHANGED'),
+                        placeholder: 'Enter some text',
+                        className: 'form-control'
+                    }),
+                ]),
+                div({ key: 'form-ouput', style: {padding: '20px'}}, [
+                    label({ key: 'output-title', htmlFor: 'output' }, 'Observable subscribe causes render here:'),
+                    textarea({
+                        key: 'output',
+                        id: 'output',
+                        readOnly: true,
+                        value: name,
+                        placeholder: 'Text shows up here',
+                        className: 'form-control'
+                    })
+                ])
+            ])
+        ]);
+
+        return root;
+    }
+
+    const getReducer = () => {
         const reducer = (state, action) => {
             var newState = clone(state);
             switch(action.type){
@@ -41,36 +70,18 @@
             }
             return newState;
         };
-
-        const action = (type) => (e) => dispatcher({type, payload: e.target.value});
-
-        const root = ({ name = '' }) => fragment([
-            div({ key: 'main-title', className: 'panel-heading'},
-                h2({ className: 'panel-text' }, 'footils: react with rx as redux')
-            ),
-            div({ key: 'form', className: 'form-group', style: {padding: '20px'}}, [
-                h4({ key: 'input-title' }, 'Action fired to trigger RX here:'),
-                textarea({
-                    key: 'text-input',
-                    id: 'text-input',
-                    onChange: action('NAME_CHANGED'),
-                    placeholder: 'Enter some text',
-                    className: 'form-control'
-                }),
-                h4({ key: 'output-title' }, 'Observable subscribe causes render here:'),
-                textarea({
-                    key: 'output',
-                    id: 'output',
-                    readOnly: true,
-                    value: name,
-                    placeholder: 'Text shows up here',
-                    className: 'form-control'
-                })
-            ])
-        ]);
+        return reducer;
+    };
+    
+    function rxReactReady(err, { components, dispatcher, start, React } = {}){
+        if(err){
+            console.error(`Error in rxReactReady: ${err}`)
+            return;
+        }
 
         start({
-            reducer, root,
+            reducer: getReducer(),
+            root: getRoot(components, dispatcher),
             attach: document.getElementById('root')
         });
     }

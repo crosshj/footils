@@ -93,6 +93,10 @@
         'https://unpkg.com/react@16/umd/react.development.js',
         'https://unpkg.com/react-dom@16/umd/react-dom.development.js'
     ];
+
+    // TODO: react and react-dom should waterfall
+    // https://remysharp.com/2015/12/18/promise-waterfall
+
     rxReact.scriptsAfter = (callback) => {
         const { of, fromEvent, from, range } = rxjs;
         const { Observable, Subject } = rxjs;
@@ -107,7 +111,7 @@
         };
         [
             'div', 'textarea', 'input', 'h1', 'h2', 'h3', 'h4', 'h5', 'p',
-            'span', 'ul', 'li', 'img', 'svg', 'canvas', 'label'
+            'span', 'ul', 'li', 'img', 'svg', 'canvas', 'label', 'form'
         ].forEach(el => {
             components[el] = (props, children) => createElement(el, props, children);
         });
