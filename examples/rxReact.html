@@ -9,10 +9,19 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
     <script src="https://crosshj.com/footils/web-foo.js"></script>
   </head>
+  <style>
+    body, textarea {
+        font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol";
+    }
+    body {
+        margin-top: 20px;
+    }
+  </style>
+
 
   <body>
     <div class="container col-sm-10 col-sm-offset-1 col-md-8 col-md-offset-2 col-lg-6 col-lg-offset-3">
-        <div id="root" class="panel panel-default panel-success"></div>
+        <div id="root" class="panel panel-default panel-primary"></div>
     </div>
   </body>
 
@@ -32,8 +41,8 @@
             div({ key: 'main-title', className: 'panel-heading'},
                 h4({ className: 'panel-text' }, 'footils: react with rx as redux')
             ),
-            form({ className: 'form-group' }, [
-                div({ key: 'form-input', style: {padding: '20px'}}, [
+            form({ key: 'form', style: {padding: '20px'} }, [
+                div({ key: 'form-input', className: 'form-group'}, [
                     label({ key: 'input-title', htmlFor: 'text-input' }, 'Action fired to trigger RX here:'),
                     textarea({
                         key: 'text-input',
@@ -43,7 +52,7 @@
                         className: 'form-control'
                     }),
                 ]),
-                div({ key: 'form-ouput', style: {padding: '20px'}}, [
+                div({ key: 'form-ouput', className: 'form-group'}, [
                     label({ key: 'output-title', htmlFor: 'output' }, 'Observable subscribe causes render here:'),
                     textarea({
                         key: 'output',
