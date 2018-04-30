@@ -29,6 +29,8 @@
             script.src = scriptUrl;
             script.onload = function (){
                 console.log(arguments);
+                console.log(document.currentScript);
+                debugger;
                 //TODO: this is where to save cache
                 res.apply(null, arguments);
             }
