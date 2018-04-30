@@ -80,7 +80,7 @@
         }
         var scripts = parent.scripts || [];
         var tasks = scripts.map(s => {
-            typeof s === "string"
+            return typeof s === "string"
                 ? loadScript(s)
                 : waterfall(loadScript, s)
         });
