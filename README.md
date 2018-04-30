@@ -10,4 +10,4 @@ It's called (foo)tils because other names for utility libs on npm were taken and
 [examples/githubPages.html](examples/githubPages.html) - [UNFINISHED] - share github repo structure as a web page   
 
 ## todo
-- [ ] document intended use cases
+  - [ ] document intended use cases
