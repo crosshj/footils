@@ -20,19 +20,40 @@
             - refer to docs for context / use case
     */
 
-    // TODO: cache script like: https://github.com/webpgr/cached-webpgr.js
-    function loadScript(scriptUrl){
-        return new Promise(function (res, rej) {
-            let script = document.createElement('script');
+    // cache script, https://github.com/webpgr/cached-webpgr.js
+    function cacheOrLoadify(script, scriptUrl, res){
+
+        var content = localStorage.getItem(scriptUrl);
+        
+        if(!content){
             script.src = scriptUrl;
+            script.onload = function (){
+                console.log(arguments);
+                //TODO: this is where to save cache
+                res.apply(null, arguments);
+            }
+            return script;
+        }
+
+        var c = JSON.parse(content);
+        var scriptContent = document.createTextNode(c.content);
+        script.appendChild(scriptContent);
+        script.onload = res;
+    }
+
+
+    function loadScript(scriptUrl){
+        const loadPromise = new Promise(function (res, rej) {
+            let script = document.createElement('script');
             script.type = 'text/javascript';
+            script = cacheOrLoadify(script, scriptUrl, res);
             script.onError = rej;
             script.async = true;
-            script.onload = res;
             script.addEventListener('error',rej);
             script.addEventListener('load',res);
             document.head.appendChild(script);
         });
+        return loadPromise;
     }
 
     // https://remysharp.com/2015/12/18/promise-waterfall
