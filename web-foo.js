@@ -35,6 +35,29 @@
         });
     }
 
+    // https://remysharp.com/2015/12/18/promise-waterfall
+    function waterfall(fn, arr){
+        if(!fn || typeof fn !== 'function'
+            || !arr || typeof arr !== "object" || !arr.length
+        ){
+            throw('Error with promise waterfall');
+            return;
+        }
+        var promises = arr.reduce((all, one) => {
+            return all
+                .then((res) => {
+                    return fn(one)
+                        .then((result) => {
+                            res.push(result);
+                            return res;
+                        });
+                });
+          }, Promise.resolve([]));
+        return promises;
+    }
+
+
+
     function consoleOrCallback(callback){
         if(callback && typeof callback === 'function'){
             return callback;
@@ -56,7 +79,12 @@
             cb(`${parent.name}: script already inited!`);
         }
         var scripts = parent.scripts || [];
-        Promise.all(scripts.map(s => loadScript(s)))
+        var tasks = scripts.map(s => {
+            typeof s === "string"
+                ? loadScript(s)
+                : waterfall(loadScript, s)
+        });
+        Promise.all(tasks)
             .then(() => {
                 parent.isInited = true;
                 if(parent.scriptsAfter){
@@ -91,12 +119,11 @@
     function rxReact(){ return returnProps(rxReact); }
     rxReact.scripts = [
         'https://unpkg.com/rxjs@beta/bundles/rxjs.umd.js',
-        'https://unpkg.com/react@16/umd/react.development.js',
-        'https://unpkg.com/react-dom@16/umd/react-dom.development.js'
+        [    // react and react-dom should waterfall
+            'https://unpkg.com/react@16/umd/react.development.js',
+            'https://unpkg.com/react-dom@16/umd/react-dom.development.js'
+        ]
     ];
-
-    // TODO: react and react-dom should waterfall
-    // https://remysharp.com/2015/12/18/promise-waterfall
 
     rxReact.scriptsAfter = (callback) => {
         const { of, fromEvent, from, range } = rxjs;
