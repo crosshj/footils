@@ -36,6 +36,8 @@
                     which introduces other issues (CORS)
                     which will have to deal with by copying from CDN
                     bleh.... (disabled for now)
+
+                    would also be cool if download parallel but append via waterfall
                 */
                 res.apply(null, arguments);
             }
