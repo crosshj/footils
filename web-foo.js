@@ -24,14 +24,17 @@
     function cacheOrLoadify(script, scriptUrl, res){
 
         var content = localStorage.getItem(scriptUrl);
-        
+
         if(!content){
             script.src = scriptUrl;
             script.onload = function (){
-                console.log(arguments);
-                console.log(document.currentScript);
-                debugger;
-                //TODO: this is where to save cache
+                /*
+                    TODO: this is where to save cache
+                    and will probably not work unless loading script source manually
+                    which introduces other issues (CORS)
+                    which will have to deal with by copying from CDN
+                    bleh.... (disabled for now)
+                */
                 res.apply(null, arguments);
             }
             return script;
