@@ -20,7 +20,8 @@
             - refer to docs for context / use case
     */
 
-   function loadScript(scriptUrl){
+    // TODO: cache script like: https://github.com/webpgr/cached-webpgr.js
+    function loadScript(scriptUrl){
         return new Promise(function (res, rej) {
             let script = document.createElement('script');
             script.src = scriptUrl;
