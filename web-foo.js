@@ -93,8 +93,9 @@
                 }
                 cb(null, `${parent.name}: script is inited!`);
             })
-            .catch(() => {
+            .catch((e) => {
                 const errorMessage = `error initialising ${parent.name}`;
+                console.log(e);
                 cb(errorMessage);
             });
     }
