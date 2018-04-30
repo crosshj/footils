@@ -21,6 +21,8 @@
     */
 
     // cache script, https://github.com/webpgr/cached-webpgr.js
+    // also see: https://addyosmani.com/basket.js/
+    // maybe use service worker instead
     function cacheOrLoadify(script, scriptUrl, res){
 
         var content = localStorage.getItem(scriptUrl);

@@ -21,10 +21,9 @@
     }
   </style>
 
-
   <body>
-    <div class="container col-sm-10 col-sm-offset-1 col-md-8 col-md-offset-2 col-lg-6 col-lg-offset-3">
-        <div id="root" class="panel panel-default panel-primary"></div>
+    <div id="root">
+        <center>Loading...</center>
     </div>
   </body>
 
@@ -40,34 +39,41 @@
         const { div, textarea, h4, label, fragment, form } = components;
         const action = (type) => (e) => dispatcher({type, payload: e.target.value});
 
-        const root = ({ name = '' }) => fragment([
-            div({ key: 'main-title', className: 'panel-heading'},
-                h4({ className: 'panel-text' }, 'footils: react with rx as redux')
-            ),
-            form({ key: 'form', style: {padding: '20px'} }, [
-                div({ key: 'form-input', className: 'form-group'}, [
-                    label({ key: 'input-title', htmlFor: 'text-input' }, 'Action fired to trigger RX here:'),
-                    textarea({
-                        key: 'text-input',
-                        id: 'text-input',
-                        onChange: action('NAME_CHANGED'),
-                        placeholder: 'Enter some text',
-                        className: 'form-control'
-                    }),
-                ]),
-                div({ key: 'form-ouput', className: 'form-group'}, [
-                    label({ key: 'output-title', htmlFor: 'output' }, 'Observable subscribe causes render here:'),
-                    textarea({
-                        key: 'output',
-                        id: 'output',
-                        readOnly: true,
-                        value: name,
-                        placeholder: 'Text shows up here',
-                        className: 'form-control'
-                    })
+        const root = ({ name = '' }) =>
+        div({
+            className: 'container col-sm-10 col-sm-offset-1 col-md-8 col-md-offset-2 col-lg-6 col-lg-offset-3'
+        },
+            div({
+                className: 'panel panel-default panel-primary'
+            },[
+                div({ key: 'main-title', className: 'panel-heading'},
+                    h4({ className: 'panel-text' }, 'footils: react with rx as redux')
+                ),
+                form({ key: 'form', style: {padding: '20px'} }, [
+                    div({ key: 'form-input', className: 'form-group'}, [
+                        label({ key: 'input-title', htmlFor: 'text-input' }, 'Action fired to trigger RX here:'),
+                        textarea({
+                            key: 'text-input',
+                            id: 'text-input',
+                            onChange: action('NAME_CHANGED'),
+                            placeholder: 'Enter some text',
+                            className: 'form-control'
+                        }),
+                    ]),
+                    div({ key: 'form-ouput', className: 'form-group'}, [
+                        label({ key: 'output-title', htmlFor: 'output' }, 'Observable subscribe causes render here:'),
+                        textarea({
+                            key: 'output',
+                            id: 'output',
+                            readOnly: true,
+                            value: name,
+                            placeholder: 'Text shows up here',
+                            className: 'form-control'
+                        })
+                    ])
                 ])
             ])
-        ]);
+        );
 
         return root;
     }
