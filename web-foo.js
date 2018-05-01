@@ -219,9 +219,18 @@
     canvas.scripts = [
         'https://crosshj.com/sandbox/canvas_plus.js'
     ];
-    // TODO: include helpers that set everything up except the basic needs
+    canvas.scriptsAfter = (callback) => {
+        const start = (options) => {
+            var cv = new CanvasPlus(options);
+            cv.start();
+            return cv;
+        };
+        return callback(null, { start });
+    };
     canvas.init = callback => isInitedFactory(canvas, callback);
 
+
+    // NEURAL ------------------------------------------------------------------
     function neural(){ return returnProps(neural); }
     neural.scripts = [
         'https://cdnjs.cloudflare.com/ajax/libs/synaptic/1.0.10/synaptic.js'
