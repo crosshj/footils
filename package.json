@@ -4,7 +4,7 @@
   "description": "Kitchen sink utilities and framework-ish js for node and browser.",
   "main": "index.js",
   "scripts": {
-    "watch.dev": "autoreload-server -w \"**/**.{html,css,js}\" ./ 82",
+    "watch.dev": "autoreload-server -w \"**/**.{html,css,js}\" ./ 8282",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {

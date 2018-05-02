@@ -8,8 +8,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="mobile-web-app-capable" content="yes">
     <!-- <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"> -->
-    <script src="https://crosshj.com/footils/web-foo.js"></script>
-    <!-- <script src="/web-foo.js"></script> -->
+
 </head>
 <style>
     body {
@@ -28,6 +27,10 @@
 <body>
     <div id="root"></div>
 </body>
+
+<script src="https://crosshj.com/footils/web-foo.js"></script>
+<script src="https://inspirit.github.io/jsfeat/js/jsfeat-min.js"></script>
+<!-- <script src="/web-foo.js"></script> -->
 
 <script>
     const clone = o => {
@@ -73,9 +76,9 @@
 
                     if(luminosity(_color) < 160){
                         const oColor = rgbXY(x, y, xmax, ymax);
-                        _color.r = (oColor.r+_color.r) / 2;
-                        _color.g = (oColor.g+_color.g) / 2;
-                        _color.b = (oColor.b+_color.b) / 2;
+                        _color.r = 0.25 * oColor.r + 0.75 * _color.r;
+                        _color.g = 0.25 * oColor.g + 0.75 * _color.g;
+                        _color.b = 0.25 * oColor.b + 0.75 * _color.b;
                     }
                     setter(_color, { x, y, xmax });
                 });
@@ -84,6 +87,21 @@
 
         function range(from, to){
             return new Array(to).fill();
+        }
+        
+        function rgbToImageData({alpha=255, r=0, g=0, b=0} = {}){
+            const newAlpha = alpha > 0 ? alpha : 255;
+            return (alpha << 24) | (b << 16) | (g << 8) | r;
+        }
+
+        function imageDataToRGB(data){
+            const newAlpha = data >> 24 > 0 ? data >> 24 : 255;
+            return {
+                alpha: newAlpha,
+                r: data & 255,
+                g: data >> 8 & 255,
+                b: data >> 16 & 255
+            };
         }
         
         var randomImageData;
@@ -100,6 +118,41 @@
                 this.dimensions.x,
                 this.dimensions.y
             );
+
+
+            // JSFEAT ----------------------------------------------------------
+            var demo_opt = function(){
+                this.blur_radius = 5;
+                this.low_threshold = 0;
+                this.high_threshold = 65;
+            }
+
+            const options = new demo_opt();
+            const img_u8 = new jsfeat.matrix_t(this.dimensions.x, this.dimensions.y, jsfeat.U8C1_t);
+            var r = options.blur_radius|0;
+            var kernel_size = (r+1) << 1;
+
+            jsfeat.imgproc.grayscale(randomImageData.data, this.dimensions.x, this.dimensions.y, img_u8);
+            jsfeat.imgproc.gaussian_blur(img_u8, img_u8, kernel_size, 0);
+            //jsfeat.imgproc.gaussian_blur(img_u8, img_u8, kernel_size, 0);
+            //jsfeat.imgproc.gaussian_blur(img_u8, img_u8, kernel_size, 0);
+            jsfeat.imgproc.canny(img_u8, img_u8, options.low_threshold|0, options.high_threshold|0);
+
+            
+
+            var data_u32 = new Uint32Array(randomImageData.data.buffer);
+            var alpha = (0xff << 24);
+            var i = img_u8.cols*img_u8.rows;
+            var pix = 0;
+            while(--i >= 0) {
+                if (img_u8.data[i] > 0){
+                    const oldData = imageDataToRGB(data_u32[i]);
+                    oldData.r = 200;
+                    oldData.g = 230;
+                    oldData.b *= 3;
+                    data_u32[i] = rgbToImageData(oldData);
+                }
+            }
 
             ctx.putImageData(randomImageData, 0, 0);
         };
