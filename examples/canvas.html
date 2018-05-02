@@ -7,13 +7,13 @@
     <meta name="description" content="Canvas from footils">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="mobile-web-app-capable" content="yes">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <!-- <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"> -->
     <script src="https://crosshj.com/footils/web-foo.js"></script>
     <!-- <script src="/web-foo.js"></script> -->
 </head>
 <style>
     body {
-        background: black;
+        background: #635b58 !important;
     }
 
     #root {
@@ -52,14 +52,31 @@
             return { r, g, b };
         }
 
+        function rgbXY(x,y, xmax, ymax){
+            var magicNumber = 0.08;
+            return {
+                r: 255 * x/xmax,
+                g: 255 * y/ymax,
+                b: 255  - Math.floor((255 * x*y)/(xmax*ymax))
+                    -magicNumber*x - magicNumber*y
+            }
+        }
+
+        function luminosity({r, g, b}){
+            return 0.267*r + 0.642*g + 0.091*b;
+        }
+
         function randomPixel(setter, xmax, ymax) {
             range(0, xmax).forEach((unused_x, x) => {
                 range(0, ymax).forEach((unused_y, y) => {
                     var _color = randomRGB();
-                    _color.r = _color.b = 0;
-                    //_color.r = Math.round(Math.random()) * 255;
-                    //_color.b = Math.round(Math.random()) * 255;
-                    _color.g = Math.round(Math.random()) * 255;
+
+                    if(luminosity(_color) < 160){
+                        const oColor = rgbXY(x, y, xmax, ymax);
+                        _color.r = (oColor.r+_color.r) / 2;
+                        _color.g = (oColor.g+_color.g) / 2;
+                        _color.b = (oColor.b+_color.b) / 2;
+                    }
                     setter(_color, { x, y, xmax });
                 });
             });
@@ -94,8 +111,9 @@
 
         const cv = start({
             dimensions: {
-                x: 150,
-                y: 100
+                x: 1024,
+                y: 768,
+                zoom: 0.175
             },
             id: 'foo-canvas',
             parent: '#root',
