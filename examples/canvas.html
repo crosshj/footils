@@ -22,6 +22,11 @@
         top: 0;
         bottom: 0;
     }
+
+    #foo-canvas-2 {
+        display: none;
+        background: transparent !important;
+    }
 </style>
 
 <body>
@@ -82,9 +87,9 @@
 
                 if(luminosity(_color) < 160){
                     const oColor = rgbXY(x, y, xmax, ymax);
-                    _color.r = 0.25 * oColor.r + 0.75 * _color.r;
-                    _color.g = 0.25 * oColor.g + 0.75 * _color.g;
-                    _color.b = 0.25 * oColor.b + 0.75 * _color.b;
+                    _color.r = 0 * oColor.r + 1.0 * _color.r;
+                    _color.g = 0 * oColor.g + 1.0 * _color.g;
+                    _color.b = 0 * oColor.b + 1.0 * _color.b;
                 }
                 setter(_color, { x, y, xmax });
             });
@@ -120,11 +125,20 @@
 
             function toggle(){
                 console.log('hide and show second layer');
+                const layer = document.getElementById('foo-canvas-2');
+                layer.style.display = layer.style.display === 'none' || !layer.style.display
+                    ? 'block'
+                    : 'none';
+            }
+
+            function reload(){
+                document.location.reload();
             }
 
             function init(setter) {
                 if (!setter) return;
                 var ctx = this.canvas.getContext('2d');
+                ctx.globalAlpha = 0.0;
 
                 window.randomImageData = window.randomImageData
                     ? window.randomImageData
@@ -134,9 +148,9 @@
                
                     // JSFEAT ----------------------------------------------------------
                     var demo_opt = function(){
-                        this.blur_radius = 5;
+                        this.blur_radius = 3;
                         this.low_threshold = 0;
-                        this.high_threshold = 65;
+                        this.high_threshold = 60;
                     }
 
                     const options = new demo_opt();
@@ -149,18 +163,28 @@
                     //jsfeat.imgproc.gaussian_blur(img_u8, img_u8, kernel_size, 0);
                     //jsfeat.imgproc.gaussian_blur(img_u8, img_u8, kernel_size, 0);
                     jsfeat.imgproc.canny(img_u8, img_u8, options.low_threshold|0, options.high_threshold|0);
+                    jsfeat.imgproc.gaussian_blur(img_u8, img_u8, kernel_size, 0);
+                    jsfeat.imgproc.gaussian_blur(img_u8, img_u8, kernel_size, 0);
+                    jsfeat.imgproc.gaussian_blur(img_u8, img_u8, kernel_size, 0);
+                    jsfeat.imgproc.canny(img_u8, img_u8, options.low_threshold|0, options.high_threshold|0);
 
                     var data_u32 = new Uint32Array(randomImageData.data.buffer);
                     var alpha = (0xff << 24);
                     var i = img_u8.cols*img_u8.rows;
                     var pix = 0;
                     while(--i >= 0) {
-                        if (img_u8.data[i] > 0){
-                            const oldData = imageDataToRGB(data_u32[i]);
-                            oldData.r = 200;
-                            //oldData.g = 230;
-                            //oldData.b *= 3;
-                            oldData.alpha = 0;
+                        const oldData = imageDataToRGB(data_u32[i]);
+                        if (imageDataToRGB(img_u8.data[i]).r > 0){
+                            oldData.r = 0;
+                            oldData.g = 0;
+                            oldData.b = 0;
+                            oldData.alpha = 255;
+                            data_u32[i] = rgbToImageData(oldData);
+                        } else {
+                            oldData.r = 0;
+                            oldData.g = 0;
+                            oldData.b = 0;
+                            oldData.alpha = 1;
                             data_u32[i] = rgbToImageData(oldData);
                         }
                     }
@@ -178,8 +202,8 @@
             };
 
             const buttons = [{
-                text: canvasid === 'foo-canvas-2' ? 'toggle' : 'random',
-                onClick: canvasid === 'foo-canvas-2' ? toggle : init
+                text: canvasid === 'foo-canvas-2' ? 'toggle' : 'reload',
+                onClick: canvasid === 'foo-canvas-2' ? toggle : reload
             }];
 
             const cv = setTimeout(() => start({
