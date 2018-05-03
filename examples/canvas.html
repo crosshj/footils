@@ -33,6 +33,18 @@
 <!-- <script src="/web-foo.js"></script> -->
 
 <script>
+
+    /*
+    TODO: 
+        - pass list of functions to bind to setter here
+        - or expose setter functions
+        - make it easy to change image after the fact
+        - game loop (or do I have that already)? yes, technically - requestAnimationFrame
+        - worker? it looks like it's not in place
+        - 
+    */
+
+
     const clone = o => {
         const result = undefined;
         try { result = JSON.parse(JSON.stringify(o)); }
@@ -40,152 +52,154 @@
         return result;
     }
 
-    function canvasReady(err, { components, dispatcher, start, React } = {}) {
-        if (err) {
-            console.error(`Error in canvasReady:`);
-            console.error(err);
-        }
-
-        // http://stackoverflow.com/a/23095731/1627873
-        function randomRGB() {
-            var num = Math.round(0xffffff * Math.random());
-            var r = num >> 16;
-            var g = num >> 8 & 255;
-            var b = num & 255;
-            return { r, g, b };
-        }
-
-        function rgbXY(x,y, xmax, ymax){
-            var magicNumber = 0.08;
-            return {
-                r: 255 * x/xmax,
-                g: 255 * y/ymax,
-                b: 255  - Math.floor((255 * x*y)/(xmax*ymax))
-                    -magicNumber*x - magicNumber*y
-            }
-        }
-
-        function luminosity({r, g, b}){
-            return 0.267*r + 0.642*g + 0.091*b;
-        }
-
-        function randomPixel(setter, xmax, ymax) {
-            range(0, xmax).forEach((unused_x, x) => {
-                range(0, ymax).forEach((unused_y, y) => {
-                    var _color = randomRGB();
-
-                    if(luminosity(_color) < 160){
-                        const oColor = rgbXY(x, y, xmax, ymax);
-                        _color.r = 0.25 * oColor.r + 0.75 * _color.r;
-                        _color.g = 0.25 * oColor.g + 0.75 * _color.g;
-                        _color.b = 0.25 * oColor.b + 0.75 * _color.b;
-                    }
-                    setter(_color, { x, y, xmax });
-                });
-            });
-        }
-
-        function range(from, to){
-            return new Array(to).fill();
-        }
-        
-        function rgbToImageData({alpha=255, r=0, g=0, b=0} = {}){
-            const newAlpha = alpha > 0 ? alpha : 255;
-            return (alpha << 24) | (b << 16) | (g << 8) | r;
-        }
-
-        function imageDataToRGB(data){
-            const newAlpha = data >> 24 > 0 ? data >> 24 : 255;
-            return {
-                alpha: newAlpha,
-                r: data & 255,
-                g: data >> 8 & 255,
-                b: data >> 16 & 255
-            };
-        }
-        
-        var randomImageData;
-        function init(setter) {
-            if (!setter) return;
-            var ctx = this.canvas.getContext('2d');
-
-            randomImageData = randomImageData
-                ? randomImageData
-                : ctx.createImageData(this.dimensions.x, this.dimensions.y);
-
-            randomPixel(
-                (color, pos) => { setter(randomImageData, color, pos) },
-                this.dimensions.x,
-                this.dimensions.y
-            );
-
-
-            // JSFEAT ----------------------------------------------------------
-            var demo_opt = function(){
-                this.blur_radius = 5;
-                this.low_threshold = 0;
-                this.high_threshold = 65;
-            }
-
-            const options = new demo_opt();
-            const img_u8 = new jsfeat.matrix_t(this.dimensions.x, this.dimensions.y, jsfeat.U8C1_t);
-            var r = options.blur_radius|0;
-            var kernel_size = (r+1) << 1;
-
-            jsfeat.imgproc.grayscale(randomImageData.data, this.dimensions.x, this.dimensions.y, img_u8);
-            jsfeat.imgproc.gaussian_blur(img_u8, img_u8, kernel_size, 0);
-            //jsfeat.imgproc.gaussian_blur(img_u8, img_u8, kernel_size, 0);
-            //jsfeat.imgproc.gaussian_blur(img_u8, img_u8, kernel_size, 0);
-            jsfeat.imgproc.canny(img_u8, img_u8, options.low_threshold|0, options.high_threshold|0);
-
-            
-
-            var data_u32 = new Uint32Array(randomImageData.data.buffer);
-            var alpha = (0xff << 24);
-            var i = img_u8.cols*img_u8.rows;
-            var pix = 0;
-            while(--i >= 0) {
-                if (img_u8.data[i] > 0){
-                    const oldData = imageDataToRGB(data_u32[i]);
-                    oldData.r = 200;
-                    oldData.g = 230;
-                    oldData.b *= 3;
-                    data_u32[i] = rgbToImageData(oldData);
-                }
-            }
-
-            ctx.putImageData(randomImageData, 0, 0);
-        };
-
-        const buttons = [{
-            text: 'random',
-            onClick: init
-        }];
-
-        const cv = start({
-            dimensions: {
-                x: 1024,
-                y: 768,
-                zoom: 0.175
-            },
-            id: 'foo-canvas',
-            parent: '#root',
-            init,
-            buttons
-        });
-        window.cv = cv || function(){ console.log('No canvas data.')};
-        /*
-        TODO: 
-            - pass list of functions to bind to setter here
-            - or expose setter functions
-            - make it easy to change image after the fact
-            - game loop (or do I have that already)? yes, technically - requestAnimationFrame
-            - worker? it looks like it's not in place
-            - 
-        */
+    // http://stackoverflow.com/a/23095731/1627873
+    function randomRGB() {
+        var num = Math.round(0xffffff * Math.random());
+        var r = num >> 16;
+        var g = num >> 8 & 255;
+        var b = num & 255;
+        return { r, g, b };
     }
 
-    footils.canvas.init(canvasReady)
+    function rgbXY(x,y, xmax, ymax){
+        var magicNumber = 0.08;
+        return {
+            r: 255 * x/xmax,
+            g: 255 * y/ymax,
+            b: 255  - Math.floor((255 * x*y)/(xmax*ymax))
+                -magicNumber*x - magicNumber*y
+        }
+    }
+
+    function luminosity({r, g, b}){
+        return 0.267*r + 0.642*g + 0.091*b;
+    }
+
+    function randomPixel(setter, xmax, ymax) {
+        range(0, xmax).forEach((unused_x, x) => {
+            range(0, ymax).forEach((unused_y, y) => {
+                var _color = randomRGB();
+
+                if(luminosity(_color) < 160){
+                    const oColor = rgbXY(x, y, xmax, ymax);
+                    _color.r = 0.25 * oColor.r + 0.75 * _color.r;
+                    _color.g = 0.25 * oColor.g + 0.75 * _color.g;
+                    _color.b = 0.25 * oColor.b + 0.75 * _color.b;
+                }
+                setter(_color, { x, y, xmax });
+            });
+        });
+    }
+
+    function range(from, to){
+        return new Array(to).fill();
+    }
+    
+    function rgbToImageData({alpha=255, r=0, g=0, b=0} = {}){
+        const newAlpha = alpha > 0 ? alpha : 255;
+        return (alpha << 24) | (b << 16) | (g << 8) | r;
+    }
+
+    function imageDataToRGB(data){
+        const newAlpha = data >> 24 > 0 ? data >> 24 : 255;
+        return {
+            alpha: newAlpha,
+            r: data & 255,
+            g: data >> 8 & 255,
+            b: data >> 16 & 255
+        };
+    }
+
+    window.randomImageData = undefined;
+    const getReadyHandler = (canvasid) => {
+        return function canvasReady(err, { components, dispatcher, start, React } = {}) {
+            if (err) {
+                console.error(`Error in canvasReady:`);
+                console.error(err);
+            }
+
+            function toggle(){
+                console.log('hide and show second layer');
+            }
+
+            function init(setter) {
+                if (!setter) return;
+                var ctx = this.canvas.getContext('2d');
+
+                window.randomImageData = window.randomImageData
+                    ? window.randomImageData
+                    : ctx.createImageData(this.dimensions.x, this.dimensions.y);
+
+                if(canvasid === 'foo-canvas-2'){
+               
+                    // JSFEAT ----------------------------------------------------------
+                    var demo_opt = function(){
+                        this.blur_radius = 5;
+                        this.low_threshold = 0;
+                        this.high_threshold = 65;
+                    }
+
+                    const options = new demo_opt();
+                    const img_u8 = new jsfeat.matrix_t(this.dimensions.x, this.dimensions.y, jsfeat.U8C1_t);
+                    var r = options.blur_radius|0;
+                    var kernel_size = (r+1) << 1;
+
+                    jsfeat.imgproc.grayscale(randomImageData.data, this.dimensions.x, this.dimensions.y, img_u8);
+                    jsfeat.imgproc.gaussian_blur(img_u8, img_u8, kernel_size, 0);
+                    //jsfeat.imgproc.gaussian_blur(img_u8, img_u8, kernel_size, 0);
+                    //jsfeat.imgproc.gaussian_blur(img_u8, img_u8, kernel_size, 0);
+                    jsfeat.imgproc.canny(img_u8, img_u8, options.low_threshold|0, options.high_threshold|0);
+
+                    var data_u32 = new Uint32Array(randomImageData.data.buffer);
+                    var alpha = (0xff << 24);
+                    var i = img_u8.cols*img_u8.rows;
+                    var pix = 0;
+                    while(--i >= 0) {
+                        if (img_u8.data[i] > 0){
+                            const oldData = imageDataToRGB(data_u32[i]);
+                            oldData.r = 200;
+                            //oldData.g = 230;
+                            //oldData.b *= 3;
+                            oldData.alpha = 0;
+                            data_u32[i] = rgbToImageData(oldData);
+                        }
+                    }
+                    ctx.putImageData(randomImageData, 0, 0);
+
+                    return;
+                }
+                randomPixel(
+                    (color, pos) => { setter(randomImageData, color, pos) },
+                    this.dimensions.x,
+                    this.dimensions.y
+                );
+
+                ctx.putImageData(randomImageData, 0, 0);
+            };
+
+            const buttons = [{
+                text: canvasid === 'foo-canvas-2' ? 'toggle' : 'random',
+                onClick: canvasid === 'foo-canvas-2' ? toggle : init
+            }];
+
+            const cv = setTimeout(() => start({
+                dimensions: {
+                    x: 1024,
+                    y: 768,
+                    zoom: 0.175
+                },
+                id: canvasid,
+                parent: '#root',
+                init,
+                buttons
+            }), canvasid === 'foo-canvas-2' ? 100 : 0);
+            window.cvs = window.cvs || [];
+            window.cvs.push(cv || function(){ console.log('No canvas data.')});
+        }
+    }
+
+    footils.canvas.init(getReadyHandler('foo-canvas'))
+    footils.canvas.init(getReadyHandler('foo-canvas-2'))
 </script>
 
 </html>
