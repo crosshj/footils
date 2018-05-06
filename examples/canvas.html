@@ -30,46 +30,56 @@
 </style>
 
 <style>
-    #root{
-        position: absolute;
-        right: 200px;
-    }
     #sidebar {
         position: absolute;
         right: 0px;
         top: 0px;
         bottom: 0px;
-        background: #202020;
+        background: #333;
         width: 200px;
-        color: #888888;
+        color: #aaa;
         padding-left: 10px;
         padding-right: 7px;
+        padding-top: 26px;
     }
-    #sidebar label {
+    #sidebar > div {
+        padding-right: 5px;
+        display: flex;
+        justify-content: space-between;
+        margin-top: 5px;
+    }
+    #sidebar span.label {
+        display: inline-block;
+        min-width: 90px;
+        max-width: 90px;
+    }
+    #sidebar, #sidebar span.label, input {
         text-transform: uppercase;
-        display: block;
-        padding-top: 5px;
         font-family: monospace;
+        font-size: 10px;
+        line-height: 16px;
     }
     #sidebar input {
-        width: -webkit-fill-available;
+        width: 100%;
+        margin: 0px;
     }
     #sidebar input:focus {
         border-radius: 0px;
         border: 0px;
+        background: #6a6a6a;
     }
     input[type=text] {
         border: none;
-        background: #555;
         height: 16px;
-        padding-left: 5px;
         color: #bbb;
+        padding-right: 5px;
+        direction: rtl;
+        padding-top: 0px;
+        padding-bottom: 0px;
     }
     input[type=range] {
         -webkit-appearance: none;
         background: transparent;
-        margin: 0px;
-        margin-top: 5px;
     }
     input[type=range]:focus {
         outline: none;
@@ -82,30 +92,92 @@
         border-radius: 0px;
         background: #888;
         cursor: pointer;
-        margin-top: 0px;
+    }
+    input[type=range]::-webkit-slider-runnable-track, input[type=text] {
+        background: #444;
     }
     input[type=range]::-webkit-slider-runnable-track {
         width: 100%;
         height: 17px;
         cursor: pointer;
-        box-shadow: 1px 1px 1px #000000, 0px 0px 1px #0d0d0d;
-        background: #555;
         border-radius: 0px;
         border: 0px;
     }
     input[type=range]:focus::-webkit-slider-runnable-track {
         background: #666;
     }
-
+    div#header {
+        margin: 0px;
+        position: absolute;
+        left: 0px;
+        top: 0px;
+        height: 20px;
+        right: 0px;
+        background: #454545;
+        padding-left: 6px;
+        line-height: 20px;
+        color: #acacac;
+        font-size: 10px;
+        text-transform: capitalize;
+    }
+    #closeSettings, #openSettings {
+        cursor: pointer;
+        min-width: 11px;
+        text-align: center;
+        height: 12px;
+        margin-top: auto;
+        margin-bottom: auto;
+        line-height: 11px;
+        font-size: 14px;
+    }
+    #openSettings {
+        background: #444;
+        color: #ddd;
+        position: absolute;
+        top: 4px;
+        right: 5px;
+        font-family: monospace;
+    }
+    #closeSettings:hover, #openSettings:hover {
+        background: #eee;
+        color: #222;
+    }
+    .sliderValue {
+        padding-right: 5px;
+        margin-left: -39px;
+        direction: rtl;
+        width: 64px;
+    }
 </style>
 
 <body>
-    <div id="root"></div>
-    <div id="sidebar">
-        <label for="textExample">Text</label>
-        <input id="textExample" type="text" value="34"/>
-        <label for="sliderExample">Slider</label>
-        <input id="sliderExample" type="range" min="0" max="100" step="5" value="35"/>
+    <div id="root"
+        onclick="document.getElementById('sidebar').style.display='none'; document.getElementById('openSettings').style.display='block';"
+    ></div>
+    <div id="openSettings"
+        onclick="document.getElementById('openSettings').style.display='none'; document.getElementById('sidebar').style.display='block';"
+    >←</div>
+    <div id="sidebar"
+        style="display:none;"
+    >
+        <div id="header">
+            <span>header text</span>
+            <span id="closeSettings"
+                onclick="document.getElementById('sidebar').style.display='none'; document.getElementById('openSettings').style.display='block';"
+            >→</span>
+        </div>
+        <div>
+            <span class="label">Text</span>
+            <input id="textExample" type="text" value="35"/>
+        </div>
+        <div>
+            <span class="label">Slider</span>
+            <div class="sliderValue">35</div>
+            <input id="sliderExample" type="range" min="0" max="100" step="5" value="35"
+                onchange="(function(e){ document.querySelector('.sliderValue').innerHTML=e.target.value; })(event)"
+                oninput="(function(e){ document.querySelector('.sliderValue').innerHTML=e.target.value; })(event)"
+            />
+        </div>
     </div>
 </body>
 
