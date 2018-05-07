@@ -95,7 +95,8 @@
     }
     input[type=range]::-webkit-slider-runnable-track,
     input[type=text],
-    .slider {
+    .slider,
+    select {
         background: #444;
     }
     input[type=range]::-webkit-slider-runnable-track {
@@ -214,6 +215,25 @@
         user-select: none;
     }
 
+    select {
+        color: #aaa;
+        text-transform: uppercase;
+        font-family: monospace;
+        width: 104px;
+        border: 0px;
+        direction: rtl;
+        text-overflow: ellipsis;
+        white-space: normal;
+        max-height: 16px;
+        font-size: 11px;
+    }
+    select:focus {
+        border: 0px;
+        border-radius: 0px;
+    }
+    option {
+
+    }
 </style>
 
 <body>
@@ -253,6 +273,17 @@
                 />
                 <span class="slider"></span>
             </label>
+        </div>
+        <div>
+            <span class="label">Select</span>
+            <select>
+                <option>red</option>
+                <option>green</option>
+                <option>blue</option>
+                <option>orange</option>
+                <option>purple</option>
+                <option>redorange fooballsomg</option>
+            </select>
         </div>
     </div>
 </body>
