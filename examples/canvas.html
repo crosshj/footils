@@ -73,6 +73,7 @@
         height: 16px;
         color: #bbb;
         padding-right: 5px;
+        padding-left: 5px;
         direction: rtl;
         padding-top: 0px;
         padding-bottom: 0px;
@@ -132,6 +133,7 @@
         margin-bottom: auto;
         line-height: 11px;
         font-size: 14px;
+        user-select: none;
     }
     #openSettings {
         background: #444;
@@ -160,11 +162,8 @@
         width: 30px;
         height: 18px;
     }
-
     /* Hide default HTML checkbox */
     .switch input {display:none;}
-
-    /* The slider */
     .slider {
         position: absolute;
         cursor: pointer;
@@ -175,7 +174,6 @@
         -webkit-transition: .4s;
         transition: .4s;
     }
-
     .slider:before {
         position: absolute;
         content: "";
@@ -187,25 +185,20 @@
         -webkit-transition: .4s;
         transition: .4s;
     }
-
     input:checked + .slider {
         /* background-color: #777; */
     }
-
     input:checked + .slider:before {
         /* background-color: #ccc; */
     }
-
     input:focus + .slider {
         background-color: #777;
     }
-
     input:checked + .slider:before {
         -webkit-transform: translateX(12px);
         -ms-transform: translateX(12px);
         transform: translateX(12px);
     }
-
     .booleanValue {
         padding-right: 5px;
         margin-left: 2px;
@@ -231,9 +224,36 @@
         border: 0px;
         border-radius: 0px;
     }
-    option {
 
+    #sidebar .buttonContainer {
+        display: flex;
+        flex-direction: column;
     }
+    #sidebar .buttonContainer > button {
+        border: 0px;
+        border-radius: 0px;
+        font-size: 10px;
+        color: #aaa;
+        width: -webkit-fill-available;
+        text-transform: uppercase;
+        height: 23px;
+        padding: 0px;
+        min-height: unset;
+        margin: 3px 0px;
+        transition: unset;
+    }
+    #sidebar .buttonContainer > button:hover {
+        background-color: #666;
+    }
+    #sidebar > div.divider:nth-child(n+3) {
+        margin-top: 19px !important;
+    }
+    #sidebar > div.divider {
+        margin-left: -3px;
+        border-bottom: 1px solid #444;
+        font-style: italic;
+    }
+
 </style>
 
 <body>
@@ -252,9 +272,12 @@
                 onclick="document.getElementById('sidebar').style.display='none'; document.getElementById('openSettings').style.display='block';"
             >→</span>
         </div>
+        <div class="divider">Dummy</div>
         <div>
             <span class="label">Text</span>
-            <input id="textExample" type="text" value="35"/>
+            <input id="textExample" type="text" value="35"
+                onclick="this.focus();this.select()"
+            />
         </div>
         <div>
             <span class="label">Slider</span>
@@ -284,6 +307,14 @@
                 <option>purple</option>
                 <option>redorange fooballsomg</option>
             </select>
+        </div>
+        <div class="buttonContainer">
+            <button>Button</button>
+        </div>
+        <div class="divider">Live</div>
+        <div class="buttonContainer">
+            <button onclick="reload()">reload</button>
+            <button onclick="toggle()">toggle</button>
         </div>
     </div>
 </body>
@@ -462,6 +493,8 @@
                 text: canvasid === 'foo-canvas-2' ? 'toggle' : 'reload',
                 onClick: canvasid === 'foo-canvas-2' ? toggle : reload
             }];
+            window.toggle = toggle;
+            window.reload = reload;
 
             const cv = setTimeout(() => start({
                 dimensions: {
