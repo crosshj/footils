@@ -254,6 +254,62 @@
         font-style: italic;
     }
 
+    .layers {
+        flex-direction: column;
+    }
+    .layers ul {
+        list-style-type: none;
+        padding-left: 0px;
+        flex-direction: column;
+        display: flex;
+        margin-bottom: 0px;
+    }
+    .layers li {
+        height: 60px;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        margin-bottom: 3px;
+        padding: 4px;
+        padding-left: 2px;
+        border: 1px solid transparent;
+    }
+    .layers li:focus, .layers li.selected {
+        background-color: #4e5a70;
+        border-radius: 0px;
+        border: 1px solid #282828;
+    }
+    .layers input[type='checkbox'] {
+        width: 20px !important;
+    }
+    .layers .image {
+        height: 100%;
+        width: 80px;
+        background: #666;
+    }
+    .layers > span.label {
+        margin-bottom: 4px;
+        padding-left: 0px;
+    }
+    .layers span {
+        padding-left: 5px;
+    }
+    .layerTools {
+        display: flex;
+        flex-direction: row;
+    }
+    .layerTools:focus {
+        border: 0px;
+        border-radius: 0px;
+        display: flex;
+    }
+    .layerTools input {
+        width: 50% !important;
+        margin-left: 5px !important;
+    }
+    .layerTools select {
+        min-height: 17px;
+    }
 </style>
 
 <body>
@@ -325,6 +381,34 @@
         <div class="buttonContainer">
             <button>Button</button>
         </div>
+        <div class="layers">
+            <span class="label">Layers</span>
+            <div class="layerTools" tabindex="0">
+                <select>
+                    <option>Normal</option>
+                    <option>Darken</option>
+                    <option>Lighten</option>
+                    <option>Burn</option>
+                </select>
+                <input id="sliderExample" type="range" min="0" max="100" step="5" value="35"
+                    onchange="(function(e){ document.querySelector('.sliderValue').innerHTML=e.target.value; })(event)"
+                    oninput="(function(e){ document.querySelector('.sliderValue').innerHTML=e.target.value; })(event)"
+                />
+            </div>
+            <ul>
+                <li tabindex="0">
+                    <input type="checkbox" checked />
+                    <div class="image"></div>
+                    <span class="label">Layer 1</span>
+                </li>
+                <li tabindex="0">
+                    <input type="checkbox" checked />
+                    <div class="image"></div>
+                    <span class="label">Layer 2</span>
+                </li>
+            </ul>
+        </div>
+
         <div class="divider">Live</div>
         <div class="buttonContainer">
             <button onclick="reload()">reload</button>
