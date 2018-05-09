@@ -323,7 +323,7 @@
         TODO:
         - add pin button
         - add layers
-            - controls
+            - controls (visibility, blend mode, opacity )
             - thumbnail
             - drag/drop order
         - move menu to left
@@ -417,6 +417,7 @@
         <div class="buttonContainer">
             <button onclick="reload()">reload</button>
             <button onclick="toggle()">toggle</button>
+            <button onclick="fullscreen(this)">fullscreen</button>
         </div>
     </div>
 </body>
@@ -521,6 +522,13 @@
                     : 'none';
             }
 
+            function fullscreen(el){
+                const requestFullScreen = document.body.webkitRequestFullScreen || document.body.mozRequestFullScreen || document.body.msRequestFullscreen;
+                if(requestFullScreen){
+                    requestFullScreen.call(document.body);
+                }
+            }
+
             function reload(){
                 document.location.reload();
             }
@@ -597,6 +605,7 @@
             }];
             window.toggle = toggle;
             window.reload = reload;
+            window.fullscreen = fullscreen;
 
             const cv = setTimeout(() => start({
                 dimensions: {
