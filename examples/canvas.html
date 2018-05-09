@@ -524,6 +524,7 @@
 
             function fullscreen(el){
                 const requestFullScreen = document.body.webkitRequestFullScreen || document.body.mozRequestFullScreen || document.body.msRequestFullscreen;
+                //TODO: cancel full screen?
                 if(requestFullScreen){
                     requestFullScreen.call(document.body);
                 }
