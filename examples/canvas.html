@@ -255,10 +255,10 @@
     #sidebar .buttonContainer > button:hover {
         background-color: #666;
     }
-    #sidebar > div.divider:nth-child(n+3) {
+    #sidebar div.divider:nth-child(n+3) {
         margin-top: 19px !important;
     }
-    #sidebar > div.divider {
+    #sidebar div.divider {
         margin-left: -3px;
         border-bottom: 1px solid #444;
         font-style: italic;
@@ -320,6 +320,35 @@
     .layerTools select {
         min-height: 17px;
     }
+    #pinButton {
+        margin-right: 12px;
+        margin-left: auto;
+        font-size: smaller;
+        /* border: 0.5px solid #999; */
+        padding: 2px 3px 2px 3px;
+        margin-top: 6px;
+        margin-bottom: 5px;
+        line-height: 4px;
+        cursor: pointer;
+        color: #ccc;
+    }
+    #pinButton:hover {
+        background: #eee;
+        color: black;
+        /* border: 1px solid #eee; */
+    }
+    #pinIcon {
+        margin-right: 6px;
+        height: 16px;
+        padding-top: 4px;
+        margin-left: auto;
+    }
+    #pinIcon path {
+        fill: #aaa;
+    }
+    #pinIcon path:hover {
+        fill: turquoise;
+    }
 </style>
 
 <body>
@@ -352,6 +381,23 @@
     >
         <div id="header">
             <span>header text</span>
+            <!-- svg id="pinIcon" xmlns="http://www.w3.org/2000/svg" width="10" height="25" version="1.1" viewBox="0 0 10 25"
+                onclick="alert('TODO: pin the sidebar')"
+            >
+                <path
+                 d="M 0 0 L 10 0
+                    L 9 2 L 8 8 
+                    L 10 12 L 6 12
+                    L 5 25
+                    L 4 12 L 0 12
+                    L 2 8 L 1 2
+                    z"
+                 fill="black" stroke="black" stroke-width="0"
+                />
+             </svg -->
+             <span id="pinButton"
+                onclick="this.innerHTML = this.innerHTML ==='PIN' ? 'UN-PIN' : 'PIN'; alert('TODO: pin the sidebar')"
+             >PIN</span>
             <span id="closeSettings"
                 onclick="document.getElementById('sidebar').style.display='none'; document.getElementById('openSettings').style.display='block';"
             >→</span>
