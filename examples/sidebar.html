@@ -134,8 +134,10 @@
         display: flex;
         justify-content: space-between;
     }
+    #closeSettings:not([disabled]), #openSettings:not([disabled]) {
+      cursor: pointer;
+    }
     #closeSettings, #openSettings {
-        cursor: pointer;
         min-width: 11px;
         text-align: center;
         height: 12px;
@@ -153,9 +155,12 @@
         right: 5px;
         font-family: monospace;
     }
-    #closeSettings:hover, #openSettings:hover {
+    #closeSettings:hover:not([disabled]), #openSettings:hover {
         background: #eee;
         color: #222;
+    }
+    #closeSettings[disabled] {
+      color: #777;
     }
     .sliderValue {
         padding-right: 5px;
@@ -359,7 +364,23 @@
   </body>
 
   <script>
+    var hideWhenFocusLost = true;
+    // when sidebar is pinned, don't show canvas under sidebar
+    const pinHandler = ({ pinned }) => {
+      hideWhenFocusLost = !pinned;
+      document.getElementById('canvasContainer').style.width = pinned ? 'calc(100vw - 220px)' : '';
+    };
+    // clicking on canvasContainer should trigger hide of sidebar if not pinned
+    document.getElementById('canvasContainer').addEventListener('click', () => {
+      if(hideWhenFocusLost && document.getElementById('sidebar').style.display !== 'none'){
+        document.getElementById('closeSettings').click();
+      }
+    });
     const sidebarDef = {
+        title: 'Sidebar Demo',
+        pinHandler,
+        hidden: false,
+        pinned: true,
         sections: [{
             name: 'dummy',
             items: [{

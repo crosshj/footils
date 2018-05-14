@@ -244,13 +244,50 @@
 
         function start({ sidebarDef }){
             const getRoot = (components, dispatcher) => {
-                const { div, textarea, h4, label, fragment, form } = components;
+                const { div, textarea, h4, label, fragment, form, span } = components;
                 const action = (type) => (e) => dispatcher({type, payload: e.target.value});
 
-                // TODO: instead of this, build root from sidebar definition
-                const root = ({ name = '' }) =>
+                const pinClick = (pinned) => dispatcher({
+                    type: 'PIN_CHANGED',
+                    payload: !pinned
+                });
+
+                const toggleClick = () => {
+                    const hidden = document.getElementById('sidebar').style.display === 'none';
+                    document.getElementById('sidebar').style.display = hidden ? 'block' : 'none';
+
+                    var opener = document.getElementById('openSettings');
+                    if(!opener){
+                        opener = document.createElement('div');
+                        opener.id = 'openSettings';
+                        opener.onclick = toggleClick;
+                        opener.innerText = '←';
+                        document.body.appendChild(opener);
+                    }
+                    opener.style.display = !hidden ? 'block' : 'none';
+
+                    return dispatcher({
+                        type: 'HIDDEN_CHANGED',
+                        payload: !hidden
+                    })
+                };
+
+                if(sidebarDef.hidden){
+                    // NOTE: is this safe since dispatcher called?
+                    toggleClick();
+                }
+
+                if(sidebarDef.pinned && sidebarDef.pinHandler){
+                    sidebarDef.pinHandler({ pinned: true });
+                }
+
+                const root = ({ pinned = sidebarDef.pinned, hidden = sidebarDef.hidden }) =>
                 fragment([
-                    div({id: 'header', key: 'header'}),
+                    div({id: 'header', key: 'header'}, [
+                        span({ key: 'headerText'}, sidebarDef.title),
+                        span({ key: "pinButton", id: "pinButton", onClick: () => pinClick(pinned)}, pinned ? 'UN-PIN' : 'PIN'),
+                        span({ key: "closeSettings", id: "closeSettings", onClick: !pinned ? toggleClick : undefined, disabled: pinned }, '→')
+                    ]),
                     div({id: 'scrollContainer', key: 'scrollContainer'})
                 ]);
 
@@ -262,8 +299,16 @@
                 const reducer = (state, action) => {
                     var newState = clone(state);
                     switch(action.type){
-                        case 'NAME_CHANGED': {
-                            newState = Object.assign({}, state, { name: action.payload });
+                        case 'PIN_CHANGED': {
+                            if(sidebarDef.pinHandler){
+                                sidebarDef.pinHandler({ pinned: action.payload });
+                            }
+                            newState = Object.assign({}, state, { pinned: action.payload });
+                            break;
+                        }
+                        case 'HIDDEN_CHANGED': {
+                            newState = Object.assign({}, state, { hidden: action.payload });
+                            break;
                         }
                     }
                     return newState;
@@ -288,7 +333,8 @@
                     attach: sidebarRoot
                 });
             }
-            rxReact.init(rxReactReady);
+
+            return rxReact.init(rxReactReady);
         }
 
         return callback(null, { start });
