@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>sidebar</title>
+    <meta name="description" content="Add a sidebar!">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="mobile-web-app-capable" content="yes">
+    <!-- <script src="https://crosshj.com/footils/web-foo.js"></script> -->
+    <script src="../web-foo.js"></script>
+  </head>
+ 
+  <style>
+      body {
+        background: #888;
+        margin: 0px;
+      }
+      #canvasContainer {
+        width: 100vw;
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+      #canvasContainer img {
+        max-width: 90%;
+        max-height: 90%;
+        filter: invert(20%) grayscale(100%);
+      }
+  </style>
+
+<style>
+    #sidebar {
+        position: absolute;
+        right: 0px;
+        top: 0px;
+        bottom: 0px;
+        background: #333;
+        width: 220px;
+        color: #aaa;
+    }    
+    #sidebar div.scrollContainer {
+        padding-left: 10px;
+        padding-right: 7px;
+        overflow-y: auto;
+        overflow-x: hidden;
+        height: calc(100% - 20px);;
+        box-sizing: border-box;
+        margin-top: 20px;
+        padding-bottom: 20px;
+    }
+    #sidebar div.scrollContainer > div {
+        padding-right: 5px;
+        display: flex;
+        justify-content: space-between;
+        margin-top: 5px;
+    }
+    #sidebar span.label {
+        display: inline-block;
+        min-width: 90px;
+        max-width: 90px;
+    }
+    #sidebar, #sidebar span.label, input {
+        text-transform: uppercase;
+        font-family: monospace;
+        font-size: 10px;
+        line-height: 16px;
+    }
+    #sidebar input {
+        width: 100%;
+        margin: 0px;
+    }
+    #sidebar input:focus {
+        border-radius: 0px;
+        border: 0px;
+        background: #6a6a6a;
+    }
+    input[type=text] {
+        border: none;
+        height: 16px;
+        color: #bbb;
+        padding-right: 5px;
+        padding-left: 5px;
+        direction: rtl;
+        padding-top: 0px;
+        padding-bottom: 0px;
+    }
+    input[type=range] {
+        -webkit-appearance: none;
+        background: transparent;
+    }
+    input[type=range]:focus {
+        outline: none;
+    }
+    input[type=range]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        border: 0px;
+        height: 17px;
+        width: 10px;
+        border-radius: 0px;
+        background: #888;
+        cursor: pointer;
+    }
+    input[type=range]::-webkit-slider-runnable-track,
+    input[type=text],
+    .slider,
+    select {
+        background: #444;
+    }
+    input[type=range]::-webkit-slider-runnable-track {
+        width: 100%;
+        height: 17px;
+        cursor: pointer;
+        border-radius: 0px;
+        border: 0px;
+    }
+    input[type=range]:focus::-webkit-slider-runnable-track {
+        background: #666;
+    }
+    div#header {
+        margin: 0px;
+        position: absolute;
+        left: 0px;
+        top: 0px;
+        height: 20px;
+        right: 0px;
+        background: #454545;
+        padding-left: 6px;
+        line-height: 20px;
+        color: #acacac;
+        font-size: 10px;
+        text-transform: capitalize;
+        padding-right: 5px;
+        display: flex;
+        justify-content: space-between;
+    }
+    #closeSettings, #openSettings {
+        cursor: pointer;
+        min-width: 11px;
+        text-align: center;
+        height: 12px;
+        margin-top: auto;
+        margin-bottom: auto;
+        line-height: 11px;
+        font-size: 14px;
+        user-select: none;
+    }
+    #openSettings {
+        background: #444;
+        color: #ddd;
+        position: absolute;
+        top: 4px;
+        right: 5px;
+        font-family: monospace;
+    }
+    #closeSettings:hover, #openSettings:hover {
+        background: #eee;
+        color: #222;
+    }
+    .sliderValue {
+        padding-right: 5px;
+        margin-left: -39px;
+        direction: rtl;
+        width: 64px;
+        user-select: none;
+    }
+
+    /* The switch - the box around the slider */
+    .switch {
+        position: relative;
+        display: inline-block;
+        width: 30px;
+        height: 18px;
+    }
+    /* Hide default HTML checkbox */
+    .switch input {display:none;}
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        -webkit-transition: .4s;
+        transition: .4s;
+    }
+    .slider:before {
+        position: absolute;
+        content: "";
+        height: 10px;
+        width: 10px;
+        left: 4px;
+        bottom: 4px;
+        background-color: #999;
+        -webkit-transition: .4s;
+        transition: .4s;
+    }
+    input:checked + .slider {
+        /* background-color: #777; */
+    }
+    input:checked + .slider:before {
+        /* background-color: #ccc; */
+    }
+    input:focus + .slider {
+        background-color: #777;
+    }
+    input:checked + .slider:before {
+        -webkit-transform: translateX(12px);
+        -ms-transform: translateX(12px);
+        transform: translateX(12px);
+    }
+    .booleanValue {
+        padding-right: 5px;
+        margin-left: 2px;
+        direction: rtl;
+        width: 64px;
+        line-height: 19px;
+        user-select: none;
+    }
+
+    select {
+        color: #aaa;
+        text-transform: uppercase;
+        font-family: monospace;
+        width: 86px;
+        border: 0px;
+        direction: rtl;
+        text-overflow: ellipsis;
+        white-space: normal;
+        max-height: 16px;
+        font-size: 11px;
+    }
+    select:focus {
+        border: 0px;
+        border-radius: 0px;
+    }
+
+    #sidebar .buttonContainer {
+        display: flex;
+        flex-direction: column;
+    }
+    #sidebar .buttonContainer > button {
+        border: 0px;
+        border-radius: 0px;
+        font-size: 10px;
+        color: #aaa;
+        width: -webkit-fill-available;
+        text-transform: uppercase;
+        height: 23px;
+        padding: 0px;
+        min-height: unset;
+        margin: 3px 0px;
+        transition: unset;
+        background: #454545;
+    }
+    #sidebar .buttonContainer > button:hover {
+        background-color: #666;
+    }
+    #sidebar div.divider:nth-child(n+3) {
+        margin-top: 19px !important;
+    }
+    #sidebar div.divider {
+        margin-left: -3px;
+        border-bottom: 1px solid #444;
+        font-style: italic;
+    }
+
+    .layers {
+        flex-direction: column;
+    }
+    .layers ul {
+        list-style-type: none;
+        padding-left: 0px;
+        flex-direction: column;
+        display: flex;
+        margin-bottom: 0px;
+    }
+    .layers li {
+        height: 60px;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        margin-bottom: 3px;
+        padding: 4px;
+        padding-left: 2px;
+        border: 1px solid transparent;
+    }
+    .layers li:focus, .layers li.selected {
+        background-color: #4e5a70;
+        border-radius: 0px;
+        border: 1px solid #282828;
+    }
+    .layers input[type='checkbox'] {
+        width: 20px !important;
+    }
+    .layers .image {
+        height: 100%;
+        width: 80px;
+        background: #666;
+    }
+    .layers > span.label {
+        margin-bottom: 4px;
+        padding-left: 0px;
+    }
+    .layers span {
+        padding-left: 5px;
+    }
+    .layerTools {
+        display: flex;
+        flex-direction: row;
+    }
+    .layerTools:focus {
+        border: 0px;
+        border-radius: 0px;
+        display: flex;
+    }
+    .layerTools input {
+        width: 50% !important;
+        margin-left: 5px !important;
+    }
+    .layerTools select {
+        min-height: 17px;
+    }
+    #pinButton {
+        margin-right: 12px;
+        margin-left: auto;
+        font-size: smaller;
+        /* border: 0.5px solid #999; */
+        padding: 2px 3px 2px 3px;
+        margin-top: 6px;
+        margin-bottom: 5px;
+        line-height: 4px;
+        cursor: pointer;
+        color: #ccc;
+    }
+    #pinButton:hover {
+        background: #eee;
+        color: black;
+        /* border: 1px solid #eee; */
+    }
+    #pinIcon {
+        margin-right: 6px;
+        height: 16px;
+        padding-top: 4px;
+        margin-left: auto;
+    }
+    #pinIcon path {
+        fill: #aaa;
+    }
+    #pinIcon path:hover {
+        fill: turquoise;
+    }
+</style>
+
+  <body>
+    <div id="canvasContainer">  
+        <img src="sidecar.jpg" alt="sidecar image">
+    </div>
+  </body>
+
+  <script>
+    const sidebarDef = {
+        sections: [{
+            name: 'dummy',
+            items: [{
+                type: 'text',
+                name: 'text',
+                onChange: (value) => { console.log(value); }
+            }, {
+                type: 'slider',
+                name: 'slider',
+                onChange: (value) => { console.log(value); }
+            }, {
+                type: 'boolean',
+                name: 'boolean',
+                onChange: (value) => { console.log(value); }
+            }, {
+                type: 'select',
+                name: 'select',
+                values: ['red', 'green', 'blue', 'yellow', 'orange'],
+                onChange: (value) => { console.log(value); }
+            }, {
+                type: 'button',
+                name: 'button',
+                onClick: () => { console.log('button clicked'); }
+            }, {
+                type: 'layers',
+                name: 'layers',
+                layers: [{
+                    name: 'Layer 1'
+                }, {
+                    name: 'Layer 2'
+                }]
+            }]
+        }, {
+            name: 'live',
+            items: [{
+                type: 'button',
+                name: 'reload',
+                onClick: () => { console.log('clicked on reload'); }
+            }, {
+                type: 'button',
+                name: 'toggle',
+                onClick: () => { console.log('clicked on toggle'); }
+            }, {
+                type: 'button',
+                name: 'fullscreen',
+                onClick: (e) => { console.log('clicked on fullscreen'); }
+            }]
+        }]
+    };
+    
+    function sidebarReady(err, { start } = {}){
+        if(err || !start){
+            console.error(`Error in sidebarReady: ${err}`)
+            return;
+        }
+
+        start({sidebarDef});
+    }
+
+    footils.sidebar.init(sidebarReady)
+  </script>
+</html>

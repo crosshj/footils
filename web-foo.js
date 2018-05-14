@@ -230,6 +230,72 @@
     canvas.init = callback => isInitedFactory(canvas, callback);
 
 
+    // SIDEBAR ------------------------------------------------------------------
+    function sidebar(){ return returnProps(sidebar); }
+    sidebar.scripts = [];
+    sidebar.scriptsAfter = (callback) => {
+        // load react, use to create menu
+        const clone = o => {
+            const result = undefined;
+            try { result = JSON.parse(JSON.stringify(o)); }
+            catch(e) {}
+            return result;
+        };
+
+        function start({ sidebarDef }){
+            const getRoot = (components, dispatcher) => {
+                const { div, textarea, h4, label, fragment, form } = components;
+                const action = (type) => (e) => dispatcher({type, payload: e.target.value});
+
+                // TODO: instead of this, build root from sidebar definition
+                const root = ({ name = '' }) =>
+                fragment([
+                    div({id: 'header', key: 'header'}),
+                    div({id: 'scrollContainer', key: 'scrollContainer'})
+                ]);
+
+                return root;
+            }
+            
+            // reducer should be built with respect to sidebar definition
+            const getReducer = () => {
+                const reducer = (state, action) => {
+                    var newState = clone(state);
+                    switch(action.type){
+                        case 'NAME_CHANGED': {
+                            newState = Object.assign({}, state, { name: action.payload });
+                        }
+                    }
+                    return newState;
+                };
+                return reducer;
+            };
+            
+            function rxReactReady(err, { components, dispatcher, start, React } = {}){
+                if(err){
+                    console.error(`Error in rxReactReady: ${err}`)
+                    return;
+                }
+
+                //TODO: insert css
+
+                const sidebarRoot = document.createElement("div");
+                sidebarRoot.id = 'sidebar';
+                document.body.appendChild(sidebarRoot);
+                start({
+                    reducer: getReducer(),
+                    root: getRoot(components, dispatcher),
+                    attach: sidebarRoot
+                });
+            }
+            rxReact.init(rxReactReady);
+        }
+
+        return callback(null, { start });
+    };
+    sidebar.init = callback => isInitedFactory(sidebar, callback);
+
+
     // NEURAL ------------------------------------------------------------------
     function neural(){ return returnProps(neural); }
     neural.scripts = [
@@ -238,11 +304,12 @@
     // TODO: include helpers that set everything up except the basic needs
     neural.init = callback => isInitedFactory(neural, callback);
 
+
+    // UTILS -------------------------------------------------------------------
     function utils(){ return returnProps(utils); }
     // TODO: create utils script and host on github
     // TODO: include helpers that set everything up except the basic needs
     utils.init = callback => isInitedFactory(utils, callback);
-
 
 
 
@@ -252,6 +319,7 @@
         githubPages,
         rxReact,
         canvas,
+        sidebar,
         neural,
         utils
     };
