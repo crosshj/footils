@@ -287,8 +287,7 @@
                         const child = div({ key: `${section.name}-divider-${i}`,className: 'divider'}, section.name);
                         children.push(child);
                         section.items.forEach((item, j) => {
-                            //NOTE: child items should be added conditionally
-                            // for example, buttons should not have label
+                            //TODO: all events should be tracked by reducer!
                             var childItem;
                             if(!['button'].includes(item.type)){
                                 childItem = div({ key: `${section.name}-${item.name}-${j}`}, [
