@@ -281,6 +281,23 @@
                     sidebarDef.pinHandler({ pinned: true });
                 }
 
+                function scrollChildren(){
+                    const children = [];
+                    sidebarDef.sections.forEach((section, i) => {
+                        const child = div({ key: `${section.name}-divider-${i}`,className: 'divider'}, section.name);
+                        children.push(child);
+                        section.items.forEach((item, j) => {
+                            //NOTE: child items should be added conditionally
+                            // for example, buttons should not have label
+                            const childItem = div({ key: `${section.name}-${item.name}-${j}`}, [
+                                span({ key: `${section.name}-${item.name}-${j}-span`, className: 'label' }, item.name)
+                            ]);
+                            children.push(childItem);
+                        });
+                    });
+                    return children;
+                }
+
                 const root = ({ pinned = sidebarDef.pinned, hidden = sidebarDef.hidden }) =>
                 fragment([
                     div({id: 'header', key: 'header'}, [
@@ -288,7 +305,7 @@
                         span({ key: "pinButton", id: "pinButton", onClick: () => pinClick(pinned)}, pinned ? 'UN-PIN' : 'PIN'),
                         span({ key: "closeSettings", id: "closeSettings", onClick: !pinned ? toggleClick : undefined, disabled: pinned }, '→')
                     ]),
-                    div({id: 'scrollContainer', key: 'scrollContainer'})
+                    div({className: 'scrollContainer', key: 'scrollContainer'}, scrollChildren())
                 ]);
 
                 return root;
