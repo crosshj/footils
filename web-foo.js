@@ -166,7 +166,7 @@
         };
         [
             'div', 'textarea', 'input', 'h1', 'h2', 'h3', 'h4', 'h5', 'p',
-            'span', 'ul', 'li', 'img', 'svg', 'canvas', 'label', 'form'
+            'span', 'ul', 'li', 'img', 'svg', 'canvas', 'label', 'form', 'button'
         ].forEach(el => {
             components[el] = (props, children) => createElement(el, props, children);
         });
@@ -244,7 +244,7 @@
 
         function start({ sidebarDef }){
             const getRoot = (components, dispatcher) => {
-                const { div, textarea, h4, label, fragment, form, span } = components;
+                const { div, textarea, h4, label, fragment, form, span, button } = components;
                 const action = (type) => (e) => dispatcher({type, payload: e.target.value});
 
                 const pinClick = (pinned) => dispatcher({
@@ -289,10 +289,22 @@
                         section.items.forEach((item, j) => {
                             //NOTE: child items should be added conditionally
                             // for example, buttons should not have label
-                            const childItem = div({ key: `${section.name}-${item.name}-${j}`}, [
-                                span({ key: `${section.name}-${item.name}-${j}-span`, className: 'label' }, item.name)
-                            ]);
-                            children.push(childItem);
+                            var childItem;
+                            if(!['button'].includes(item.type)){
+                                childItem = div({ key: `${section.name}-${item.name}-${j}`}, [
+                                    span({ key: `${section.name}-${item.name}-${j}-span`, className: 'label' }, item.name)
+                                ]);
+                            }
+                            if(['button'].includes(item.type)){
+                                childItem = div({ key: `${section.name}-${item.name}-${j}`,
+                                    className: 'buttonContainer'
+                                }, [
+                                    button({ key: `${section.name}-${item.name}-${j}-span`,
+                                        onClick: item.onClick || (() => {})
+                                    }, item.name)
+                                ]);
+                            }
+                            if(childItem) children.push(childItem);
                         });
                     });
                     return children;
