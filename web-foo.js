@@ -191,7 +191,7 @@
         RXConnector.prototype = Object.create(Component.prototype);
         const Connector = (props, children) => createElement(RXConnector, props, children);
 
-        const start = ({reducer, root, attach}) => {
+        const start = ({reducer, root, attach}, reactStartCallback) => {
             const initialState = {};
             const store$ = action$
               .pipe(
@@ -202,6 +202,7 @@
                 Connector({ observable$: store$, render: root }),
                 attach
             );
+            reactStartCallback();
         };
 
         if( !components || !dispatcher || !start || !React || !rxjs){
@@ -242,7 +243,7 @@
             return result;
         };
 
-        function start({ sidebarDef }){
+        function sidebarStart({ sidebarDef }, startCallback){
             const getRoot = (components, dispatcher) => {
                 const { div, textarea, h4, label, fragment, form, span, button } = components;
                 const action = (type) => (e) => dispatcher({type, payload: e.target.value});
@@ -359,13 +360,13 @@
                     reducer: getReducer(),
                     root: getRoot(components, dispatcher),
                     attach: sidebarRoot
-                });
+                }, startCallback);
             }
 
             return rxReact.init(rxReactReady);
         }
 
-        return callback(null, { start });
+        return callback(null, { start: sidebarStart });
     };
     sidebar.init = callback => isInitedFactory(sidebar, callback);
 
