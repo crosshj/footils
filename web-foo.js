@@ -352,7 +352,11 @@
                     return (
                         div({ key: `${section.name}-${item.name}-${index}`}, [
                             span({ key: `${section.name}-${item.name}-${index}-span`, className: 'label' }, item.name),
-                            select({ key: `${section.name}-${item.name}-${index}-select` },
+                            select({
+                                key: `${section.name}-${item.name}-${index}-select`,
+                                defaultValue: item.default,
+                                onChange: e => console.log(`TODO: should update reducer state!`) & item.onChange(e.target.value)
+                            },
                                 item.options.map((opt, i) => 
                                     option(
                                         { key: `${section.name}-${item.name}-${index}-option${i}`},
