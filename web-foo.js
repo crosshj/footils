@@ -310,6 +310,7 @@
                                 max: item.max,
                                 step: item.step,
                                 defaultValue: item.default,
+                                //tabIndex: 0,
                                 onChange: e => console.log(`TODO: should update sliderValue div TRUE|FALSE`) & item.onChange(e)
                             })
                         ])
@@ -329,7 +330,8 @@
                                 }),
                                 span({
                                     key: `${section.name}-${item.name}-${index}-label-span`,
-                                    className: "slider"
+                                    className: "slider",
+                                    tabIndex: 0
                                 })
                             ])
                         ])
