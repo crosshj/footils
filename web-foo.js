@@ -282,6 +282,71 @@
                     sidebarDef.pinHandler({ pinned: true });
                 }
 
+                function textComponent({div, span, section, item, index }){
+                    return (
+                        div({ key: `${section.name}-${item.name}-${index}`}, [
+                            span({ key: `${section.name}-${item.name}-${index}-span`, className: 'label' }, item.name),
+                            input({
+                                key: `${section.name}-${item.name}-${index}-input`,
+                                type:'text',
+                                defaultValue: item.default,
+                                onChange: e => console.log(`TODO: should update reducer state!`) & item.onChange(e),
+                                onFocus: e => e.target.select()
+                            })
+                        ])
+                    );
+                }
+
+                function sliderComponent({ span, div, input, section, item, index }){
+                    return (
+                        div({ key: `${section.name}-${item.name}-${index}`}, [
+                            span({ key: `${section.name}-${item.name}-${index}-span`, className: 'label' }, item.name),
+                            div({ key: `${section.name}-${item.name}-${index}-div`, className: 'sliderValue' }, item.default),
+                            input({
+                                key: `${section.name}-${item.name}-${index}-input`,
+                                type: 'range',
+                                min: item.min,
+                                max: item.max,
+                                step: item.step,
+                                defaultValue: item.default,
+                                onChange: e => console.log(`TODO: should update sliderValue div TRUE|FALSE`) & item.onChange(e)
+                            })
+                        ])
+                    );
+                }
+
+                function booleanComponent({ div, span, label, input, section, item, index }){
+                    return (
+                        div({ key: `${section.name}-${item.name}-${index}`}, [
+                            span({ key: `${section.name}-${item.name}-${index}-span`, className: 'label' }, item.name),
+                            div({ key: `${section.name}-${item.name}-${index}-div`, className: 'booleanValue' }, item.default),
+                            label({key: `${section.name}-${item.name}-${index}-label`, className: 'switch'}, [
+                                input({
+                                    key: `${section.name}-${item.name}-${index}-label-input`,
+                                    type:"checkbox",
+                                    onChange: e => console.log(`TODO: should update booleanValue div TRUE|FALSE`) & item.onChange({ target: { value: e.target.checked }})
+                                }),
+                                span({
+                                    key: `${section.name}-${item.name}-${index}-label-span`,
+                                    className: "slider"
+                                })
+                            ])
+                        ])
+                    );
+                }
+
+                function buttonComponent({ div, button, section, item, index }){
+                    return (
+                        div({ key: `${section.name}-${item.name}-${index}`,
+                            className: 'buttonContainer'
+                        }, [
+                            button({ key: `${section.name}-${item.name}-${index}-span`,
+                                onClick: item.onClick || (() => {})
+                            }, item.name)
+                        ])
+                    );
+                }
+
                 function scrollChildren(){
                     const children = [];
                     sidebarDef.sections.forEach((section, i) => {
@@ -289,51 +354,13 @@
                         children.push(child);
                         section.items.forEach((item, j) => {
                             //TODO: all events should be tracked by reducer!
-                            var childItem;
-                            if(item.type === 'text'){
-                                childItem = div({ key: `${section.name}-${item.name}-${j}`}, [
-                                    span({ key: `${section.name}-${item.name}-${j}-span`, className: 'label' }, item.name),
-                                    input({
-                                        key: `${section.name}-${item.name}-${j}-input`,
-                                        type:'text',
-                                        defaultValue: item.default,
-                                        onChange: e => console.log(`TODO: should update reducer state!`) & item.onChange(e),
-                                        onFocus: e => e.target.select()
-                                    })
-                                ]);
-                            }
-                            if(item.type === 'slider'){
-                                childItem = div({ key: `${section.name}-${item.name}-${j}`}, [
-                                    span({ key: `${section.name}-${item.name}-${j}-span`, className: 'label' }, item.name),
-                                    div({ key: `${section.name}-${item.name}-${j}-div`, className: 'sliderValue' }, item.default),
-                                    input({
-                                        key: `${section.name}-${item.name}-${j}-input`,
-                                        type: 'range',
-                                        min: item.min,
-                                        max: item.max,
-                                        step: item.step,
-                                        defaultValue: item.default,
-                                        onChange: e => console.log(`TODO: should update sliderValue div TRUE|FALSE`) & item.onChange(e)
-                                    })
-                                ]);
-                            }
-                            if(item.type === 'boolean'){
-                                childItem = div({ key: `${section.name}-${item.name}-${j}`}, [
-                                    span({ key: `${section.name}-${item.name}-${j}-span`, className: 'label' }, item.name),
-                                    div({ key: `${section.name}-${item.name}-${j}-div`, className: 'booleanValue' }, item.default),
-                                    label({key: `${section.name}-${item.name}-${j}-label`, className: 'switch'}, [
-                                        input({
-                                            key: `${section.name}-${item.name}-${j}-label-input`,
-                                            type:"checkbox",
-                                            onChange: e => console.log(`TODO: should update booleanValue div TRUE|FALSE`) & item.onChange({ target: { value: e.target.checked }})
-                                        }),
-                                        span({
-                                            key: `${section.name}-${item.name}-${j}-label-span`,
-                                            className: "slider"
-                                        })
-                                    ])
-                                ]);
-                            }
+                            const componentMap = {
+                                'text': textComponent({div, span, section, item, index: j}),
+                                'slider': sliderComponent({ span, div, input, section, item, index: j }),
+                                'boolean': booleanComponent({ div, span, label, input, section, item, index: j }),
+                                'button': buttonComponent({ div, button, section, item, index: j })
+                            };
+                            var childItem = componentMap[item.type];
 
                             if(['select', 'layers'].includes(item.type)){
                                 childItem = div({ key: `${section.name}-${item.name}-${j}`}, [
@@ -341,15 +368,6 @@
                                 ]);
                             }
 
-                            if(item.type === 'button'){
-                                childItem = div({ key: `${section.name}-${item.name}-${j}`,
-                                    className: 'buttonContainer'
-                                }, [
-                                    button({ key: `${section.name}-${item.name}-${j}-span`,
-                                        onClick: item.onClick || (() => {})
-                                    }, item.name)
-                                ]);
-                            }
                             if(childItem) children.push(childItem);
                         });
                     });
