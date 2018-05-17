@@ -363,6 +363,12 @@
                     );
                 }
 
+                function dividerComponent({ div, section, index }){
+                    return (
+                        div({ key: `${section.name}-divider-${index}`,className: 'divider'}, section.name)
+                    );
+                }
+
                 //TODO: all events should be tracked by reducer!
 
                 const root = ({ pinned = sidebarDef.pinned, hidden = sidebarDef.hidden }) =>
@@ -374,9 +380,7 @@
                     ]),
                     div({className: 'scrollContainer', key: 'scrollContainer'},
                         sidebarDef.sections.reduce((all, section, i) => {
-                            all.push(
-                                div({ key: `${section.name}-divider-${i}`,className: 'divider'}, section.name)
-                            );
+                            all.push(dividerComponent({ div, section, index }));
                             section.items.forEach((item, j) => {
                                 const childItem = ({
                                     'text': textComponent({div, span, section, item, index: j}),
