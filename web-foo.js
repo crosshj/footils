@@ -347,32 +347,23 @@
                     );
                 }
 
-                function scrollChildren(){
-                    const children = [];
-                    sidebarDef.sections.forEach((section, i) => {
-                        const child = div({ key: `${section.name}-divider-${i}`,className: 'divider'}, section.name);
-                        children.push(child);
-                        section.items.forEach((item, j) => {
-                            //TODO: all events should be tracked by reducer!
-                            const componentMap = {
-                                'text': textComponent({div, span, section, item, index: j}),
-                                'slider': sliderComponent({ span, div, input, section, item, index: j }),
-                                'boolean': booleanComponent({ div, span, label, input, section, item, index: j }),
-                                'button': buttonComponent({ div, button, section, item, index: j })
-                            };
-                            var childItem = componentMap[item.type];
-
-                            if(['select', 'layers'].includes(item.type)){
-                                childItem = div({ key: `${section.name}-${item.name}-${j}`}, [
-                                    span({ key: `${section.name}-${item.name}-${j}-span`, className: 'label' }, item.name)
-                                ]);
-                            }
-
-                            if(childItem) children.push(childItem);
-                        });
-                    });
-                    return children;
+                function selectComponent({ div, span, section, item, index}){
+                    return (
+                        div({ key: `${section.name}-${item.name}-${index}`}, [
+                            span({ key: `${section.name}-${item.name}-${index}-span`, className: 'label' }, item.name)
+                        ])
+                    );
                 }
+
+                function layersComponent({ div, span, section, item, index}){
+                    return (
+                        div({ key: `${section.name}-${item.name}-${index}`}, [
+                            span({ key: `${section.name}-${item.name}-${index}-span`, className: 'label' }, item.name)
+                        ])
+                    );
+                }
+
+                //TODO: all events should be tracked by reducer!
 
                 const root = ({ pinned = sidebarDef.pinned, hidden = sidebarDef.hidden }) =>
                 fragment([
@@ -381,7 +372,25 @@
                         span({ key: "pinButton", id: "pinButton", onClick: () => pinClick(pinned)}, pinned ? 'UN-PIN' : 'PIN'),
                         span({ key: "closeSettings", id: "closeSettings", onClick: !pinned ? toggleClick : undefined, disabled: pinned }, '→')
                     ]),
-                    div({className: 'scrollContainer', key: 'scrollContainer'}, scrollChildren())
+                    div({className: 'scrollContainer', key: 'scrollContainer'},
+                        sidebarDef.sections.reduce((all, section, i) => {
+                            all.push(
+                                div({ key: `${section.name}-divider-${i}`,className: 'divider'}, section.name)
+                            );
+                            section.items.forEach((item, j) => {
+                                const childItem = ({
+                                    'text': textComponent({div, span, section, item, index: j}),
+                                    'slider': sliderComponent({ span, div, input, section, item, index: j }),
+                                    'boolean': booleanComponent({ div, span, label, input, section, item, index: j }),
+                                    'button': buttonComponent({ div, button, section, item, index: j }),
+                                    'select': selectComponent({ div, span, section, item, index: j}),
+                                    'layers': selectComponent({ div, span, section, item, index: j})
+                                })[item.type];
+                                if(childItem) all.push(childItem);
+                            });
+                            return all;
+                        }, [])
+                    )
                 ]);
 
                 return root;
