@@ -245,7 +245,7 @@
 
         function sidebarStart({ sidebarDef }, startCallback){
             const getRoot = (components, dispatcher) => {
-                const { div, textarea, h4, label, fragment, form, span, button } = components;
+                const { div, textarea, h4, label, fragment, form, span, button, input } = components;
                 const action = (type) => (e) => dispatcher({type, payload: e.target.value});
 
                 const pinClick = (pinned) => dispatcher({
@@ -290,7 +290,19 @@
                         section.items.forEach((item, j) => {
                             //TODO: all events should be tracked by reducer!
                             var childItem;
-                            if(!['button'].includes(item.type)){
+                            //<input id="textExample" type="text" value="35" onclick="this.focus();this.select()">
+                            if(item.type === 'text'){
+                                childItem = div({ key: `${section.name}-${item.name}-${j}`}, [
+                                    span({ key: `${section.name}-${item.name}-${j}-span`, className: 'label' }, item.name),
+                                    input({
+                                        key: `${section.name}-${item.name}-${j}-input`,
+                                        type:'text',
+                                        defaultValue: item.default,
+                                        onChange: item.onChange,
+                                        onFocus: e => e.target.select()
+                                    })
+                                ]);                            }
+                            if(!['button', 'text'].includes(item.type)){
                                 childItem = div({ key: `${section.name}-${item.name}-${j}`}, [
                                     span({ key: `${section.name}-${item.name}-${j}-span`, className: 'label' }, item.name)
                                 ]);
