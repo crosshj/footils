@@ -290,7 +290,6 @@
                         section.items.forEach((item, j) => {
                             //TODO: all events should be tracked by reducer!
                             var childItem;
-                            //<input id="textExample" type="text" value="35" onclick="this.focus();this.select()">
                             if(item.type === 'text'){
                                 childItem = div({ key: `${section.name}-${item.name}-${j}`}, [
                                     span({ key: `${section.name}-${item.name}-${j}-span`, className: 'label' }, item.name),
@@ -298,16 +297,51 @@
                                         key: `${section.name}-${item.name}-${j}-input`,
                                         type:'text',
                                         defaultValue: item.default,
-                                        onChange: item.onChange,
+                                        onChange: e => console.log(`TODO: should update reducer state!`) & item.onChange(e),
                                         onFocus: e => e.target.select()
                                     })
-                                ]);                            }
-                            if(!['button', 'text'].includes(item.type)){
+                                ]);
+                            }
+                            if(item.type === 'slider'){
+                                childItem = div({ key: `${section.name}-${item.name}-${j}`}, [
+                                    span({ key: `${section.name}-${item.name}-${j}-span`, className: 'label' }, item.name),
+                                    div({ key: `${section.name}-${item.name}-${j}-div`, className: 'sliderValue' }, item.default),
+                                    input({
+                                        key: `${section.name}-${item.name}-${j}-input`,
+                                        type: 'range',
+                                        min: item.min,
+                                        max: item.max,
+                                        step: item.step,
+                                        defaultValue: item.default,
+                                        onChange: e => console.log(`TODO: should update sliderValue div TRUE|FALSE`) & item.onChange(e)
+                                    })
+                                ]);
+                            }
+                            if(item.type === 'boolean'){
+                                childItem = div({ key: `${section.name}-${item.name}-${j}`}, [
+                                    span({ key: `${section.name}-${item.name}-${j}-span`, className: 'label' }, item.name),
+                                    div({ key: `${section.name}-${item.name}-${j}-div`, className: 'booleanValue' }, item.default),
+                                    label({key: `${section.name}-${item.name}-${j}-label`, className: 'switch'}, [
+                                        input({
+                                            key: `${section.name}-${item.name}-${j}-label-input`,
+                                            type:"checkbox",
+                                            onChange: e => console.log(`TODO: should update booleanValue div TRUE|FALSE`) & item.onChange({ target: { value: e.target.checked }})
+                                        }),
+                                        span({
+                                            key: `${section.name}-${item.name}-${j}-label-span`,
+                                            className: "slider"
+                                        })
+                                    ])
+                                ]);
+                            }
+
+                            if(['select', 'layers'].includes(item.type)){
                                 childItem = div({ key: `${section.name}-${item.name}-${j}`}, [
                                     span({ key: `${section.name}-${item.name}-${j}-span`, className: 'label' }, item.name)
                                 ]);
                             }
-                            if(['button'].includes(item.type)){
+
+                            if(item.type === 'button'){
                                 childItem = div({ key: `${section.name}-${item.name}-${j}`,
                                     className: 'buttonContainer'
                                 }, [

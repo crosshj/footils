@@ -452,11 +452,16 @@
             }, {
                 type: 'slider',
                 name: 'slider',
-                onChange: (value) => { console.log(value); }
+                default: 30,
+                min: 0,
+                max: 100,
+                step: 5,
+                onChange: e => { console.log(e.target.value); }
             }, {
                 type: 'boolean',
                 name: 'boolean',
-                onChange: (value) => { console.log(value); }
+                default: 'FALSE',
+                onChange: e => { console.log(e.target.value); }
             }, {
                 type: 'select',
                 name: 'select',
