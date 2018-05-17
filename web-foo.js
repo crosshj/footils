@@ -166,7 +166,8 @@
         };
         [
             'div', 'textarea', 'input', 'h1', 'h2', 'h3', 'h4', 'h5', 'p',
-            'span', 'ul', 'li', 'img', 'svg', 'canvas', 'label', 'form', 'button'
+            'span', 'ul', 'li', 'img', 'svg', 'canvas', 'label', 'form', 'button',
+            'select', 'option'
         ].forEach(el => {
             components[el] = (props, children) => createElement(el, props, children);
         });
@@ -245,7 +246,7 @@
 
         function sidebarStart({ sidebarDef }, startCallback){
             const getRoot = (components, dispatcher) => {
-                const { div, textarea, h4, label, fragment, form, span, button, input } = components;
+                const { div, textarea, h4, label, fragment, form, span, button, input, select, option } = components;
                 const action = (type) => (e) => dispatcher({type, payload: e.target.value});
 
                 const pinClick = (pinned) => dispatcher({
@@ -347,10 +348,18 @@
                     );
                 }
 
-                function selectComponent({ div, span, section, item, index}){
+                function selectComponent({ div, span, select, option, section, item, index}){
                     return (
                         div({ key: `${section.name}-${item.name}-${index}`}, [
-                            span({ key: `${section.name}-${item.name}-${index}-span`, className: 'label' }, item.name)
+                            span({ key: `${section.name}-${item.name}-${index}-span`, className: 'label' }, item.name),
+                            select({ key: `${section.name}-${item.name}-${index}-select` },
+                                item.options.map((opt, i) => 
+                                    option(
+                                        { key: `${section.name}-${item.name}-${index}-option${i}`},
+                                        opt
+                                    )
+                                )
+                            )
                         ])
                     );
                 }
@@ -380,18 +389,19 @@
                     ]),
                     div({className: 'scrollContainer', key: 'scrollContainer'},
                         sidebarDef.sections.reduce((all, section, i) => {
-                            all.push(dividerComponent({ div, section, index }));
-                            section.items.forEach((item, j) => {
-                                const childItem = ({
-                                    'text': textComponent({div, span, section, item, index: j}),
-                                    'slider': sliderComponent({ span, div, input, section, item, index: j }),
-                                    'boolean': booleanComponent({ div, span, label, input, section, item, index: j }),
-                                    'button': buttonComponent({ div, button, section, item, index: j }),
-                                    'select': selectComponent({ div, span, section, item, index: j}),
-                                    'layers': selectComponent({ div, span, section, item, index: j})
-                                })[item.type];
-                                if(childItem) all.push(childItem);
-                            });
+                            all.push(dividerComponent({ div, section, index: i }));
+                            const sectionItems = section.items
+                                .map((item, j) => {
+                                    return ({
+                                        text: () => textComponent({div, span, section, item, index: j}),
+                                        slider: () => sliderComponent({ span, div, input, section, item, index: j }),
+                                        boolean: () => booleanComponent({ div, span, label, input, section, item, index: j }),
+                                        button: () => buttonComponent({ div, button, section, item, index: j }),
+                                        select: () => selectComponent({ div, span, select, option, section, item, index: j}),
+                                        layers: () => layersComponent({ div, span, section, item, index: j})
+                                    })[item.type];
+                                })
+                                .forEach(component => all.push(component()));
                             return all;
                         }, [])
                     )
