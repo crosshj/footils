@@ -167,7 +167,7 @@
         [
             'div', 'textarea', 'input', 'h1', 'h2', 'h3', 'h4', 'h5', 'p',
             'span', 'ul', 'li', 'img', 'svg', 'canvas', 'label', 'form', 'button',
-            'select', 'option'
+            'select', 'option', 'svg', 'g', 'path', 'circle'
         ].forEach(el => {
             components[el] = (props, children) => createElement(el, props, children);
         });
@@ -248,7 +248,7 @@
             const getRoot = (components, dispatcher) => {
                 const {
                     div, textarea, h4, label, fragment, form, span, button,
-                    input, select, option, ul, li
+                    input, select, option, ul, li, svg, g, path, circle
                 } = components;
                 const action = (type) => (e) => dispatcher({type, payload: e.target.value});
 
@@ -373,14 +373,15 @@
                     );
                 }
 
-                function eyeToggle(){
+                function eyeToggle({ svg, g, path, circle }){
                     return (
                         svg({
                             xmlns:"http://www.w3.org/2000/svg",
-                            'xmlns:xlink': "http://www.w3.org/1999/xlink",
+                            xmlnsXlink: "http://www.w3.org/1999/xlink",
                             version: "1.1",
                             viewBox: "0 0 512 512",
-                            'enable-background': "new 0 0 512 512"
+                            preserveAspectRatio: "none",
+                            className: "eyeToggle"
                         },
                             g(null, [
                                 path({
@@ -434,14 +435,14 @@
                                 li({
                                     tabIndex: 0
                                 }, [
-                                    input({ type:"checkbox", defaultChecked: true}),
+                                    eyeToggle({ svg, g, path, circle }),
                                     div({ className: "image"}),
                                     span({ className: "label"}, 'Layer 1')
                                 ]),
                                 li({
                                     tabIndex: 0
                                 }, [
-                                    input({ type:"checkbox", defaultChecked: true}),
+                                    eyeToggle({ svg, g, path, circle }),
                                     div({ className: "image"}),
                                     span({ className: "label"}, 'Layer 2')
                                 ])
