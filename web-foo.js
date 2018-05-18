@@ -20,6 +20,10 @@
             - refer to docs for context / use case
     */
 
+    function isNumeric(n) {
+        return !isNaN(parseFloat(n)) && isFinite(n);
+    }
+
     // cache script, https://github.com/webpgr/cached-webpgr.js
     // also see: https://addyosmani.com/basket.js/
     // maybe use service worker instead
@@ -277,6 +281,13 @@
                     })
                 };
 
+                const layerVisibleClick = (layerNumber) => {
+                    return dispatcher({
+                        type: 'LAYER_VISIBILE_TOGGLED',
+                        payload: layerNumber
+                    });
+                }
+
                 if(sidebarDef.hidden){
                     // NOTE: is this safe since dispatcher called?
                     toggleClick();
@@ -373,7 +384,7 @@
                     );
                 }
 
-                function eyeToggle({ svg, g, path, circle, visible=true }){
+                function eyeToggle({ svg, g, path, circle, hidden, layerClick }){
                     return (
                         svg({
                             xmlns:"http://www.w3.org/2000/svg",
@@ -382,14 +393,15 @@
                             viewBox: "0 0 512 512",
                             preserveAspectRatio: "none",
                             className: "eyeToggle",
-                            tabIndex: 0
+                            // tabIndex: 0,
+                            onClick: layerClick
                         },
                             g(null, [
                                 path({
                                     d: "m34,256l26.2,26.2c108,108 283.7,108 391.7,0l26.1-26.2-26.2-26.2c-108-108-283.7-108-391.7,0l-26.1,26.2zm222,126.2c-75.8,0-151.6-28.9-209.3-86.6l-32.9-32.9c-3.7-3.7-3.7-9.7 0-13.5l32.9-32.9c115.4-115.4 303.2-115.4 418.6,0l32.9,32.9c3.7,3.7 3.7,9.7 0,13.5l-32.9,32.9c-57.7,57.7-133.5,86.6-209.3,86.6z"
                                 }),
                                 circle({ cx:"256", cy: "256", r: "80"}),
-                                !visible
+                                hidden
                                     ? path({
                                         d: "M 400 52 L 460 52 L 160 460 L 100 460 Z"
                                     })
@@ -399,7 +411,7 @@
                     );
                 }
 
-                function layersComponent({ div, span, section, item, index}){
+                function layersComponent({ div, span, section, item, index, layersHidden}){
                     return (
                         div({
                             key: `${section.name}-${item.name}-${index}`,
@@ -441,16 +453,22 @@
                                 li({
                                     tabIndex: 0
                                 }, [
-                                    eyeToggle({ svg, g, path, circle }),
+                                    eyeToggle({
+                                        svg, g, path, circle, hidden: layersHidden.includes(0),
+                                        layerClick: () => layerVisibleClick(0)
+                                    }),
                                     div({ className: "image", tabIndex: 0}),
                                     span({ className: "label", tabIndex: 0}, 'Layer 1')
                                 ]),
                                 li({
                                     tabIndex: 0
                                 }, [
-                                    eyeToggle({ svg, g, path, circle }),
-                                    div({ className: "image", tabIndex: 0}),
-                                    span({ className: "label", tabIndex: 0}, 'Layer 2')
+                                    eyeToggle({
+                                        svg, g, path, circle, hidden: layersHidden.includes(1),
+                                        layerClick: () => layerVisibleClick(1)
+                                    }),
+                                    div({ className: "image"/*, tabIndex: 0*/}),
+                                    span({ className: "label"/*, tabIndex: 0*/}, 'Layer 2')
                                 ])
                             ])
                         ])
@@ -465,7 +483,7 @@
 
                 //TODO: all events should be tracked by reducer!
 
-                const root = ({ pinned = sidebarDef.pinned, hidden = sidebarDef.hidden }) =>
+                const root = ({ pinned = sidebarDef.pinned, hidden = sidebarDef.hidden, layersHidden = [] }) =>
                 fragment([
                     div({id: 'header', key: 'header'}, [
                         span({ key: 'headerText'}, sidebarDef.title),
@@ -483,7 +501,7 @@
                                         boolean: () => booleanComponent({ div, span, label, input, section, item, index: j }),
                                         button: () => buttonComponent({ div, button, section, item, index: j }),
                                         select: () => selectComponent({ div, span, select, option, section, item, index: j}),
-                                        layers: () => layersComponent({ div, span, section, item, index: j})
+                                        layers: () => layersComponent({ div, span, section, item, index: j, layersHidden})
                                     })[item.type];
                                 })
                                 .forEach(component => all.push(component()));
@@ -509,6 +527,21 @@
                         }
                         case 'HIDDEN_CHANGED': {
                             newState = Object.assign({}, state, { hidden: action.payload });
+                            break;
+                        }
+                        case 'LAYER_VISIBILE_TOGGLED': {
+                            var layersHidden = state.layersHidden || [];
+                            if (!isNumeric(action.payload)){
+                                console.log('Error in reducer: LAYER_VISIBILE_TOGGLED');
+                                break;
+                            }
+                            const layerNumber = Number(action.payload);
+                            if(layersHidden.includes(layerNumber)){
+                                layersHidden = layersHidden.filter(x => x !== layerNumber);
+                            } else {
+                                layersHidden.push(layerNumber);
+                            }
+                            newState = Object.assign({}, state, { layersHidden });
                             break;
                         }
                     }

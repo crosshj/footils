@@ -238,6 +238,8 @@
         white-space: normal;
         max-height: 16px;
         font-size: 11px;
+        -webkit-appearance: none;
+        padding-right: 5px;
     }
     select:focus {
         border: 0px;
@@ -291,11 +293,11 @@
         align-items: center;
         margin-bottom: 3px;
         padding: 4px;
-        padding-left: 2px;
+        padding-left: 0px;
         border: 1px solid transparent;
     }
     .layers li:focus, .layers li.selected {
-        background-color: #4e5a70;
+        /* background-color: #4e5a70; */
         border-radius: 0px;
         border: 1px solid #282828;
     }
@@ -306,13 +308,14 @@
         height: 100%;
         width: 80px;
         background: #666;
+        margin-left: 4px;
     }
     .layers > span.label {
         margin-bottom: 4px;
         padding-left: 0px;
     }
     .layers span {
-        padding-left: 5px;
+        margin-left: 4px;
     }
     .layerTools {
         display: flex;
@@ -330,6 +333,13 @@
     .layerTools select {
         min-height: 17px;
         width: 50%;
+    }
+    .eyeToggle {
+        width: 19px;
+        height: 25px;
+        fill: #666;
+        padding-right: 2px;
+        padding-left: 2px;
     }
     #pinButton {
         margin-right: 12px;
@@ -360,14 +370,7 @@
     #pinIcon path:hover {
         fill: turquoise;
     }
-    .eyeToggle {
-        width: 19px;
-        height: 25px;
-        fill: #666;
-        padding-right: 4px;
-        padding-left: 4px;
-        margin-left: -9px;
-    }
+
 </style>
 
 
