@@ -246,7 +246,10 @@
 
         function sidebarStart({ sidebarDef }, startCallback){
             const getRoot = (components, dispatcher) => {
-                const { div, textarea, h4, label, fragment, form, span, button, input, select, option } = components;
+                const {
+                    div, textarea, h4, label, fragment, form, span, button,
+                    input, select, option, ul, li
+                } = components;
                 const action = (type) => (e) => dispatcher({type, payload: e.target.value});
 
                 const pinClick = (pinned) => dispatcher({
@@ -372,8 +375,58 @@
 
                 function layersComponent({ div, span, section, item, index}){
                     return (
-                        div({ key: `${section.name}-${item.name}-${index}`}, [
-                            span({ key: `${section.name}-${item.name}-${index}-span`, className: 'label' }, item.name)
+                        div({
+                            key: `${section.name}-${item.name}-${index}`,
+                            className: 'layers'
+                        }, [
+                            span({
+                                key: `${section.name}-${item.name}-${index}-span`,
+                                className: 'label'
+                            }, item.name),
+                            div({
+                                key: `${section.name}-${item.name}-${index}-div`,
+                                className: 'layerTools'
+                            }, [
+                                select({
+                                    key: `${section.name}-${item.name}-${index}-select`
+                                }, [
+                                    option({
+                                        key: `${section.name}-${item.name}-${index}-li-normal`
+                                    }, 'Normal'),
+                                    option({
+                                        key: `${section.name}-${item.name}-${index}-li-darken`
+                                    }, 'Darken'),
+                                    option({
+                                        key: `${section.name}-${item.name}-${index}-ul-lighten`
+                                    }, 'Lighten'),
+                                    option({
+                                        key: `${section.name}-${item.name}-${index}-ul-burn`
+                                    }, 'Burn')
+                                ]),
+                                input({
+                                    key: `${section.name}-${item.name}-${index}-input`,
+                                    type:"range", min:"0", max:"100", step:"5", 
+                                    defaultValue: 100
+                                })
+                            ]),
+                            ul({
+                                key: `${section.name}-${item.name}-${index}-ul`
+                            }, [
+                                li({
+                                    tabIndex: 0
+                                }, [
+                                    input({ type:"checkbox", defaultChecked: true}),
+                                    div({ className: "image"}),
+                                    span({ className: "label"}, 'Layer 1')
+                                ]),
+                                li({
+                                    tabIndex: 0
+                                }, [
+                                    input({ type:"checkbox", defaultChecked: true}),
+                                    div({ className: "image"}),
+                                    span({ className: "label"}, 'Layer 2')
+                                ])
+                            ])
                         ])
                     );
                 }
