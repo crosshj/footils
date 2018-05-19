@@ -20,6 +20,31 @@
             - refer to docs for context / use case
     */
 
+   function addCssLink({ id, href }){
+        if (document.getElementById(id)){
+            return;
+        }
+        var head  = document.getElementsByTagName('head')[0];
+        var link  = document.createElement('link');
+        link.id   = id;
+        link.rel  = 'stylesheet';
+        link.type = 'text/css';
+        link.href = href;
+        link.media = 'all';
+        head.appendChild(link);
+    }
+
+    function appendCss(cssToAppend){
+        const layersUrl = './css/sidebar.css';
+        const appendIncludesSidebar = () => Array.isArray(cssToAppend) && cssToAppend.includes('sidebar')
+        if(cssToAppend === 'sidebar' || appendIncludesSidebar()){
+            addCssLink({
+                id: 'sidebarCSS',
+                href: '../css/sidebar.css'
+            });
+        }
+    }
+
     function isNumeric(n) {
         return !isNaN(parseFloat(n)) && isFinite(n);
     }
@@ -451,24 +476,30 @@
                                 key: `${section.name}-${item.name}-${index}-ul`
                             }, [
                                 li({
-                                    tabIndex: 0
+                                    disabled: true
                                 }, [
                                     eyeToggle({
                                         svg, g, path, circle, hidden: layersHidden.includes(0),
-                                        layerClick: () => layerVisibleClick(0)
+                                        layerClick: () => {
+                                            item.layers[0].onToggle(layersHidden.includes(0));
+                                            layerVisibleClick(0);
+                                        }
                                     }),
                                     div({ className: "image", tabIndex: 0}),
-                                    span({ className: "label", tabIndex: 0}, 'Layer 1')
+                                    span({ className: "label"/*, tabIndex: 0*/}, 'Top Layer')
                                 ]),
                                 li({
-                                    tabIndex: 0
+                                    disabled: true
                                 }, [
                                     eyeToggle({
                                         svg, g, path, circle, hidden: layersHidden.includes(1),
-                                        layerClick: () => layerVisibleClick(1)
+                                        layerClick: () => {
+                                            item.layers[1].onToggle(layersHidden.includes(1));
+                                            layerVisibleClick(1);
+                                        }
                                     }),
-                                    div({ className: "image"/*, tabIndex: 0*/}),
-                                    span({ className: "label"/*, tabIndex: 0*/}, 'Layer 2')
+                                    div({ className: "image", tabIndex: 0}),
+                                    span({ className: "label"/*, tabIndex: 0*/}, 'Bottom Layer')
                                 ])
                             ])
                         ])
@@ -556,8 +587,6 @@
                     return;
                 }
 
-                //TODO: insert css
-
                 const sidebarRoot = document.createElement("div");
                 sidebarRoot.id = 'sidebar';
                 document.body.appendChild(sidebarRoot);
@@ -573,7 +602,12 @@
 
         return callback(null, { start: sidebarStart });
     };
-    sidebar.init = callback => isInitedFactory(sidebar, callback);
+    sidebar.init = callback => {
+        // TODO: might be done like sidebar.script (eg. sidebar.css = ['sidebar.css'])
+        appendCss('sidebar');
+
+        return isInitedFactory(sidebar, callback);
+    }
 
 
     // NEURAL ------------------------------------------------------------------
@@ -590,8 +624,6 @@
     // TODO: create utils script and host on github
     // TODO: include helpers that set everything up except the basic needs
     utils.init = callback => isInitedFactory(utils, callback);
-
-
 
     // TODO: there should be a way of loading multiple contexts / modules
 
