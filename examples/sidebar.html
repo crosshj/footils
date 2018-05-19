@@ -197,12 +197,12 @@
         });
         var layer2 = new Concrete.Layer();
         viewport.add(layer2);
-        layer2.scene.context.fillStyle = 'blue';
+        layer2.scene.context.fillStyle = 'rgb(30,30,255)';
         layer2.scene.context.fillRect(100, 100, 200, 200);
 
         var layer1 = new Concrete.Layer();
         viewport.add(layer1);
-        layer1.scene.context.fillStyle = 'orange';
+        layer1.scene.context.fillStyle = 'rgb(255,165,0)';
         layer1.scene.context.arc(300, 300, 100, 0, 2*Math.PI, false);
         layer1.scene.context.globalAlpha = 0.9;
         //layer1.scene.context.globalCompositeOperation = 'multiply';
