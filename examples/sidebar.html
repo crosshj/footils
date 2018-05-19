@@ -117,7 +117,12 @@
     // var toggleBottomLayer = (visible) => {
     //     console.log(`toggleBottomLayer ${visible}`);
     // };
-    const sidebarDef = ({toggleTopLayer, toggleBottomLayer}) => ({
+    const sidebarDef = ({
+        toggleTopLayer,
+        toggleBottomLayer,
+        getTopThumb,
+        getBottomThumb
+    }) => ({
         title: 'Sidebar Demo',
         pinHandler,
         hidden: false,
@@ -157,10 +162,12 @@
                 name: 'layers',
                 layers: [{
                     name: 'Top Layer',
-                    onToggle: toggleTopLayer
+                    onToggle: toggleTopLayer,
+                    getThumb: getTopThumb
                 }, {
                     name: 'Bottom Layer',
-                    onToggle: toggleBottomLayer
+                    onToggle: toggleBottomLayer,
+                    getThumb: getBottomThumb
                 }]
             }]
         }, {
@@ -196,7 +203,8 @@
         var layer1 = new Concrete.Layer();
         viewport.add(layer1);
         layer1.scene.context.fillStyle = 'orange';
-        layer1.scene.context.fillRect(150, 150, 200, 200);
+        layer1.scene.context.arc(300, 300, 100, 0, 2*Math.PI, false);
+        layer1.scene.context.fill();
 
         viewport.render();
         return { viewport, layers: [layer1, layer2] };
@@ -220,7 +228,9 @@
 
         const definition = sidebarDef({
             toggleBottomLayer,
-            toggleTopLayer
+            toggleTopLayer,
+            getTopThumb: () => canvas.layers[0].scene.canvas.toDataURL('image/png'),
+            getBottomThumb: () => canvas.layers[1].scene.canvas.toDataURL('image/png')
         });
 
         start({ sidebarDef: definition }, () => {

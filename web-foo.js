@@ -485,7 +485,14 @@
                                             layerVisibleClick(0);
                                         }
                                     }),
-                                    div({ className: "image", tabIndex: 0}),
+                                    div({
+                                        className: "image",
+                                        tabIndex: 0,
+                                        style: {
+                                            backgroundImage: `url(${item.layers[0].getThumb()})`,
+                                            backgroundSize: "cover"
+                                        }
+                                    }),
                                     span({ className: "label"/*, tabIndex: 0*/}, 'Top Layer')
                                 ]),
                                 li({
@@ -498,7 +505,14 @@
                                             layerVisibleClick(1);
                                         }
                                     }),
-                                    div({ className: "image", tabIndex: 0}),
+                                    div({
+                                        className: "image",
+                                        tabIndex: 0,
+                                        style: {
+                                            backgroundImage: `url(${item.layers[1].getThumb()})`,
+                                            backgroundSize: "cover"
+                                        }
+                                    }),
                                     span({ className: "label"/*, tabIndex: 0*/}, 'Bottom Layer')
                                 ])
                             ])
