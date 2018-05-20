@@ -490,7 +490,7 @@
                                         tabIndex: 0,
                                         style: {
                                             backgroundImage: `url(${item.layers[0].getThumb()})`,
-                                            backgroundSize: "cover"
+                                            backgroundSize: "contain" //cover
                                         }
                                     }),
                                     span({ className: "label"/*, tabIndex: 0*/}, 'Top Layer')
@@ -510,7 +510,7 @@
                                         tabIndex: 0,
                                         style: {
                                             backgroundImage: `url(${item.layers[1].getThumb()})`,
-                                            backgroundSize: "cover"
+                                            backgroundSize: "contain" 
                                         }
                                     }),
                                     span({ className: "label"/*, tabIndex: 0*/}, 'Bottom Layer')
