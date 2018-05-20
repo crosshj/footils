@@ -31,9 +31,10 @@
 }
 #sidebar, #sidebar span.label, input {
     text-transform: uppercase;
-    font-family: monospace;
-    font-size: 10px;
-    line-height: 16px;
+    /* font-family: monospace; */
+    font-family: 'Lucida Grande', sans-serif;
+    font-size: 8px;
+    line-height: 17px;
 }
 #sidebar input {
     width: 100%;
@@ -122,7 +123,8 @@ div#header {
     position: absolute;
     top: 4px;
     right: 5px;
-    font-family: monospace;
+    /* font-family: monospace; */
+    font-family: 'Lucida Grande', sans-serif;
 }
 #closeSettings:hover:not([disabled]), #openSettings:hover {
     background: #eee;
@@ -195,7 +197,8 @@ input:checked + .slider:before {
 select {
     color: #aaa;
     text-transform: uppercase;
-    font-family: monospace;
+    /* font-family: monospace; */
+    font-family: 'Lucida Grande', sans-serif;
     width: 100%;
     border-radius: 0px;
     border: 0px;
@@ -203,7 +206,7 @@ select {
     text-overflow: ellipsis;
     white-space: normal;
     max-height: 16px;
-    font-size: 11px;
+    font-size: 8px;
     -webkit-appearance: none;
     padding-right: 5px;
 }

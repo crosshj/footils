@@ -506,7 +506,7 @@
                                         }
                                     }),
                                     div({
-                                        className: "image",
+                                        className: "image checkedBg",
                                         tabIndex: 0,
                                         style: {
                                             backgroundImage: `url(${item.layers[1].getThumb()})`,

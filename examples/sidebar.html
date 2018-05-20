@@ -25,13 +25,19 @@
         justify-content: center;
         align-items: center;
     }
+    .checkedBg, #canvasContainer canvas {
+        background-image: linear-gradient(45deg, #808080 25%, transparent 25%), linear-gradient(-45deg, #808080 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #808080 75%), linear-gradient(-45deg, transparent 75%, #808080 75%);
+        background-size: 20px 20px;
+        background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+        background-color: #bbb;
+    }
 
     #canvasContainer canvas {
         max-width: 90%;
         max-height: 90%;
         width: unset !important;
         height: unset !important;
-        background: #555;
+        /* background: #7e7e7e; */
         /* filter: invert(20%) grayscale(100%); */
     }
 
@@ -111,12 +117,19 @@
             document.getElementById('closeSettings').click();
         }
     });
-    // var toggleTopLayer = (visible) => {
-    //     console.log(`toggleTopLayer ${visible}`);
-    // };
-    // var toggleBottomLayer = (visible) => {
-    //     console.log(`toggleBottomLayer ${visible}`);
-    // };
+
+    function fullscreen(el){
+        // TODO: illegal invocation? wtf?
+        //const requestFullScreen = document.documentElement.webkitRequestFullScreen || document.body.mozRequestFullScreen || document.body.msRequestFullscreen;
+        //const exitFullscreen = document.webkitExitFullscreen || document.exitFullscreen;
+
+        if(document.fullscreen || document.webkitIsFullScreen){
+            document.webkitExitFullscreen();
+        } else {
+            document.documentElement.webkitRequestFullScreen();
+        }
+    }
+
     const sidebarDef = ({
         toggleTopLayer,
         toggleBottomLayer,
@@ -175,15 +188,14 @@
             items: [{
                 type: 'button',
                 name: 'reload',
-                onClick: () => { console.log('clicked on reload'); }
-            }, {
-                type: 'button',
-                name: 'toggle',
-                onClick: () => { console.log('clicked on toggle'); }
+                onClick: () => {
+                    //TODO: would be nice if this only reloaded DOM/scripts/CSS, not reload page
+                    document.location = document.location;
+                }
             }, {
                 type: 'button',
                 name: 'fullscreen',
-                onClick: (e) => { console.log('clicked on fullscreen'); }
+                onClick: (e) => fullscreen()
             }]
         }]
     });
