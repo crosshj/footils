@@ -481,7 +481,10 @@
                                     eyeToggle({
                                         svg, g, path, circle, hidden: layersHidden.includes(0),
                                         layerClick: () => {
-                                            item.layers[0].onToggle(layersHidden.includes(0));
+                                            item.layers[0].onToggle({
+                                                number: 0,
+                                                visible: layersHidden.includes(0)
+                                            });
                                             layerVisibleClick(0);
                                         }
                                     }),
@@ -489,7 +492,7 @@
                                         className: "image",
                                         tabIndex: 0,
                                         style: {
-                                            backgroundImage: `url(${item.layers[0].getThumb()})`,
+                                            backgroundImage: `url(${item.layers[0].getThumb({ number: 0 })})`,
                                             backgroundSize: "contain" //cover
                                         }
                                     }),
@@ -501,7 +504,15 @@
                                     eyeToggle({
                                         svg, g, path, circle, hidden: layersHidden.includes(1),
                                         layerClick: () => {
-                                            item.layers[1].onToggle(layersHidden.includes(1));
+                                            item.layers[1].onToggle({
+                                                number: 1,
+                                                visible: layersHidden.includes(1)
+                                            });
+                                            // TODO: do this elsewhere, only here for testing
+                                            // item.layers[1].changeLayerAlpha({
+                                            //     number: 1,
+                                            //     alpha: 0.5
+                                            // })
                                             layerVisibleClick(1);
                                         }
                                     }),
@@ -509,7 +520,7 @@
                                         className: "image checkedBg",
                                         tabIndex: 0,
                                         style: {
-                                            backgroundImage: `url(${item.layers[1].getThumb()})`,
+                                            backgroundImage: `url(${item.layers[1].getThumb({ number: 1 })})`,
                                             backgroundSize: "contain" 
                                         }
                                     }),

@@ -160,10 +160,9 @@
     }
 
     const sidebarDef = ({
-        toggleTopLayer,
-        toggleBottomLayer,
-        getTopThumb,
-        getBottomThumb
+        toggleLayerVisible,
+        getLayerThumb,
+        changeLayerAlpha
     }) => ({
         title: 'Sidebar Demo',
         pinHandler,
@@ -204,12 +203,14 @@
                 name: 'layers',
                 layers: [{
                     name: 'Top Layer',
-                    onToggle: toggleTopLayer,
-                    getThumb: getTopThumb
+                    onToggle: toggleLayerVisible,
+                    getThumb: getLayerThumb,
+                    changeLayerAlpha
                 }, {
                     name: 'Bottom Layer',
-                    onToggle: toggleBottomLayer,
-                    getThumb: getBottomThumb
+                    onToggle: toggleLayerVisible,
+                    getThumb: getLayerThumb,
+                    changeLayerAlpha
                 }]
             }]
         }, {
@@ -229,27 +230,42 @@
         }]
     });
 
+    function renderLayer2({ layer, alpha, width, height }){
+        const context = layer.scene.context;
+        context.clearRect(0, 0, width, height);
+        context.globalAlpha = alpha || 1.0;
+        context.fillStyle = 'rgb(30,30,255)';
+        context.fillRect(50, 50, 400, 400);
+        context.globalAlpha = 1.0;
+    }
+
+    function renderLayer1({ layer, alpha, width, height }){
+        const context = layer.scene.context;
+        context.clearRect(0, 0, width, height);
+        context.globalAlpha = alpha || 1.0;
+        context.fillStyle = 'rgb(255,165,0)';
+        context.arc(500, 500, 400, 0, 2*Math.PI, false);
+        context.fill();
+        context.globalAlpha = 1.0;
+    }
+
     function setupCanvas(){
-        var concreteContainer = document.getElementById('canvasContainer');
+        var container = document.getElementById('canvasContainer');
+        const width = 1000;
+        const height = 850;
         var viewport = new Concrete.Viewport({
-            width: 1000,
-            height: 850,
-            container: concreteContainer
+            width,
+            height,
+            container
         });
         var layer2 = new Concrete.Layer();
         viewport.add(layer2);
-        layer2.scene.context.fillStyle = 'rgb(30,30,255)';
-        layer2.scene.context.fillRect(50, 50, 400, 400);
+        renderLayer2({ layer: layer2, alpha: 1.0, width, height });
 
         var layer1 = new Concrete.Layer();
         viewport.add(layer1);
-        layer1.scene.context.fillStyle = 'rgb(255,165,0)';
-        layer1.scene.context.arc(500, 500, 400, 0, 2*Math.PI, false);
-        layer1.scene.context.globalAlpha = 0.9;
+        renderLayer1({ layer: layer1, alpha: 1.0, width, height });
         //layer1.scene.context.globalCompositeOperation = 'multiply';
-
-        layer1.scene.context.fill();
-        layer1.scene.context.globalAlpha = 1.0;
 
         viewport.render();
         return { viewport, layers: [layer1, layer2] };
@@ -262,20 +278,28 @@
         }
 
         const canvas = setupCanvas();
-        const toggleTopLayer = (visible) => {
-            canvas.layers[0].visible = visible;
+        const toggleLayerVisible = ({ number, visible }) => {
+            canvas.layers[number].visible = visible;
             canvas.viewport.render();
+        };
+        const getLayerThumb = ({ number }) => {
+            return canvas.layers[number].scene.canvas.toDataURL('image/png');
         }
-        const toggleBottomLayer = (visible) => {
-            canvas.layers[1].visible = visible;
+        const changeLayerAlpha = ({ number, alpha }) => {
+            const renderFunction = Number(number) === 1
+                ? renderLayer1 
+                : renderLayer2;
+            renderFunction({
+                layer: canvas.layers[number],
+                alpha
+            });
             canvas.viewport.render();
         }
 
         const definition = sidebarDef({
-            toggleBottomLayer,
-            toggleTopLayer,
-            getTopThumb: () => canvas.layers[0].scene.canvas.toDataURL('image/png'),
-            getBottomThumb: () => canvas.layers[1].scene.canvas.toDataURL('image/png')
+            toggleLayerVisible,
+            getLayerThumb,
+            changeLayerAlpha
         });
 
         start({ sidebarDef: definition }, () => {
