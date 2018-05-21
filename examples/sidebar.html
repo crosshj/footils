@@ -234,8 +234,11 @@
         const context = layer.scene.context;
         context.clearRect(0, 0, width, height);
         context.globalAlpha = alpha || 1.0;
-        context.fillStyle = 'rgb(30,30,255)';
-        context.fillRect(50, 50, 400, 400);
+        context.fillStyle = 'rgb(100,100,100)';
+        context.fillRect(0, 0, width, height);
+        context.fillStyle = 'rgb(110,110,110)';
+        context.font = 'bold 120px sans-serif';
+        context.fillText('BG', width-200, height-50);
         context.globalAlpha = 1.0;
     }
 
@@ -243,8 +246,8 @@
         const context = layer.scene.context;
         context.clearRect(0, 0, width, height);
         context.globalAlpha = alpha || 1.0;
-        context.fillStyle = 'rgb(255,165,0)';
-        context.arc(500, 500, 400, 0, 2*Math.PI, false);
+        context.fillStyle = 'rgb(130,130,130)';
+        context.arc(width/2, height/2, 400, 0, 2*Math.PI, false);
         context.fill();
         context.globalAlpha = 1.0;
     }

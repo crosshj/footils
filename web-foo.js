@@ -277,7 +277,7 @@
             const getRoot = (components, dispatcher) => {
                 const {
                     div, textarea, h4, label, fragment, form, span, button,
-                    input, select, option, ul, li, svg, g, path, circle
+                    input, select, option, ul, li, svg, g, path, circle, img
                 } = components;
                 const action = (type) => (e) => dispatcher({type, payload: e.target.value});
 
@@ -443,8 +443,8 @@
                     );
                 }
 
-                function layersComponent({ div, span, section, item, index,
-                    layersHidden, layersSelected
+                function layersComponent({ div, span, section, item, img,
+                    index, layersHidden, layersSelected
                 }){
                     return (
                         div({
@@ -499,13 +499,14 @@
                                             layerVisibleClick(0);
                                         }
                                     }),
-                                    div({
+                                    img({
                                         className: "image",
                                         tabIndex: 0,
-                                        style: {
-                                            backgroundImage: `url(${item.layers[0].getThumb({ number: 0 })})`,
-                                            backgroundSize: "contain" //cover
-                                        }
+                                        src: item.layers[0].getThumb({ number: 0 }),
+                                        // style: {
+                                        //     backgroundImage: `url(${item.layers[0].getThumb({ number: 0 })})`,
+                                        //     backgroundSize: "contain" //cover
+                                        // }
                                     }),
                                     span({ className: "label"/*, tabIndex: 0*/}, 'Top Layer')
                                 ]),
@@ -529,13 +530,10 @@
                                             layerVisibleClick(1);
                                         }
                                     }),
-                                    div({
-                                        className: "image checkedBg",
+                                    img({
+                                        className: "image",
                                         tabIndex: 0,
-                                        style: {
-                                            backgroundImage: `url(${item.layers[1].getThumb({ number: 1 })})`,
-                                            backgroundSize: "contain" 
-                                        }
+                                        src: item.layers[1].getThumb({ number: 1 }),
                                     }),
                                     span({ className: "label"/*, tabIndex: 0*/}, 'Bottom Layer')
                                 ])
@@ -575,7 +573,7 @@
                                         boolean: () => booleanComponent({ div, span, label, input, section, item, index: j }),
                                         button: () => buttonComponent({ div, button, section, item, index: j }),
                                         select: () => selectComponent({ div, span, select, option, section, item, index: j}),
-                                        layers: () => layersComponent({ div, span, section, item, index: j, layersHidden, layersSelected})
+                                        layers: () => layersComponent({ div, span, section, item, img, index: j, layersHidden, layersSelected})
                                     })[item.type];
                                 })
                                 .forEach(component => all.push(component()));

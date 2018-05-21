@@ -274,8 +274,8 @@ select:focus {
     width: 20px !important;
 }
 .layers .image {
-    height: 100%;
-    width: 80px;
+    max-height: 100%;
+    max-width: 80px;
     background: #666;
     margin-left: 4px;
 }
