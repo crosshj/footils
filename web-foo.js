@@ -344,10 +344,17 @@
                     );
                 }
 
-                function sliderComponent({ span, div, input, section, item, index }){
+                function sliderComponent({ span, div, input, section, item, index, showLabel=true }){
+                    const touchend = e => item.onChange(e);
+
                     return (
-                        div({ key: `${section.name}-${item.name}-${index}`}, [
-                            span({ key: `${section.name}-${item.name}-${index}-span`, className: 'label' }, item.name),
+                        div({
+                            key: `${section.name}-${item.name}-${index}`,
+                            className: 'slider-component'
+                        }, [
+                            showLabel
+                                ? span({ key: `${section.name}-${item.name}-${index}-span`, className: 'label' }, item.name)
+                                : undefined,
                             div({ key: `${section.name}-${item.name}-${index}-div`, className: 'sliderValue' }, item.default),
                             input({
                                 key: `${section.name}-${item.name}-${index}-input`,
@@ -357,7 +364,9 @@
                                 step: item.step,
                                 defaultValue: item.default,
                                 //tabIndex: 0,
-                                onChange: e => console.log(`TODO: should update sliderValue div TRUE|FALSE`) & item.onChange(e)
+                                onChange: () => console.log(`TODO: should update sliderValue div (label)`),
+                                onMouseUp: touchend,
+                                onTouchEnd: touchend
                             })
                         ])
                     );
@@ -372,7 +381,7 @@
                                 input({
                                     key: `${section.name}-${item.name}-${index}-label-input`,
                                     type:"checkbox",
-                                    onChange: e => console.log(`TODO: should update booleanValue div TRUE|FALSE`) & item.onChange({ target: { value: e.target.checked }})
+                                    onChange: e => console.log(`TODO: should update booleanValue div (label TRUE|FALSE)`) & item.onChange({ target: { value: e.target.checked }})
                                 }),
                                 span({
                                     key: `${section.name}-${item.name}-${index}-label-span`,
@@ -396,10 +405,15 @@
                     );
                 }
 
-                function selectComponent({ div, span, select, option, section, item, index}){
+                function selectComponent({ div, span, select, option, section, item, index, showLabel=true }){
                     return (
-                        div({ key: `${section.name}-${item.name}-${index}`}, [
-                            span({ key: `${section.name}-${item.name}-${index}-span`, className: 'label' }, item.name),
+                        div({
+                            key: `${section.name}-${item.name}-${index}`,
+                            className: 'select-component'
+                        }, [
+                            showLabel
+                                ? span({ key: `${section.name}-${item.name}-${index}-span`, className: 'label' }, item.name)
+                                : undefined,
                             select({
                                 key: `${section.name}-${item.name}-${index}-select`,
                                 defaultValue: item.default,
@@ -446,6 +460,7 @@
                 function layersComponent({ div, span, section, item, img,
                     index, layersHidden, layersSelected
                 }){
+                    const touchend = e => console.log(`TODO: change layer alpha to: ${e.target.value}`);
                     return (
                         div({
                             key: `${section.name}-${item.name}-${index}`,
@@ -459,26 +474,22 @@
                                 key: `${section.name}-${item.name}-${index}-div`,
                                 className: 'layerTools'
                             }, [
-                                select({
-                                    key: `${section.name}-${item.name}-${index}-select`
-                                }, [
-                                    option({
-                                        key: `${section.name}-${item.name}-${index}-li-normal`
-                                    }, 'Normal'),
-                                    option({
-                                        key: `${section.name}-${item.name}-${index}-li-darken`
-                                    }, 'Darken'),
-                                    option({
-                                        key: `${section.name}-${item.name}-${index}-ul-lighten`
-                                    }, 'Lighten'),
-                                    option({
-                                        key: `${section.name}-${item.name}-${index}-ul-burn`
-                                    }, 'Burn')
-                                ]),
-                                input({
-                                    key: `${section.name}-${item.name}-${index}-input`,
-                                    type:"range", min:"0", max:"100", step:"5", 
-                                    defaultValue: 100
+                                selectComponent({ div, span, select, option, section,
+                                    item: {
+                                        name: 'layer-blend-select',
+                                        options: ['Normal', 'Darken', 'Lighten', 'Burn'],
+                                        onChange: (value) => console.log(`TODO: change layer blend to: ${value}`)
+                                    },
+                                    index, showLabel:false
+                                }),
+                                sliderComponent({
+                                    span, div, input, section,
+                                    item: {
+                                        name: 'layer-alpha-slider',
+                                        min: 0, max: 100, step: 5, defaultValue: 100,
+                                        onChange: touchend
+                                    },
+                                    index, showLabel:false
                                 })
                             ]),
                             ul({

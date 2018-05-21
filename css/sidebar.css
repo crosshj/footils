@@ -295,13 +295,15 @@ select:focus {
     border-radius: 0px;
     display: flex;
 }
-.layerTools input {
-    width: 50% !important;
+.layerTools .slider-component {
+    width: 50% !important;;
     margin-left: 5px !important;
+}
+.layerTools .select-component {
+    width: 50%;
 }
 .layerTools select {
     min-height: 17px;
-    width: 50%;
 }
 .eyeToggle {
     width: 19px;
