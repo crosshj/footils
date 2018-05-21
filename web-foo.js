@@ -311,7 +311,14 @@
                         type: 'LAYER_VISIBILE_TOGGLED',
                         payload: layerNumber
                     });
-                }
+                };
+
+                const layerSelectedChanged = (layerNumber) => {
+                    return dispatcher({
+                        type: 'LAYER_SELECTION_CHANGED',
+                        payload: layerNumber
+                    });
+                };
 
                 if(sidebarDef.hidden){
                     // NOTE: is this safe since dispatcher called?
@@ -436,7 +443,9 @@
                     );
                 }
 
-                function layersComponent({ div, span, section, item, index, layersHidden}){
+                function layersComponent({ div, span, section, item, index,
+                    layersHidden, layersSelected
+                }){
                     return (
                         div({
                             key: `${section.name}-${item.name}-${index}`,
@@ -476,7 +485,9 @@
                                 key: `${section.name}-${item.name}-${index}-ul`
                             }, [
                                 li({
-                                    disabled: true
+                                    disabled: true,
+                                    onClick: () => layerSelectedChanged(0),
+                                    className: layersSelected.includes(0) ? 'selected' : ''
                                 }, [
                                     eyeToggle({
                                         svg, g, path, circle, hidden: layersHidden.includes(0),
@@ -499,7 +510,9 @@
                                     span({ className: "label"/*, tabIndex: 0*/}, 'Top Layer')
                                 ]),
                                 li({
-                                    disabled: true
+                                    disabled: true,
+                                    onClick: () => layerSelectedChanged(1),
+                                    className: layersSelected.includes(1) ? 'selected' : ''
                                 }, [
                                     eyeToggle({
                                         svg, g, path, circle, hidden: layersHidden.includes(1),
@@ -539,7 +552,12 @@
 
                 //TODO: all events should be tracked by reducer!
 
-                const root = ({ pinned = sidebarDef.pinned, hidden = sidebarDef.hidden, layersHidden = [] }) =>
+                const root = ({
+                    pinned = sidebarDef.pinned,
+                    hidden = sidebarDef.hidden,
+                    layersHidden = [],
+                    layersSelected = [ 0 ]
+                }) =>
                 fragment([
                     div({id: 'header', key: 'header'}, [
                         span({ key: 'headerText'}, sidebarDef.title),
@@ -557,7 +575,7 @@
                                         boolean: () => booleanComponent({ div, span, label, input, section, item, index: j }),
                                         button: () => buttonComponent({ div, button, section, item, index: j }),
                                         select: () => selectComponent({ div, span, select, option, section, item, index: j}),
-                                        layers: () => layersComponent({ div, span, section, item, index: j, layersHidden})
+                                        layers: () => layersComponent({ div, span, section, item, index: j, layersHidden, layersSelected})
                                     })[item.type];
                                 })
                                 .forEach(component => all.push(component()));
@@ -598,6 +616,12 @@
                                 layersHidden.push(layerNumber);
                             }
                             newState = Object.assign({}, state, { layersHidden });
+                            break;
+                        }
+                        case 'LAYER_SELECTION_CHANGED': {
+                            //TODO: case where all layers are deselected
+                            const layersSelected = [ action.payload ];
+                            newState = Object.assign({}, state, { layersSelected });
                             break;
                         }
                     }

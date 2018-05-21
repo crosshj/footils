@@ -265,8 +265,8 @@ select:focus {
     padding-left: 0px;
     border: 1px solid transparent;
 }
-.layers li:focus, .layers li.selected {
-    /* background-color: #4e5a70; */
+.layers li.selected {
+    background-color: #343942;
     border-radius: 0px;
     border: 1px solid #282828;
 }
