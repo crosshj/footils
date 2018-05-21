@@ -565,7 +565,12 @@
                     pinned = sidebarDef.pinned,
                     hidden = sidebarDef.hidden,
                     layersHidden = [],
-                    layersSelected = [ 0 ]
+                    layersSelected = [ 0 ],
+                    layersProperties = [{
+                        number: 0,
+                        alpha: 100,
+                        blend: 'Normal'
+                    }]
                 }) =>
                 fragment([
                     div({id: 'header', key: 'header'}, [
@@ -596,6 +601,8 @@
                 return root;
             }
             
+            //TODO: default state ???
+
             // reducer should be built with respect to sidebar definition
             const getReducer = () => {
                 const reducer = (state, action) => {
@@ -631,6 +638,37 @@
                             //TODO: case where all layers are deselected
                             const layersSelected = [ action.payload ];
                             newState = Object.assign({}, state, { layersSelected });
+                            break;
+                        }
+                        case 'LAYERS_PROPERTIES_CHANGE': {
+                            const newLayersProperties = state.layersProperties
+                                ? clone(state.layersProperties)
+                                : [];
+                            const currentSelectedLayers = state.layersSelected || [];
+                            currentSelectedLayers.forEach(selected => {
+                                // ensure existence
+                                const exists = newLayersProperties.map(prop => prop.number).includes(selected);
+                                if(!exists){
+                                    // default
+                                    newLayersProperties.push({
+                                        number: selected,
+                                        alpha: 100,
+                                        blend: 'Normal'
+                                    });
+                                }
+                                // set
+                                newLayersProperties
+                                    .filter(x => x.number === selected)
+                                    .forEach(x => {
+                                        if(action.payload.blend){
+                                            x.blend = action.payload.blend;
+                                        }
+                                        if(action.payload.alpha){
+                                            x.alpha = action.payload.alpha;
+                                        }
+                                    });
+                            });
+                            newState = Object.assign({}, state, { layersProperties: newLayersProperties });
                             break;
                         }
                     }
