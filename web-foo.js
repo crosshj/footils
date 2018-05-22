@@ -690,6 +690,7 @@
                             const found = (state.layersProperties || []).find(x => x.number === action.payload);
                             var newGlobalState = clone(state.globalState || []) || [];
                             
+                            // NOTE: "predicate" - another word I wanted to use instead of "condition"
                             const upsert = ({ item, array, condition }) => {
                                 const found = array.find(condition);
                                 if( found ){
