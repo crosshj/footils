@@ -320,6 +320,13 @@
                     });
                 };
 
+                const setGlobalState = ({ key, value }) => {
+                    return dispatcher({
+                        type: 'SET_GLOBAL_STATE',
+                        payload: { key, value }
+                    });
+                };
+
                 if(sidebarDef.hidden){
                     // NOTE: is this safe since dispatcher called?
                     toggleClick();
@@ -344,27 +351,43 @@
                     );
                 }
 
-                function sliderComponent({ span, div, input, section, item, index, showLabel=true }){
-                    const touchend = e => item.onChange(e);
+                function sliderComponent({ span, div, input, section, item, index,
+                    showLabel=true, globalState=[]
+                }){
+                    const touchend = e => setGlobalState({ key: keyBase, value: e.target.value }) && item.onChange(e);
+                    const keyBase = `${section.name}-${item.name}-${index}-slider`;
+                    const currentValue = (globalState.find(x => x.key === keyBase) || {}).value;
+                    const value = currentValue || item.default;
+                    const leftOffset = showLabel ? '90px' : '0px';
+                    const rightOffset = showLabel ? '5px' : '0px';
 
                     return (
                         div({
-                            key: `${section.name}-${item.name}-${index}`,
+                            key: `${keyBase}`,
                             className: 'slider-component'
                         }, [
                             showLabel
-                                ? span({ key: `${section.name}-${item.name}-${index}-span`, className: 'label' }, item.name)
+                                ? span({
+                                    key: `${keyBase}-span`,
+                                    className: 'label'
+                                }, item.name)
                                 : undefined,
-                            div({ key: `${section.name}-${item.name}-${index}-div`, className: 'sliderValue' }, item.default),
+                            div({
+                                key: `${keyBase}-div`,
+                                className: 'sliderValue', style: {
+                                    left: value < 50 ? 'unset' : leftOffset,
+                                    right: value < 50 ? rightOffset : 'unset'
+                                }
+                            }, value),
                             input({
-                                key: `${section.name}-${item.name}-${index}-input`,
+                                key: `${keyBase}-input`,
                                 type: 'range',
                                 min: item.min,
                                 max: item.max,
                                 step: item.step,
-                                defaultValue: item.default,
+                                value,
                                 //tabIndex: 0,
-                                onChange: () => console.log(`TODO: should update sliderValue div (label)`),
+                                onChange: (e) => setGlobalState({ key: keyBase, value: e.target.value }),
                                 onMouseUp: touchend,
                                 onTouchEnd: touchend
                             })
@@ -458,7 +481,7 @@
                 }
 
                 function layersComponent({ div, span, section, item, img,
-                    index, layersHidden, layersSelected
+                    index, layersHidden, layersSelected, globalState
                 }){
                     const touchend = e => console.log(`TODO: change layer alpha to: ${e.target.value}`);
                     return (
@@ -486,10 +509,10 @@
                                     span, div, input, section,
                                     item: {
                                         name: 'layer-alpha-slider',
-                                        min: 0, max: 100, step: 5, defaultValue: 100,
+                                        min: 0, max: 100, step: 5, default: 100,
                                         onChange: touchend
                                     },
-                                    index, showLabel:false
+                                    index, showLabel:false, globalState
                                 })
                             ]),
                             ul({
@@ -562,6 +585,7 @@
                 //TODO: all events should be tracked by reducer!
 
                 const root = ({
+                    globalState = [],
                     pinned = sidebarDef.pinned,
                     hidden = sidebarDef.hidden,
                     layersHidden = [],
@@ -585,11 +609,13 @@
                                 .map((item, j) => {
                                     return ({
                                         text: () => textComponent({div, span, section, item, index: j}),
-                                        slider: () => sliderComponent({ span, div, input, section, item, index: j }),
+                                        slider: () => sliderComponent({ span, div, input, section, item, index: j, globalState }),
                                         boolean: () => booleanComponent({ div, span, label, input, section, item, index: j }),
                                         button: () => buttonComponent({ div, button, section, item, index: j }),
                                         select: () => selectComponent({ div, span, select, option, section, item, index: j}),
-                                        layers: () => layersComponent({ div, span, section, item, img, index: j, layersHidden, layersSelected})
+                                        layers: () => layersComponent({ div, span, section, item, img, index: j,
+                                            layersHidden, layersSelected, globalState
+                                        })
                                     })[item.type];
                                 })
                                 .forEach(component => all.push(component()));
@@ -608,6 +634,17 @@
                 const reducer = (state, action) => {
                     var newState = clone(state);
                     switch(action.type){
+                        case 'SET_GLOBAL_STATE': {
+                            const gstate = state.globalState || [];
+                            const found = gstate.find(x => x.key === action.payload.key);
+                            if(found){
+                                found.value = action.payload.value;
+                            } else {
+                                gstate.push(action.payload);
+                            }
+                            newState = Object.assign({}, state, { globalState: gstate });
+                            break;
+                        }
                         case 'PIN_CHANGED': {
                             if(sidebarDef.pinHandler){
                                 sidebarDef.pinHandler({ pinned: action.payload });

@@ -134,11 +134,16 @@ div#header {
     color: #777;
 }
 .sliderValue {
-    padding-right: 5px;
+    /* padding-right: 5px;
     margin-left: -39px;
     direction: rtl;
     width: 64px;
+    user-select: none; */
     user-select: none;
+    position: absolute;
+    z-index: 999;
+    padding-left: 5px;
+    padding-right: 5px;
 }
 
 /* The switch - the box around the slider */
@@ -294,6 +299,9 @@ select:focus {
     border: 0px;
     border-radius: 0px;
     display: flex;
+}
+.slider-component {
+    position: relative;
 }
 .layerTools .slider-component {
     width: 50% !important;;
