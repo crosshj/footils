@@ -182,7 +182,7 @@
                 min: 0,
                 max: 100,
                 step: 5,
-                onChange: e => { console.log(e.target.value); }
+                onChange: value => { console.log(value); }
             }, {
                 type: 'boolean',
                 name: 'boolean',
@@ -230,6 +230,8 @@
         }]
     });
 
+    var thumbs = [];
+
     function renderLayer2({ layer, alpha, width, height }){
         const context = layer.scene.context;
         context.clearRect(0, 0, width, height);
@@ -240,6 +242,7 @@
         context.font = 'bold 120px sans-serif';
         context.fillText('BG', width-200, height-50);
         context.globalAlpha = 1.0;
+        thumbs[1] = layer.scene.canvas.toDataURL('image/png');
     }
 
     function renderLayer1({ layer, alpha, width, height }){
@@ -250,6 +253,7 @@
         context.arc(width/2, height/2, 400, 0, 2*Math.PI, false);
         context.fill();
         context.globalAlpha = 1.0;
+        thumbs[0] = layer.scene.canvas.toDataURL('image/png');
     }
 
     function setupCanvas(){
@@ -285,9 +289,8 @@
             canvas.layers[number].visible = visible;
             canvas.viewport.render();
         };
-        const getLayerThumb = ({ number }) => {
-            return canvas.layers[number].scene.canvas.toDataURL('image/png');
-        }
+        const getLayerThumb = ({ number }) => thumbs[number];
+
         const changeLayerAlpha = ({ number, alpha }) => {
             const renderFunction = Number(number) === 1
                 ? renderLayer1 
