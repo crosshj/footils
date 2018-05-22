@@ -52,7 +52,7 @@ input[type=text] {
     color: #bbb;
     padding-right: 5px;
     padding-left: 5px;
-    direction: rtl;
+    text-align: right;
     padding-top: 0px;
     padding-bottom: 0px;
 }
