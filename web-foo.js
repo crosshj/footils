@@ -267,9 +267,11 @@
     sidebar.scriptsAfter = (callback) => {
         // load react, use to create menu
         const clone = o => {
-            const result = undefined;
+            var result = undefined;
             try { result = JSON.parse(JSON.stringify(o)); }
-            catch(e) {}
+            catch(e) {
+                console.error('Some problem cloning!', e);
+            }
             return result;
         };
 
@@ -320,6 +322,13 @@
                     });
                 };
 
+                const layersPropertiesChanged = ({ alpha, blend}) => {
+                    return dispatcher({
+                        type: 'LAYERS_PROPERTIES_CHANGE',
+                        payload: { alpha, blend }
+                    });
+                };
+
                 const setGlobalState = ({ key, value }) => {
                     return dispatcher({
                         type: 'SET_GLOBAL_STATE',
@@ -354,13 +363,16 @@
                 function sliderComponent({ span, div, input, section, item, index,
                     showLabel=true, globalState=[]
                 }){
-                    const touchend = e => setGlobalState({ key: keyBase, value: e.target.value }) && item.onChange(e);
+
                     const keyBase = `${section.name}-${item.name}-${index}-slider`;
                     const currentValue = (globalState.find(x => x.key === keyBase) || {}).value;
                     const value = currentValue || item.default;
                     const leftOffset = showLabel ? '90px' : '0px';
                     const rightOffset = showLabel ? '5px' : '0px';
 
+                    const touchend = e => {
+                        item.onChange({ value: e.target.value, key: keyBase });
+                    };
                     return (
                         div({
                             key: `${keyBase}`,
@@ -388,7 +400,7 @@
                                 value,
                                 //tabIndex: 0,
                                 onChange: (e) => setGlobalState({ key: keyBase, value: e.target.value }),
-                                onMouseUp: touchend,
+                                onMouseUp: (e) => { setGlobalState({ key: keyBase, value: e.target.value }); touchend(e); },
                                 onTouchEnd: touchend
                             })
                         ])
@@ -510,7 +522,7 @@
                                     item: {
                                         name: 'layer-alpha-slider',
                                         min: 0, max: 100, step: 5, default: 100,
-                                        onChange: touchend
+                                        onChange: ({key, value}) => layersPropertiesChanged({ alpha: { key, value } })
                                     },
                                     index, showLabel:false, globalState
                                 })
@@ -673,19 +685,54 @@
                         }
                         case 'LAYER_SELECTION_CHANGED': {
                             //TODO: case where all layers are deselected
+                            //TODO: case where multiple layers are selected
                             const layersSelected = [ action.payload ];
-                            newState = Object.assign({}, state, { layersSelected });
+                            const found = (state.layersProperties || []).find(x => x.number === action.payload);
+                            var newGlobalState = clone(state.globalState || []) || [];
+                            
+                            const upsert = ({ item, array, condition }) => {
+                                const found = array.find(condition);
+                                if( found ){
+                                    Object.keys(item)
+                                        .forEach(key => found[key] = item[key]);
+                                } else {
+                                    array.push(item);
+                                }
+                            }
+
+                            if( found && found.alpha && found.alpha.key){
+                                upsert({
+                                    item: found.alpha,
+                                    array: newGlobalState,
+                                    condition: x => x.key === found.alpha.key
+                                }); 
+                            }
+                            if( found && found.blend && found.blend.key){
+                                upsert({
+                                    item: found.blend,
+                                    array: newGlobalState,
+                                    condition: x => x.key === found.blend.key
+                                }); 
+                            }
+                            if(!found){
+                                newGlobalState = newGlobalState
+                                    .filter(x => !x.key.includes('layer-alpha')
+                                        && !x.key.includes('layer-blend')
+                                    );
+                            }
+                            newState = Object.assign({}, state, { layersSelected, globalState: newGlobalState });
                             break;
                         }
                         case 'LAYERS_PROPERTIES_CHANGE': {
-                            const newLayersProperties = state.layersProperties
+                            var newLayersProperties = state.layersProperties
                                 ? clone(state.layersProperties)
                                 : [];
-                            const currentSelectedLayers = state.layersSelected || [];
+                            const currentSelectedLayers = state.layersSelected || [ 0 ];
                             currentSelectedLayers.forEach(selected => {
+
                                 // ensure existence
-                                const exists = newLayersProperties.map(prop => prop.number).includes(selected);
-                                if(!exists){
+                                const exists = (newLayersProperties || []).map(prop => prop.number).includes(selected);
+                                if(!exists && newLayersProperties){
                                     // default
                                     newLayersProperties.push({
                                         number: selected,
@@ -694,7 +741,7 @@
                                     });
                                 }
                                 // set
-                                newLayersProperties
+                                (newLayersProperties || [])
                                     .filter(x => x.number === selected)
                                     .forEach(x => {
                                         if(action.payload.blend){
