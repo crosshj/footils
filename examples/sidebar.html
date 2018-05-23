@@ -279,9 +279,11 @@
         ctx.fillStyle = 'rgb(110,110,110)';
         ctx.font = 'bold 120px sans-serif';
 
-        var kanji = ' 丳 临 丵 丧 乶 不 擄 ㍼ 书'; 
+        const kanji = ' 丳 临 丵 丧 乶 不 擄 ㍼ 书'; 
         const braille = "⠁⠂⠃⠄⠅⠆⠇⠈⠉⠊⠋⠌⠍⠎⠏⠐⠑⠒⠓⠔⠕⠖⠗⠘⠙⠚⠛⠜⠝⠞⠟⠠⠡⠢⠣⠤⠥⠦⠧⠨⠩⠪⠫⠬⠭⠮⠯⠰⠱⠲⠳⠴⠵⠶⠷⠸⠹⠺⠻⠼⠽⠾⠿⡀⡁⡂⡃⡄⡅⡆⡇⡈⡉⡊⡋⡌⡍⡎⡏⡐⡑⡒⡓⡔⡕⡖⡗⡘⡙⡚⡛⡜⡝⡞⡟⡠⡡⡢⡣⡤⡥⡦⡧⡨⡩⡪⡫⡬⡭";
-        ctx.fillText(braille, 0, height-50);
+        const omg = ' ꙭꙮ꙯꙰꙱꙲꙳ꙴꙵꙶꙷꙸꙹꙺꙻ꙼꙽꙾ꙿ';
+        const indic = 'ﶝﶞﶟﶢﶣﶤﶥﶩﶯ';
+        ctx.fillText(indic, 0, height-50);
     });
 
 
