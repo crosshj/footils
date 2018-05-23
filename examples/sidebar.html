@@ -275,9 +275,13 @@
     const renderSquare = renderContext(2, ({ ctx, width, height }) => {
         ctx.fillStyle = 'rgb(100,100,100)';
         ctx.fillRect(0, 0, width, height);
+
         ctx.fillStyle = 'rgb(110,110,110)';
-        ctx.font = 'bold 80px sans-serif';
-        ctx.fillText(' 丳 临 丵 丧 乶 不 擄 ㍼ 书', 0, height-50);
+        ctx.font = 'bold 120px sans-serif';
+
+        var kanji = ' 丳 临 丵 丧 乶 不 擄 ㍼ 书'; 
+        const braille = "⠁⠂⠃⠄⠅⠆⠇⠈⠉⠊⠋⠌⠍⠎⠏⠐⠑⠒⠓⠔⠕⠖⠗⠘⠙⠚⠛⠜⠝⠞⠟⠠⠡⠢⠣⠤⠥⠦⠧⠨⠩⠪⠫⠬⠭⠮⠯⠰⠱⠲⠳⠴⠵⠶⠷⠸⠹⠺⠻⠼⠽⠾⠿⡀⡁⡂⡃⡄⡅⡆⡇⡈⡉⡊⡋⡌⡍⡎⡏⡐⡑⡒⡓⡔⡕⡖⡗⡘⡙⡚⡛⡜⡝⡞⡟⡠⡡⡢⡣⡤⡥⡦⡧⡨⡩⡪⡫⡬⡭";
+        ctx.fillText(braille, 0, height-50);
     });
 
 
