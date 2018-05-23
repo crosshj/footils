@@ -570,7 +570,7 @@
                                         img({
                                             className: "image",
                                             tabIndex: 0,
-                                            src: layer.getThumb({ number: 0 }),
+                                            src: layer.getThumb({ number: layersIndex }),
                                             key: `${section.name}-${item.name}-${index}-thumbnail-${layersIndex}`,
                                         }),
                                         span({ className: "label",

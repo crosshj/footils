@@ -212,6 +212,11 @@
                     getThumb: getLayerThumb,
                     changeLayerAlpha
                 }, {
+                    name: 'Middle Layer',
+                    onToggle: toggleLayerVisible,
+                    getThumb: getLayerThumb,
+                    changeLayerAlpha
+                }, {
                     name: 'Bottom Layer',
                     onToggle: toggleLayerVisible,
                     getThumb: getLayerThumb,
@@ -237,33 +242,44 @@
 
     var thumbs = [];
 
-    function renderSquare({ layer, alpha, width, height }){
-        const context = layer.scene.context;
-        context.clearRect(0, 0, width, height);
-        context.globalAlpha = alpha == 0
+    const renderContext = (thumbNumber, fn) => ({ layer, alpha, width, height }) => {
+        const ctx = layer.scene.context;
+        ctx.clearRect(0, 0, width, height);
+        ctx.globalAlpha = alpha == 0
             ? 0
             : alpha || 1.0;
-        context.fillStyle = 'rgb(100,100,100)';
-        context.fillRect(0, 0, width, height);
-        context.fillStyle = 'rgb(110,110,110)';
-        context.font = 'bold 120px sans-serif';
-        context.fillText('BG', width-200, height-50);
-        //context.globalAlpha = 1.0;
-        thumbs[1] = layer.scene.canvas.toDataURL('image/png');
-    }
+        fn({ ctx, width, height});
+        thumbs[thumbNumber] = layer.scene.canvas.toDataURL('image/png');
+    };
 
-    function renderCircle({ layer, alpha, width, height }){
-        const context = layer.scene.context;
-        context.clearRect(0, 0, width, height);
-        context.globalAlpha = alpha == 0
-            ? 0
-            : alpha || 1.0;
-        context.fillStyle = 'rgb(130,130,130)';
-        context.arc(width/2, height/2, 400, 0, 2*Math.PI, false);
-        context.fill();
-        //context.globalAlpha = 1.0;
-        thumbs[0] = layer.scene.canvas.toDataURL('image/png');
-    }
+    const renderTriangle = renderContext(0, ({ ctx, width, height }) => {
+        const originX = width/2;
+        const originY = 200;
+        const twidth = 375;
+        const theight = 0.866 * twidth;
+
+        ctx.fillStyle = 'rgb(110,110,110)';
+        ctx.beginPath();
+        ctx.moveTo(originX    , originY);
+        ctx.lineTo(originX+twidth/2, originY + theight);
+        ctx.lineTo(originX-twidth/2, originY + theight);
+        ctx.fill();
+    });
+
+    const renderCircle = renderContext(1, ({ ctx, width, height }) => {
+        ctx.fillStyle = 'rgb(130,130,130)';
+        ctx.arc(width/2, height/2, 400, 0, 2*Math.PI, false);
+        ctx.fill();
+    });
+
+    const renderSquare = renderContext(2, ({ ctx, width, height }) => {
+        ctx.fillStyle = 'rgb(100,100,100)';
+        ctx.fillRect(0, 0, width, height);
+        ctx.fillStyle = 'rgb(110,110,110)';
+        ctx.font = 'bold 120px sans-serif';
+        ctx.fillText('BG', width-200, height-50);
+    });
+
 
     const width = 1000;
     const height = 850;
@@ -274,17 +290,25 @@
             height,
             container
         });
-        var layer2 = new Concrete.Layer();
-        viewport.add(layer2);
-        renderSquare({ layer: layer2, alpha: 1.0, width, height });
+        var square = new Concrete.Layer();
+        viewport.add(square);
+        renderSquare({ layer: square, alpha: 1.0, width, height });
 
-        var layer1 = new Concrete.Layer();
-        viewport.add(layer1);
-        renderCircle({ layer: layer1, alpha: 1.0, width, height });
+        var circle = new Concrete.Layer();
+        viewport.add(circle);
+        renderCircle({ layer: circle, alpha: 1.0, width, height });
         //layer1.scene.context.globalCompositeOperation = 'multiply';
 
+        var triangle = new Concrete.Layer();
+        viewport.add(triangle);
+        renderTriangle({ layer: triangle, alpha: 1.0, width, height });
+
         viewport.render();
-        return { viewport, layers: [layer1, layer2] };
+        return { viewport, layers: [
+            triangle,
+            circle,
+            square
+        ] };
     }
 
     function sidebarReady(err, { start } = {}) {
@@ -301,9 +325,14 @@
         const getLayerThumb = ({ number }) => thumbs[number];
 
         const changeLayerAlpha = ({ number, alpha }) => {
-            const renderFunction = Number(number) === 1
-                ? renderSquare
-                : renderCircle;
+            console.log(number);
+            const renderFunctions = [
+                renderTriangle,
+                renderCircle,
+                renderSquare
+            ];
+            const renderFunction = renderFunctions[number];
+
             renderFunction({
                 layer: canvas.layers[number],
                 alpha, width, height
