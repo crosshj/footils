@@ -433,7 +433,7 @@
                         div({ key: `${section.name}-${item.name}-${index}`,
                             className: 'buttonContainer'
                         }, [
-                            button({ key: `${section.name}-${item.name}-${index}-span`,
+                            button({ key: `${section.name}-${item.name}-${index}-button`,
                                 onClick: item.onClick || (() => {})
                             }, item.name)
                         ])
@@ -465,9 +465,10 @@
                     );
                 }
 
-                function eyeToggle({ svg, g, path, circle, hidden, layerClick }){
+                function eyeToggle({ key, svg, g, path, circle, hidden, layerClick }){
                     return (
                         svg({
+                            key,
                             xmlns:"http://www.w3.org/2000/svg",
                             xmlnsXlink: "http://www.w3.org/1999/xlink",
                             version: "1.1",
@@ -479,11 +480,16 @@
                         },
                             g(null, [
                                 path({
+                                    key: `${key}-g-path`,
                                     d: "m34,256l26.2,26.2c108,108 283.7,108 391.7,0l26.1-26.2-26.2-26.2c-108-108-283.7-108-391.7,0l-26.1,26.2zm222,126.2c-75.8,0-151.6-28.9-209.3-86.6l-32.9-32.9c-3.7-3.7-3.7-9.7 0-13.5l32.9-32.9c115.4-115.4 303.2-115.4 418.6,0l32.9,32.9c3.7,3.7 3.7,9.7 0,13.5l-32.9,32.9c-57.7,57.7-133.5,86.6-209.3,86.6z"
                                 }),
-                                circle({ cx:"256", cy: "256", r: "80"}),
+                                circle({
+                                    key: `${key}-g-circle`,
+                                    cx:"256", cy: "256", r: "80"
+                                }),
                                 hidden
                                     ? path({
+                                        key: `${key}-g-path-2`,
                                         d: "M 400 52 L 460 52 L 160 460 L 100 460 Z"
                                     })
                                     : null
@@ -542,56 +548,38 @@
                             ]),
                             ul({
                                 key: `${section.name}-${item.name}-${index}-ul`
-                            }, [
-                                li({
-                                    disabled: true,
-                                    onClick: () => layerSelectedChanged(0),
-                                    className: layersSelected.includes(0) ? 'selected' : ''
-                                }, [
-                                    eyeToggle({
-                                        svg, g, path, circle, hidden: layersHidden.includes(0),
-                                        layerClick: () => {
-                                            item.layers[0].onToggle({
-                                                number: 0,
-                                                visible: layersHidden.includes(0)
-                                            });
-                                            layerVisibleClick(0);
-                                        }
-                                    }),
-                                    img({
-                                        className: "image",
-                                        tabIndex: 0,
-                                        src: item.layers[0].getThumb({ number: 0 }),
-                                        // style: {
-                                        //     backgroundImage: `url(${item.layers[0].getThumb({ number: 0 })})`,
-                                        //     backgroundSize: "contain" //cover
-                                        // }
-                                    }),
-                                    span({ className: "label"/*, tabIndex: 0*/}, 'Top Layer')
-                                ]),
-                                li({
-                                    disabled: true,
-                                    onClick: () => layerSelectedChanged(1),
-                                    className: layersSelected.includes(1) ? 'selected' : ''
-                                }, [
-                                    eyeToggle({
-                                        svg, g, path, circle, hidden: layersHidden.includes(1),
-                                        layerClick: () => {
-                                            item.layers[1].onToggle({
-                                                number: 1,
-                                                visible: layersHidden.includes(1)
-                                            });
-                                            layerVisibleClick(1);
-                                        }
-                                    }),
-                                    img({
-                                        className: "image",
-                                        tabIndex: 0,
-                                        src: item.layers[1].getThumb({ number: 1 }),
-                                    }),
-                                    span({ className: "label"/*, tabIndex: 0*/}, 'Bottom Layer')
-                                ])
-                            ])
+                            }, 
+                                item.layers.map((layer, layersIndex) =>
+                                    li({
+                                        disabled: true,
+                                        key: `${section.name}-${item.name}-${index}-li-${layersIndex}`,
+                                        onClick: () => layerSelectedChanged(layersIndex),
+                                        className: layersSelected.includes(layersIndex) ? 'selected' : ''
+                                    }, [
+                                        eyeToggle({
+                                            svg, g, path, circle, hidden: layersHidden.includes(layersIndex),
+                                            key: `${section.name}-${item.name}-${index}-eyeToggle-${layersIndex}`,
+                                            layerClick: () => {
+                                                layer.onToggle({
+                                                    number: layersIndex,
+                                                    visible: layersHidden.includes(layersIndex)
+                                                });
+                                                layerVisibleClick(layersIndex);
+                                            }
+                                        }),
+                                        img({
+                                            className: "image",
+                                            tabIndex: 0,
+                                            src: layer.getThumb({ number: 0 }),
+                                            key: `${section.name}-${item.name}-${index}-thumbnail-${layersIndex}`,
+                                        }),
+                                        span({ className: "label",
+                                        key: `${section.name}-${item.name}-${index}-name-${layersIndex}`
+                                        /*, tabIndex: 0*/
+                                        }, layer.name)
+                                    ])
+                                )
+                            )
                         ])
                     );
                 }
