@@ -254,9 +254,9 @@
 
     const renderTriangle = renderContext(0, ({ ctx, width, height }) => {
         const originX = width/2;
-        const originY = 200;
-        const twidth = 375;
+        const twidth = 695-300;
         const theight = 0.866 * twidth;
+        const originY = (height/2) - (theight/1.5);
 
         ctx.fillStyle = 'rgb(110,110,110)';
         ctx.beginPath();
@@ -276,8 +276,8 @@
         ctx.fillStyle = 'rgb(100,100,100)';
         ctx.fillRect(0, 0, width, height);
         ctx.fillStyle = 'rgb(110,110,110)';
-        ctx.font = 'bold 120px sans-serif';
-        ctx.fillText('BG', width-200, height-50);
+        ctx.font = 'bold 80px sans-serif';
+        ctx.fillText(' 丳 临 丵 丧 乶 不 擄 ㍼ 书', 0, height-50);
     });
 
 
