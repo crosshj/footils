@@ -16,13 +16,10 @@
     TODO:
     - layers
         - layer blend - https://codepen.io/chriscoyier/pen/Kkliq
-        - layer opacity
         - drag/drop order
         - add new
         - remove layer
-        - same width components / smart labels
-        - checked background for layer thumbs
-        - same aspect ratio for thumbnails as canvas
+        - same width components / smart labels : done for slider, do for boolean
         - spinner for actions (like those that require canvas re-render)
         - rename layer
         - add to layer
@@ -32,11 +29,13 @@
     - bottom status bar
     - floating menu (?)
     - right click menu?
-    - auto show on hover
+    - auto sidebar show screen edge hover
     - link nodes together with wires
     - error messages
     - add collapse to sections
     - eliminate all "violation click handler took" warnings
+        - many of these were coming from get thumbnail
+        - other areas?
     - custom scrollbars (native on windows looks crappy)
 -->
 
@@ -54,7 +53,7 @@
         justify-content: center;
         align-items: center;
     }
-    .checkedBg, #canvasContainer canvas {
+    #canvasContainer canvas {
         background-image: linear-gradient(45deg, #808080 25%, transparent 25%), linear-gradient(-45deg, #808080 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #808080 75%), linear-gradient(-45deg, transparent 75%, #808080 75%);
         background-size: 20px 20px;
         background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
@@ -238,34 +237,38 @@
 
     var thumbs = [];
 
-    function renderLayer2({ layer, alpha, width, height }){
+    function renderSquare({ layer, alpha, width, height }){
         const context = layer.scene.context;
         context.clearRect(0, 0, width, height);
-        context.globalAlpha = alpha || 1.0;
+        context.globalAlpha = alpha == 0
+            ? 0
+            : alpha || 1.0;
         context.fillStyle = 'rgb(100,100,100)';
         context.fillRect(0, 0, width, height);
         context.fillStyle = 'rgb(110,110,110)';
         context.font = 'bold 120px sans-serif';
         context.fillText('BG', width-200, height-50);
-        context.globalAlpha = 1.0;
+        //context.globalAlpha = 1.0;
         thumbs[1] = layer.scene.canvas.toDataURL('image/png');
     }
 
-    function renderLayer1({ layer, alpha, width, height }){
+    function renderCircle({ layer, alpha, width, height }){
         const context = layer.scene.context;
         context.clearRect(0, 0, width, height);
-        context.globalAlpha = alpha || 1.0;
+        context.globalAlpha = alpha == 0
+            ? 0
+            : alpha || 1.0;
         context.fillStyle = 'rgb(130,130,130)';
         context.arc(width/2, height/2, 400, 0, 2*Math.PI, false);
         context.fill();
-        context.globalAlpha = 1.0;
+        //context.globalAlpha = 1.0;
         thumbs[0] = layer.scene.canvas.toDataURL('image/png');
     }
 
+    const width = 1000;
+    const height = 850;
     function setupCanvas(){
         var container = document.getElementById('canvasContainer');
-        const width = 1000;
-        const height = 850;
         var viewport = new Concrete.Viewport({
             width,
             height,
@@ -273,11 +276,11 @@
         });
         var layer2 = new Concrete.Layer();
         viewport.add(layer2);
-        renderLayer2({ layer: layer2, alpha: 1.0, width, height });
+        renderSquare({ layer: layer2, alpha: 1.0, width, height });
 
         var layer1 = new Concrete.Layer();
         viewport.add(layer1);
-        renderLayer1({ layer: layer1, alpha: 1.0, width, height });
+        renderCircle({ layer: layer1, alpha: 1.0, width, height });
         //layer1.scene.context.globalCompositeOperation = 'multiply';
 
         viewport.render();
@@ -299,11 +302,11 @@
 
         const changeLayerAlpha = ({ number, alpha }) => {
             const renderFunction = Number(number) === 1
-                ? renderLayer1 
-                : renderLayer2;
+                ? renderSquare
+                : renderCircle;
             renderFunction({
                 layer: canvas.layers[number],
-                alpha
+                alpha, width, height
             });
             canvas.viewport.render();
         }

@@ -522,7 +522,20 @@
                                     item: {
                                         name: 'layer-alpha-slider',
                                         min: 0, max: 100, step: 5, default: 100,
-                                        onChange: ({key, value}) => layersPropertiesChanged({ alpha: { key, value } })
+                                        onChange: ({key, value}) => {
+                                            // store in reducer
+                                            layersPropertiesChanged({ alpha: { key, value } });
+                                            // call function for alpha change setup in sidebar def
+                                            const changeSelectedAlpha = () => {
+                                                (layersSelected || [0] ).forEach(layerNumber => {
+                                                    item.layers[layerNumber].changeLayerAlpha({
+                                                        number: layerNumber,
+                                                        alpha: Number(value)/100
+                                                    })
+                                                });
+                                            };
+                                            changeSelectedAlpha();
+                                        }
                                     },
                                     index, showLabel:false, globalState
                                 })
@@ -568,11 +581,6 @@
                                                 number: 1,
                                                 visible: layersHidden.includes(1)
                                             });
-                                            // TODO: do this elsewhere, only here for testing
-                                            // item.layers[1].changeLayerAlpha({
-                                            //     number: 1,
-                                            //     alpha: 0.5
-                                            // })
                                             layerVisibleClick(1);
                                         }
                                     }),

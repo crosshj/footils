@@ -282,8 +282,14 @@ select:focus {
 .layers .image {
     max-height: 100%;
     max-width: 80px;
-    background: #666;
+    /* background: #666; */
     margin-left: 4px;
+    --main-color: #a2a2a2;
+    --second-color: #aeaeae;
+    background-image: linear-gradient(45deg, var(--main-color) 25%, transparent 25%), linear-gradient(-45deg, var(--main-color) 25%, transparent 25%), linear-gradient(45deg, transparent 75%, var(--main-color) 75%), linear-gradient(-45deg, transparent 75%, var(--main-color) 75%);
+    background-size: 10px 10px;
+    background-position: 0 0, 0 5px, 5px -5px, -5px 0px;
+    background-color: var(--second-color);
 }
 .layers > span.label {
     margin-bottom: 4px;
