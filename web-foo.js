@@ -512,8 +512,8 @@
                                 className: 'label'
                             }, item.name),
                             div({
-                                key: `${section.name}-${item.name}-${index}-div`,
-                                className: 'layerTools'
+                                key: `${section.name}-${item.name}-${index}-props`,
+                                className: 'layerProps'
                             }, [
                                 selectComponent({ div, span, select, option, section,
                                     item: {
@@ -579,7 +579,20 @@
                                         }, layer.name)
                                     ])
                                 )
-                            )
+                            ),
+                            div({
+                                key: `${section.name}-${item.name}-${index}-tools`,
+                                className: 'layerTools'
+                            },[
+                                buttonComponent({ div, button, section, item: {
+                                        name: '+'
+                                    }
+                                }),
+                                buttonComponent({ div, button, section, item: {
+                                    name: '-'
+                                }
+                            })
+                            ])
                         ])
                     );
                 }

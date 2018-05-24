@@ -298,11 +298,11 @@ select:focus {
 .layers span {
     margin-left: 4px;
 }
-.layerTools {
+.layerProps {
     display: flex;
     flex-direction: row;
 }
-.layerTools:focus {
+.layerProps:focus {
     border: 0px;
     border-radius: 0px;
     display: flex;
@@ -310,16 +310,32 @@ select:focus {
 .slider-component {
     position: relative;
 }
-.layerTools .slider-component {
+.layerProps .slider-component {
     width: 50% !important;;
     margin-left: 5px !important;
 }
-.layerTools .select-component {
+.layerProps .select-component {
     width: 50%;
 }
-.layerTools select {
+.layerProps select {
     min-height: 17px;
 }
+
+.layerTools {
+    height: 29px;
+    margin-top: 5px;
+    background: #2c2c2c;
+    padding-left: 3px;
+    padding-right: 3px;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.layerTools .buttonContainer {
+    width: 28px;
+    margin-left: 5px;
+}
+
 .eyeToggle {
     width: 19px;
     height: 25px;
