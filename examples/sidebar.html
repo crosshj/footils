@@ -290,9 +290,10 @@
         //     ctx.fillStyle = needlesPat;
         // }
 
-        ctx.globalAlpha /= 4;
-        ctx.fillStyle = 'rgb(130,130,130)';
+        ctx.globalAlpha /= 3;
+        ctx.fillStyle = '#666';
         //ctx.filter = "grayscale(10)"
+        //ctx.filter = "blur(100px)";
         ctx.arc(width/2, height/2, 400, 0, 2*Math.PI, false);
         ctx.fill();
         //ctx.drawImage(texture, 0, 0);
@@ -300,8 +301,8 @@
 
     const renderSquare = renderContext(2, ({ ctx, width, height }) => {
         var grd=ctx.createLinearGradient(0,0,0,height);
-        grd.addColorStop(0,"#999");
-        grd.addColorStop(1,"#555");
+        grd.addColorStop(0,"#aaa"); //top
+        grd.addColorStop(1,"#555"); //bottom
         ctx.fillStyle=grd;
         //ctx.fillStyle = 'rgb(100,100,100)';
         ctx.fillRect(0, 0, width, height);
