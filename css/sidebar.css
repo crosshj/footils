@@ -8,6 +8,7 @@
     width: 220px;
     color: #aaa;
     border-left: 1px solid #4c4c4c;
+    user-select: none;
 }
 #sidebar div.scrollContainer {
     padding-left: 10px;
@@ -265,6 +266,7 @@ select:focus {
     height: 60px;
     display: flex;
     flex-direction: row;
+    flex-wrap: wrap;
     align-items: center;
     margin-bottom: 3px;
     padding: 4px;
@@ -290,10 +292,12 @@ select:focus {
     background-size: 10px 10px;
     background-position: 0 0, 0 5px, 5px -5px, -5px 0px;
     background-color: var(--second-color);
+    pointer-events: none;
 }
 .layers > span.label {
     margin-bottom: 4px;
     padding-left: 0px;
+    pointer-events: none;
 }
 .layers span {
     margin-left: 4px;
@@ -372,3 +376,27 @@ select:focus {
 #pinIcon path:hover {
     fill: turquoise;
 }
+li.dropBottom {
+    border-bottom: 20px solid #4f4f4f !important;
+}
+li.dropTop {
+    border-top: 20px solid #4f4f4f !important;
+}
+
+/* 
+THIS WORKS!!!
+li.dropBottom:after {
+    width: 100%;
+    content: ' ';
+    height: 4px;
+    background: red;
+    margin-top: 4px;
+}
+THIS DOES NOT!!!!
+li.dropTop:before {
+    width: 100%;
+    content: ' ';
+    height: 4px;
+    background: red;
+    margin-top: 4px;
+} */

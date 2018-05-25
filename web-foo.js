@@ -553,12 +553,75 @@
                                     li({
                                         disabled: true,
                                         key: `${section.name}-${item.name}-${index}-li-${layersIndex}`,
+                                        id: `${section.name}-${item.name}-${index}-li-${layersIndex}`,
                                         onClick: () => layerSelectedChanged(layersIndex),
-                                        className: layersSelected.includes(layersIndex) ? 'selected' : ''
+                                        className: layersSelected.includes(layersIndex) ? 'selected' : '',
+                                        draggable: true,
+                                        onDragStart: ({nativeEvent: e}) => {
+                                            window.draggedIndex = layersIndex;
+                                        },
+                                        onDragEnter: ({nativeEvent: e}) => {
+                                            if(layersIndex === window.draggedIndex
+                                                || e.target.tagName.toLowerCase() !== 'li'
+                                                || window.enterTarget
+                                            ){
+                                                return;
+                                            }
+                                            window.enterTarget = e.target;
+                                            if(window.draggedIndex > layersIndex){
+                                                e.target.classList.add('dropTop');
+                                            } else {
+                                                e.target.classList.add('dropBottom');
+                                            }
+                                            e.stopPropagation();
+                                            e.preventDefault();
+                                            return false;
+                                        },
+                                        onDragLeave: ({nativeEvent: e}) => {
+                                            if(e.target.tagName.toLowerCase() !== 'li'
+                                            ){
+                                                return false;
+                                            }
+                                            var newElement = document.elementFromPoint(e.pageX, e.pageY);
+                                            if((window.enterTarget && window.enterTarget.contains(newElement))){
+                                                return false;
+                                            }
+                                            e.target.classList.remove('dropTop');
+                                            e.target.classList.remove('dropBottom');
+                                            window.enterTarget = null;
+                                            e.stopPropagation();
+                                            e.preventDefault();
+                                            return false;
+                                        },
+                                        onDragEnd: ({nativeEvent: e}) => {
+                                            e.target.classList.remove('dropTop');
+                                            e.target.classList.remove('dropBottom');
+                                            window.enterTarget = null;
+                                            window.draggedIndex = null;
+                                            e.stopPropagation();
+                                            e.preventDefault();
+                                        },
+                                        onDrop: ({nativeEvent: e}) => {
+                                            //TODO: this not working right!!
+                                            //var newElement = document.elementFromPoint(e.pageX, e.pageY);
+                                            if(window.draggedIndex > layersIndex){
+                                                console.log(`Dragged item ${draggedIndex} to position BEFORE item ${layersIndex}`);
+                                            } else {
+                                                console.log(`Dragged item ${draggedIndex} to position AFTER item ${layersIndex}`);
+                                            }
+                                            e.target.classList.remove('dropTop');
+                                            e.target.classList.remove('dropBottom');
+                                            window.enterTarget = null;
+                                            window.draggedIndex = null;
+                                            e.stopPropagation();
+                                            e.preventDefault();
+                                            //return false;
+                                        }
                                     }, [
                                         eyeToggle({
                                             svg, g, path, circle, hidden: layersHidden.includes(layersIndex),
                                             key: `${section.name}-${item.name}-${index}-eyeToggle-${layersIndex}`,
+                                            draggable: false,
                                             layerClick: () => {
                                                 layer.onToggle({
                                                     number: layersIndex,
@@ -570,12 +633,15 @@
                                         img({
                                             className: "image",
                                             tabIndex: 0,
+                                            draggable: false,
                                             src: layer.getThumb({ number: layersIndex }),
                                             key: `${section.name}-${item.name}-${index}-thumbnail-${layersIndex}`,
                                         }),
-                                        span({ className: "label",
-                                        key: `${section.name}-${item.name}-${index}-name-${layersIndex}`
-                                        /*, tabIndex: 0*/
+                                        span({
+                                            className: "label",
+                                            draggable: false,
+                                            key: `${section.name}-${item.name}-${index}-name-${layersIndex}`
+                                            /*, tabIndex: 0*/
                                         }, layer.name)
                                     ])
                                 )
