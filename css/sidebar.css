@@ -142,7 +142,7 @@ div#header {
     user-select: none; */
     user-select: none;
     position: absolute;
-    z-index: 999;
+    z-index: 1;
     padding-left: 5px;
     padding-right: 5px;
 }
