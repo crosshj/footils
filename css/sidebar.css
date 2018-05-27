@@ -379,6 +379,9 @@ select:focus {
 
 .layer-drop.active {
     display: flex !important;
-    outline: 1px dashed grey;
-    height: 20px;
+    height: 0px;
+    padding: 0px;
+    margin: 0px;
+    background: black;
+    margin-top: -2px;
 }

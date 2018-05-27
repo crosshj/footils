@@ -533,6 +533,12 @@
                                 - weird flashing back and forth when hovering over some places
                                 - dragging element should be constrained to y axis
                                 - while dragging, should original disappear?
+
+                            references:
+                                https://forums.adobe.com/thread/1598080
+                                https://www.youtube.com/watch?v=v96u1srGg1w
+
+                            hide drag image?
                         */
                         
                     };
