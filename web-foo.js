@@ -501,7 +501,137 @@
                 function layersComponent({ div, span, section, item, img,
                     index, layersHidden, layersSelected, globalState
                 }){
-                    const touchend = e => console.log(`TODO: change layer alpha to: ${e.target.value}`);
+                    const layerDropZone = (number) => li({
+                        key: `layer-drop-zone-${number}`,
+                        className: 'layer-drop',
+                        style: { display: 'none' }
+                    });
+
+                    const handleReOrder = ({ item, layers, draggedItem, dropTarget}) => {
+                        // NOTE: moveToTop already noted elsewhere
+                        if(dropTarget === `AFTER ${layers.length - 1}`){
+                            console.log(`Dragged item ${draggedItem} to position ${dropTarget} (moveToBottom)`);
+                            return;
+                        }
+                        if(dropTarget === `AFTER ${draggedItem - 2}`){
+                            console.log(`Dragged item ${draggedItem} to position ${dropTarget} (moveUp)`);
+                            return;
+                        }
+                        if(dropTarget === `AFTER ${draggedItem + 1}`){
+                            console.log(`Dragged item ${draggedItem} to position ${dropTarget} (moveDown)`);
+                            return;
+                        }
+                        //TODO: there are more situations to handle with larger amounts of layers
+                        // multiple moveUp's and moveDown's?
+                        console.log(`Dragged item ${draggedItem} to position ${dropTarget}`);
+
+                        /*TODO: handle reorder
+                            1) trigger external changes
+                            2) change internal model and re-render sidebar
+
+                            still some issues with drag and drop:
+                                - weird flashing back and forth when hovering over some places
+                                - dragging element should be constrained to y axis
+                                - while dragging, should original disappear?
+                        */
+                        
+                    };
+                    
+                    const getLayer = (layer, layersIndex, layers) => li({
+                        disabled: true,
+                        key: `${section.name}-${item.name}-${index}-li-${layersIndex}`,
+                        id: `${section.name}-${item.name}-${index}-li-${layersIndex}`,
+                        onClick: () => layerSelectedChanged(layersIndex),
+                        className: layersSelected.includes(layersIndex) ? 'selected' : '',
+                        draggable: true,
+                        onDragStart: ({nativeEvent: e}) => {
+                            window.draggedIndex = layersIndex;
+                        },
+                        onDragEnter: ({nativeEvent: e}) => {
+                            if(layersIndex === window.draggedIndex
+                                || e.target.tagName.toLowerCase() !== 'li'
+                                || window.enterTarget
+                            ){
+                                return;
+                            }
+
+                            window.enterTarget = e.target;
+                            if(window.draggedIndex > layersIndex){
+                                window.dropText = layersIndex > 0
+                                ? `AFTER ${layersIndex-1}`
+                                : `BEFORE ${layersIndex} (moveToTop)`;
+                                e.target.previousSibling.classList.add('active');
+                            } else {
+                                window.dropText = `AFTER ${layersIndex}`;
+                                e.target.nextSibling.classList.add('active');
+                            }
+                            e.stopPropagation();
+                            e.preventDefault();
+                            return false;
+                        },
+                        onDragLeave: ({nativeEvent: e}) => {
+                            if(e.target.tagName.toLowerCase() !== 'li'
+                            ){
+                                return false;
+                            }
+                            var newElement = document.elementFromPoint(e.pageX, e.pageY);
+                            if((window.enterTarget && window.enterTarget.contains(newElement))){
+                                return false;
+                            }
+                            document.querySelectorAll('.layer-drop').forEach(node => node.classList.remove('active'))
+                            window.enterTarget = null;
+                            e.stopPropagation();
+                            e.preventDefault();
+                            return false;
+                        },
+                        onDragEnd: ({nativeEvent: e}) => {
+                            document.querySelectorAll('.layer-drop').forEach(node => node.classList.remove('active'))
+                            handleReOrder({
+                                item, layers,
+                                draggedItem: window.draggedIndex,
+                                dropTarget: window.dropText
+                            });
+                            window.enterTarget = null;
+                            window.draggedIndex = null;
+                            e.stopPropagation();
+                            e.preventDefault();
+                            return false;
+                        }
+                    }, [
+                        eyeToggle({
+                            svg, g, path, circle, hidden: layersHidden.includes(layersIndex),
+                            key: `${section.name}-${item.name}-${index}-eyeToggle-${layersIndex}`,
+                            draggable: false,
+                            layerClick: () => {
+                                layer.onToggle({
+                                    number: layersIndex,
+                                    visible: layersHidden.includes(layersIndex)
+                                });
+                                layerVisibleClick(layersIndex);
+                            }
+                        }),
+                        img({
+                            className: "image",
+                            tabIndex: 0,
+                            draggable: false,
+                            src: layer.getThumb({ number: layersIndex }),
+                            key: `${section.name}-${item.name}-${index}-thumbnail-${layersIndex}`,
+                        }),
+                        span({
+                            className: "label",
+                            draggable: false,
+                            key: `${section.name}-${item.name}-${index}-name-${layersIndex}`
+                            /*, tabIndex: 0*/
+                        }, layer.name)
+                    ]);
+                    
+                    const layersList = item.layers.reduce((allLayerLi, oneLayerLi, layersIndex) => {
+                        allLayerLi.push(getLayer(oneLayerLi, layersIndex, item.layers));
+                        allLayerLi.push(layerDropZone(layersIndex+1));
+                        return allLayerLi;
+                    }, [ layerDropZone(0) ]);
+
+
                     return (
                         div({
                             key: `${section.name}-${item.name}-${index}`,
@@ -548,104 +678,7 @@
                             ]),
                             ul({
                                 key: `${section.name}-${item.name}-${index}-ul`
-                            }, 
-                                item.layers.map((layer, layersIndex) =>
-                                    li({
-                                        disabled: true,
-                                        key: `${section.name}-${item.name}-${index}-li-${layersIndex}`,
-                                        id: `${section.name}-${item.name}-${index}-li-${layersIndex}`,
-                                        onClick: () => layerSelectedChanged(layersIndex),
-                                        className: layersSelected.includes(layersIndex) ? 'selected' : '',
-                                        draggable: true,
-                                        onDragStart: ({nativeEvent: e}) => {
-                                            window.draggedIndex = layersIndex;
-                                        },
-                                        onDragEnter: ({nativeEvent: e}) => {
-                                            if(layersIndex === window.draggedIndex
-                                                || e.target.tagName.toLowerCase() !== 'li'
-                                                || window.enterTarget
-                                            ){
-                                                return;
-                                            }
-                                            window.enterTarget = e.target;
-                                            if(window.draggedIndex > layersIndex){
-                                                e.target.classList.add('dropTop');
-                                            } else {
-                                                e.target.classList.add('dropBottom');
-                                            }
-                                            e.stopPropagation();
-                                            e.preventDefault();
-                                            return false;
-                                        },
-                                        onDragLeave: ({nativeEvent: e}) => {
-                                            if(e.target.tagName.toLowerCase() !== 'li'
-                                            ){
-                                                return false;
-                                            }
-                                            var newElement = document.elementFromPoint(e.pageX, e.pageY);
-                                            if((window.enterTarget && window.enterTarget.contains(newElement))){
-                                                return false;
-                                            }
-                                            e.target.classList.remove('dropTop');
-                                            e.target.classList.remove('dropBottom');
-                                            window.enterTarget = null;
-                                            e.stopPropagation();
-                                            e.preventDefault();
-                                            return false;
-                                        },
-                                        onDragEnd: ({nativeEvent: e}) => {
-                                            e.target.classList.remove('dropTop');
-                                            e.target.classList.remove('dropBottom');
-                                            window.enterTarget = null;
-                                            window.draggedIndex = null;
-                                            e.stopPropagation();
-                                            e.preventDefault();
-                                        },
-                                        onDrop: ({nativeEvent: e}) => {
-                                            //TODO: this not working right!!
-                                            //var newElement = document.elementFromPoint(e.pageX, e.pageY);
-                                            if(window.draggedIndex > layersIndex){
-                                                console.log(`Dragged item ${draggedIndex} to position BEFORE item ${layersIndex}`);
-                                            } else {
-                                                console.log(`Dragged item ${draggedIndex} to position AFTER item ${layersIndex}`);
-                                            }
-                                            e.target.classList.remove('dropTop');
-                                            e.target.classList.remove('dropBottom');
-                                            window.enterTarget = null;
-                                            window.draggedIndex = null;
-                                            e.stopPropagation();
-                                            e.preventDefault();
-                                            //return false;
-                                        }
-                                    }, [
-                                        eyeToggle({
-                                            svg, g, path, circle, hidden: layersHidden.includes(layersIndex),
-                                            key: `${section.name}-${item.name}-${index}-eyeToggle-${layersIndex}`,
-                                            draggable: false,
-                                            layerClick: () => {
-                                                layer.onToggle({
-                                                    number: layersIndex,
-                                                    visible: layersHidden.includes(layersIndex)
-                                                });
-                                                layerVisibleClick(layersIndex);
-                                            }
-                                        }),
-                                        img({
-                                            className: "image",
-                                            tabIndex: 0,
-                                            draggable: false,
-                                            src: layer.getThumb({ number: layersIndex }),
-                                            key: `${section.name}-${item.name}-${index}-thumbnail-${layersIndex}`,
-                                        }),
-                                        span({
-                                            className: "label",
-                                            draggable: false,
-                                            key: `${section.name}-${item.name}-${index}-name-${layersIndex}`
-                                            /*, tabIndex: 0*/
-                                        }, layer.name)
-                                    ])
-                                )
-                            ),
+                            }, layersList),
                             div({
                                 key: `${section.name}-${item.name}-${index}-tools`,
                                 className: 'layerTools'

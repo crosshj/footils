@@ -376,27 +376,9 @@ select:focus {
 #pinIcon path:hover {
     fill: turquoise;
 }
-li.dropBottom {
-    border-bottom: 20px solid #4f4f4f !important;
-}
-li.dropTop {
-    border-top: 20px solid #4f4f4f !important;
-}
 
-/* 
-THIS WORKS!!!
-li.dropBottom:after {
-    width: 100%;
-    content: ' ';
-    height: 4px;
-    background: red;
-    margin-top: 4px;
+.layer-drop.active {
+    display: flex !important;
+    outline: 1px dashed grey;
+    height: 20px;
 }
-THIS DOES NOT!!!!
-li.dropTop:before {
-    width: 100%;
-    content: ' ';
-    height: 4px;
-    background: red;
-    margin-top: 4px;
-} */
