@@ -518,9 +518,8 @@
                         var order = layers.map((x,i) => isNumeric(x.number) ? x.number : i);
                         var actualDragged = draggedItem;
                         var draggedPosition = layers.map(x => x.number).indexOf(actualDragged);
-                        var actualDropped = layers[
-                            Number(dropTarget.replace('AFTER','').replace('BEFORE',''))
-                        ].number;
+                        var droppedPosition = Number(dropTarget.replace('AFTER','').replace('BEFORE',''));
+                        var actualDropped = layers[droppedPosition].number;
 
                         // console.log({
                         //     layers,
@@ -562,6 +561,7 @@
                             return;
                         }
 
+                        // MOVE DOWN
                         if(dropTarget === `AFTER ${draggedPosition + 1}`){
                             order = order.filter(x => x !== actualDragged);
                             order = order.reduce((all, x) => {
@@ -572,6 +572,38 @@
                                 return all;
                             }, []);
                             console.log(`Dragged item ${actualDragged} to position AFTER ${actualDropped} (moveDown)`);
+                            //console.log(`New order: ${order}`);
+                            reorderLayers(order);
+                            return;
+                        }
+                        
+                        // MOVE DOWN MULTIPLE TIMES
+                        if(draggedPosition < droppedPosition){
+                            order = order.filter(x => x !== actualDragged);
+                            order = order.reduce((all, x, i) => {
+                                all.push(x);
+                                if(i === droppedPosition-1){
+                                    all.push(actualDragged);
+                                }
+                                return all;
+                            }, []);
+                            console.log(`Dragged item ${actualDragged} to position AFTER ${actualDropped} (moveDown X ${droppedPosition - draggedPosition})`);
+                            //console.log(`New order: ${order}`);
+                            reorderLayers(order);
+                            return;
+                        }
+
+                        // MOVE UP MULTIPLE TIMES
+                        if(draggedPosition > droppedPosition){
+                            order = order.filter(x => x !== actualDragged);
+                            order = order.reduce((all, x, i) => {
+                                all.push(x);
+                                if(i === droppedPosition){
+                                    all.push(actualDragged);
+                                }
+                                return all;
+                            }, []);
+                            console.log(`Dragged item ${actualDragged} to position AFTER ${actualDropped} (moveUp X ${draggedPosition - droppedPosition - 1})`);
                             //console.log(`New order: ${order}`);
                             reorderLayers(order);
                             return;
