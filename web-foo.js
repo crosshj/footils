@@ -516,39 +516,63 @@
 
                     const handleReOrder = ({ item, layers, draggedItem, dropTarget}) => {
                         var order = layers.map((x,i) => isNumeric(x.number) ? x.number : i);
-                        var actualDragged = layers[draggedItem].number;
+                        var actualDragged = draggedItem;
+                        var draggedPosition = layers.map(x => x.number).indexOf(actualDragged);
                         var actualDropped = layers[
                             Number(dropTarget.replace('AFTER','').replace('BEFORE',''))
                         ].number;
 
-                        console.log({
-                            dropTarget,
-                            draggedItem,
-                            actualDragged,
-                            actualDropped
-                        });
+                        // console.log({
+                        //     layers,
+                        //     dropTarget,
+                        //     draggedItem,
+                        //     draggedPosition,
+                        //     actualDragged,
+                        //     actualDropped
+                        // });
 
+                        // MOVE TO TOP
                         if(dropTarget === 'BEFORE 0'){
                             order = [actualDragged].concat(order.filter(x => x !== actualDragged));
                             console.log(`Dragged item ${actualDragged} to position BEFORE 0 (moveToTop)`);
-                            console.log(`New order: ${order}`);
                             reorderLayers(order);
                             return;
                         }
-                        
+                        // MOVE TO BOTTOM
                         if(dropTarget === `AFTER ${layers.length - 1}`){
                             order = order.filter(x => x !== actualDragged).concat([actualDragged])
                             console.log(`Dragged item ${actualDragged} to position AFTER ${actualDropped} (moveToBottom)`);
                             reorderLayers(order);
                             return;
                         }
-                        if(dropTarget === `AFTER ${draggedItem - 2}`){
-                            console.log(`Dragged item ${actualDragged} to position ${actualDropped} (moveUp)`);
+
+                        // MOVE UP
+                        if(dropTarget === `AFTER ${draggedPosition - 2}`){
+                            order = order.filter(x => x !== actualDragged);
+                            order = order.reduce((all, x) => {
+                                all.push(x);
+                                if(x === actualDropped){
+                                    all.push(actualDragged);
+                                }
+                                return all;
+                            }, []);
+                            console.log(`Dragged item ${actualDragged} to position AFTER ${actualDropped} (moveUp)`);
+                            //console.log(`New order: ${order}`);
                             reorderLayers(order);
                             return;
                         }
-                        if(dropTarget === `AFTER ${draggedItem + 1}`){
-                            console.log(`Dragged item ${actualDragged} to position ${actualDropped} (moveDown)`);
+
+                        if(dropTarget === `AFTER ${draggedPosition + 1}`){
+                            order = order.filter(x => x !== actualDragged);
+                            order = order.reduce((all, x) => {
+                                all.push(x);
+                                if(x === actualDropped){
+                                    all.push(actualDragged);
+                                }
+                                return all;
+                            }, []);
+                            console.log(`Dragged item ${actualDragged} to position AFTER ${actualDropped} (moveDown)`);
+                            //console.log(`New order: ${order}`);
                             reorderLayers(order);
                             return;
                         }
@@ -587,7 +611,7 @@
                         className: layersSelected.includes(layersIndex) ? 'selected' : '',
                         draggable: true,
                         onDragStart: ({nativeEvent: e}) => {
-                            console.log(`started dragging ${layersIndex}`)
+                            //console.log(`started dragging ${layersIndex}`)
                             window.draggedIndex = layersIndex;
                         },
                         onDragEnter: ({nativeEvent: e}) => {
@@ -600,12 +624,12 @@
                                 return;
                             }
 
-                            console.log(`entered dragging ${e.target.id}`)
+                            //console.log(`entered dragging ${e.target.id}`)
                             window.enterTarget = e.target;
                             if(realDragged > realTarget){
                                 window.dropText = realTarget > 0
-                                ? `AFTER ${realTarget-1}`
-                                : `BEFORE 0`;
+                                    ? `AFTER ${realTarget-1}`
+                                    : `BEFORE 0`;
                                 e.target.previousSibling.classList.add('active');
                             } else {
                                 window.dropText = `AFTER ${realTarget}`;
@@ -674,7 +698,7 @@
                     const reorderedLayers = layerOrder.length && layerOrder.length === item.layers.length
                         ? layerOrder.map(number => Object.assign({}, item.layers[number], { number }))
                         : item.layers.map((x,i) => Object.assign({}, x, { number: i }));
-                    console.log(layerOrder);
+
                     const layersList = reorderedLayers.reduce((allLayerLi, oneLayerLi, layersIndex) => {
                         const layerIndex = isNumeric(oneLayerLi.number)
                             ? oneLayerLi.number

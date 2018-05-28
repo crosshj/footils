@@ -207,6 +207,16 @@
                     getThumb: getLayerThumb,
                     changeLayerAlpha
                 }, {
+                    name: 'Middle Layer 2',
+                    onToggle: toggleLayerVisible,
+                    getThumb: getLayerThumb,
+                    changeLayerAlpha
+                }, {
+                    name: 'Middle Layer 3',
+                    onToggle: toggleLayerVisible,
+                    getThumb: getLayerThumb,
+                    changeLayerAlpha
+                }, {
                     name: 'Bottom Layer',
                     onToggle: toggleLayerVisible,
                     getThumb: getLayerThumb,
@@ -366,7 +376,14 @@
             canvas.layers[number].visible = visible;
             canvas.viewport.render();
         };
-        const getLayerThumb = ({ number }) => thumbs[number];
+        //const getLayerThumb = ({ number }) => thumbs[number];
+        const getLayerThumb = ({ number }) => thumbs[
+            number === 0
+                ? number
+                : number === 4
+                    ? 2
+                    : 1
+        ];
 
         const changeLayerAlpha = ({ number, alpha }) => {
             //console.log(number);
