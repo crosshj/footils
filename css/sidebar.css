@@ -385,3 +385,8 @@ select:focus {
     background: black;
     margin-top: -2px;
 }
+
+.layers span.label {
+    min-width: 70px !important;
+    max-width: 70px !important;
+}

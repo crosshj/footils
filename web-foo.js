@@ -336,6 +336,13 @@
                     });
                 };
 
+                const reorderLayers = (order) => {
+                    return dispatcher({
+                        type: 'REORDER_LAYERS',
+                        payload: { order }
+                    });
+                };
+
                 if(sidebarDef.hidden){
                     // NOTE: is this safe since dispatcher called?
                     toggleClick();
@@ -499,31 +506,57 @@
                 }
 
                 function layersComponent({ div, span, section, item, img,
-                    index, layersHidden, layersSelected, globalState
+                    index, layersHidden, layersSelected, globalState, layerOrder
                 }){
                     const layerDropZone = (number) => li({
-                        key: `layer-drop-zone-${number}`,
+                        key: `layer-drop-zone-${number}-${Math.random()}`,
                         className: 'layer-drop',
                         style: { display: 'none' }
                     });
 
                     const handleReOrder = ({ item, layers, draggedItem, dropTarget}) => {
-                        // NOTE: moveToTop already noted elsewhere
+                        var order = layers.map((x,i) => isNumeric(x.number) ? x.number : i);
+                        var actualDragged = layers[draggedItem].number;
+                        var actualDropped = layers[
+                            Number(dropTarget.replace('AFTER','').replace('BEFORE',''))
+                        ].number;
+
+                        console.log({
+                            dropTarget,
+                            draggedItem,
+                            actualDragged,
+                            actualDropped
+                        });
+
+                        if(dropTarget === 'BEFORE 0'){
+                            order = [actualDragged].concat(order.filter(x => x !== actualDragged));
+                            console.log(`Dragged item ${actualDragged} to position BEFORE 0 (moveToTop)`);
+                            console.log(`New order: ${order}`);
+                            reorderLayers(order);
+                            return;
+                        }
+                        
                         if(dropTarget === `AFTER ${layers.length - 1}`){
-                            console.log(`Dragged item ${draggedItem} to position ${dropTarget} (moveToBottom)`);
+                            order = order.filter(x => x !== actualDragged).concat([actualDragged])
+                            console.log(`Dragged item ${actualDragged} to position AFTER ${actualDropped} (moveToBottom)`);
+                            reorderLayers(order);
                             return;
                         }
                         if(dropTarget === `AFTER ${draggedItem - 2}`){
-                            console.log(`Dragged item ${draggedItem} to position ${dropTarget} (moveUp)`);
+                            console.log(`Dragged item ${actualDragged} to position ${actualDropped} (moveUp)`);
+                            reorderLayers(order);
                             return;
                         }
                         if(dropTarget === `AFTER ${draggedItem + 1}`){
-                            console.log(`Dragged item ${draggedItem} to position ${dropTarget} (moveDown)`);
+                            console.log(`Dragged item ${actualDragged} to position ${actualDropped} (moveDown)`);
+                            reorderLayers(order);
                             return;
                         }
                         //TODO: there are more situations to handle with larger amounts of layers
                         // multiple moveUp's and moveDown's?
-                        console.log(`Dragged item ${draggedItem} to position ${dropTarget}`);
+                        console.warn(`UNHANDLED: Dragged item ${draggedItem} to position ${dropTarget}`);
+
+
 
                         /*TODO: handle reorder
                             1) trigger external changes
@@ -540,35 +573,42 @@
 
                             hide drag image?
                         */
-                        
+                       window.enterTarget = null;
+                       window.draggedIndex = null;
+                       window.dropTarget = null;
                     };
                     
+                    //use Math.random to force re-evaluation of drag handlers
                     const getLayer = (layer, layersIndex, layers) => li({
                         disabled: true,
-                        key: `${section.name}-${item.name}-${index}-li-${layersIndex}`,
-                        id: `${section.name}-${item.name}-${index}-li-${layersIndex}`,
+                        key: `${section.name}-${item.name}-${index}-li-${layersIndex}-${Math.random()}`,
+                        id: `${section.name}-${item.name}-${index}-li-${layersIndex}-${Math.random()}`,
                         onClick: () => layerSelectedChanged(layersIndex),
                         className: layersSelected.includes(layersIndex) ? 'selected' : '',
                         draggable: true,
                         onDragStart: ({nativeEvent: e}) => {
+                            console.log(`started dragging ${layersIndex}`)
                             window.draggedIndex = layersIndex;
                         },
                         onDragEnter: ({nativeEvent: e}) => {
-                            if(layersIndex === window.draggedIndex
+                            const realTarget = layers.map(x => x.number).indexOf(layersIndex);
+                            const realDragged = layers.map(x => x.number).indexOf(window.draggedIndex)
+                            if(realTarget === realDragged
                                 || e.target.tagName.toLowerCase() !== 'li'
                                 || window.enterTarget
                             ){
                                 return;
                             }
 
+                            console.log(`entered dragging ${e.target.id}`)
                             window.enterTarget = e.target;
-                            if(window.draggedIndex > layersIndex){
-                                window.dropText = layersIndex > 0
-                                ? `AFTER ${layersIndex-1}`
-                                : `BEFORE ${layersIndex} (moveToTop)`;
+                            if(realDragged > realTarget){
+                                window.dropText = realTarget > 0
+                                ? `AFTER ${realTarget-1}`
+                                : `BEFORE 0`;
                                 e.target.previousSibling.classList.add('active');
                             } else {
-                                window.dropText = `AFTER ${layersIndex}`;
+                                window.dropText = `AFTER ${realTarget}`;
                                 e.target.nextSibling.classList.add('active');
                             }
                             e.stopPropagation();
@@ -630,10 +670,17 @@
                             /*, tabIndex: 0*/
                         }, layer.name)
                     ]);
-                    
-                    const layersList = item.layers.reduce((allLayerLi, oneLayerLi, layersIndex) => {
-                        allLayerLi.push(getLayer(oneLayerLi, layersIndex, item.layers));
-                        allLayerLi.push(layerDropZone(layersIndex+1));
+
+                    const reorderedLayers = layerOrder.length && layerOrder.length === item.layers.length
+                        ? layerOrder.map(number => Object.assign({}, item.layers[number], { number }))
+                        : item.layers.map((x,i) => Object.assign({}, x, { number: i }));
+                    console.log(layerOrder);
+                    const layersList = reorderedLayers.reduce((allLayerLi, oneLayerLi, layersIndex) => {
+                        const layerIndex = isNumeric(oneLayerLi.number)
+                            ? oneLayerLi.number
+                            : layersIndex;
+                        allLayerLi.push(getLayer(oneLayerLi, layerIndex, reorderedLayers));
+                        allLayerLi.push(layerDropZone(layerIndex + 1 ));
                         return allLayerLi;
                     }, [ layerDropZone(0) ]);
 
@@ -720,7 +767,8 @@
                         number: 0,
                         alpha: 100,
                         blend: 'Normal'
-                    }]
+                    }],
+                    layerOrder = []
                 }) =>
                 fragment([
                     div({id: 'header', key: 'header'}, [
@@ -740,7 +788,7 @@
                                         button: () => buttonComponent({ div, button, section, item, index: j }),
                                         select: () => selectComponent({ div, span, select, option, section, item, index: j}),
                                         layers: () => layersComponent({ div, span, section, item, img, index: j,
-                                            layersHidden, layersSelected, globalState
+                                            layersHidden, layersSelected, globalState, layerOrder
                                         })
                                     })[item.type];
                                 })
@@ -760,6 +808,11 @@
                 const reducer = (state, action) => {
                     var newState = clone(state);
                     switch(action.type){
+                        case 'REORDER_LAYERS': {
+                            const layerOrder = action.payload.order;
+                            newState = Object.assign({}, state, { layerOrder });
+                            break;
+                        }
                         case 'SET_GLOBAL_STATE': {
                             const gstate = state.globalState || [];
                             const found = gstate.find(x => x.key === action.payload.key);
