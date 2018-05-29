@@ -516,10 +516,11 @@
 
                     const handleReOrder = ({ item, layers, draggedItem, dropTarget}) => {
                         var order = layers.map((x,i) => isNumeric(x.number) ? x.number : i);
-                        var actualDragged = draggedItem;
-                        var draggedPosition = layers.map(x => x.number).indexOf(actualDragged);
-                        var droppedPosition = Number(dropTarget.replace('AFTER','').replace('BEFORE',''));
-                        var actualDropped = layers[droppedPosition].number;
+                        const actualDragged = draggedItem;
+                        const draggedPosition = layers.map(x => x.number).indexOf(actualDragged);
+                        const droppedPosition = Number(dropTarget.replace('AFTER','').replace('BEFORE',''));
+                        const actualDropped = layers[droppedPosition].number;
+                        const layer = layers.find(x => x.number == draggedItem);
 
                         // console.log({
                         //     layers,
@@ -533,14 +534,24 @@
                         // MOVE TO TOP
                         if(dropTarget === 'BEFORE 0'){
                             order = [actualDragged].concat(order.filter(x => x !== actualDragged));
-                            console.log(`Dragged item ${actualDragged} to position BEFORE 0 (moveToTop)`);
+                            //console.log(`Dragged item ${actualDragged} to position BEFORE 0 (moveToTop)`);
+                            layer.changeLayerOrder({
+                                number: layer.number,
+                                operation: 'moveToTop'
+                            });
+                            //console.log(`New order: ${order}`);
                             reorderLayers(order);
                             return;
                         }
                         // MOVE TO BOTTOM
                         if(dropTarget === `AFTER ${layers.length - 1}`){
                             order = order.filter(x => x !== actualDragged).concat([actualDragged])
-                            console.log(`Dragged item ${actualDragged} to position AFTER ${actualDropped} (moveToBottom)`);
+                            //console.log(`Dragged item ${actualDragged} to position AFTER ${actualDropped} (moveToBottom)`);
+                            layer.changeLayerOrder({
+                                number: layer.number,
+                                operation: 'moveToBottom'
+                            });
+                            //console.log(`New order: ${order}`);
                             reorderLayers(order);
                             return;
                         }
@@ -555,7 +566,11 @@
                                 }
                                 return all;
                             }, []);
-                            console.log(`Dragged item ${actualDragged} to position AFTER ${actualDropped} (moveUp)`);
+                            //console.log(`Dragged item ${actualDragged} to position AFTER ${actualDropped} (moveUp)`);
+                            layer.changeLayerOrder({
+                                number: layer.number,
+                                operation: 'moveUp'
+                            });
                             //console.log(`New order: ${order}`);
                             reorderLayers(order);
                             return;
@@ -571,7 +586,11 @@
                                 }
                                 return all;
                             }, []);
-                            console.log(`Dragged item ${actualDragged} to position AFTER ${actualDropped} (moveDown)`);
+                            //console.log(`Dragged item ${actualDragged} to position AFTER ${actualDropped} (moveDown)`);
+                            layer.changeLayerOrder({
+                                number: layer.number,
+                                operation: 'moveDown'
+                            });
                             //console.log(`New order: ${order}`);
                             reorderLayers(order);
                             return;
@@ -587,7 +606,12 @@
                                 }
                                 return all;
                             }, []);
-                            console.log(`Dragged item ${actualDragged} to position AFTER ${actualDropped} (moveDown X ${droppedPosition - draggedPosition})`);
+                            //console.log(`Dragged item ${actualDragged} to position AFTER ${actualDropped} (moveDown X ${droppedPosition - draggedPosition})`);
+                            layer.changeLayerOrder({
+                                number: layer.number,
+                                operation: 'moveDown',
+                                repeat: droppedPosition - draggedPosition
+                            });
                             //console.log(`New order: ${order}`);
                             reorderLayers(order);
                             return;
@@ -603,7 +627,12 @@
                                 }
                                 return all;
                             }, []);
-                            console.log(`Dragged item ${actualDragged} to position AFTER ${actualDropped} (moveUp X ${draggedPosition - droppedPosition - 1})`);
+                            //console.log(`Dragged item ${actualDragged} to position AFTER ${actualDropped} (moveUp X ${draggedPosition - droppedPosition - 1})`);
+                            layer.changeLayerOrder({
+                                number: layer.number,
+                                operation: 'moveUp',
+                                repeat: draggedPosition - droppedPosition - 1
+                            });
                             //console.log(`New order: ${order}`);
                             reorderLayers(order);
                             return;
@@ -614,7 +643,7 @@
 
 
                         /*TODO: handle reorder
-                            1) trigger external changes
+                            X) trigger external changes
                             X) change internal model and re-render sidebar
 
                             still some issues with drag and drop:
@@ -649,9 +678,11 @@
                         onDragEnter: ({nativeEvent: e}) => {
                             const realTarget = layers.map(x => x.number).indexOf(layersIndex);
                             const realDragged = layers.map(x => x.number).indexOf(window.draggedIndex)
-                            if(realTarget === realDragged
-                                || e.target.tagName.toLowerCase() !== 'li'
-                                || window.enterTarget
+                            if(e.target.tagName.toLowerCase() !== 'li'){
+                                return false;
+                            }
+                            
+                            if(realTarget === realDragged || window.enterTarget
                             ){
                                 //window.enterTarget = null;
                                 window.dropText = null;

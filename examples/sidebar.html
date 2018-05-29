@@ -175,7 +175,8 @@
     const sidebarDef = ({
         toggleLayerVisible,
         getLayerThumb,
-        changeLayerAlpha
+        changeLayerAlpha,
+        changeLayerOrder
     }) => ({
         title: 'Sidebar Demo',
         pinHandler,
@@ -201,12 +202,14 @@
                     name: 'Top Layer',
                     onToggle: toggleLayerVisible,
                     getThumb: getLayerThumb,
-                    changeLayerAlpha
+                    changeLayerAlpha,
+                    changeLayerOrder
                 }, {
                     name: 'Middle Layer',
                     onToggle: toggleLayerVisible,
                     getThumb: getLayerThumb,
-                    changeLayerAlpha
+                    changeLayerAlpha,
+                    changeLayerOrder
                 // }, {
                 //     name: 'Middle Layer 2',
                 //     onToggle: toggleLayerVisible,
@@ -221,7 +224,8 @@
                     name: 'Bottom Layer',
                     onToggle: toggleLayerVisible,
                     getThumb: getLayerThumb,
-                    changeLayerAlpha
+                    changeLayerAlpha,
+                    changeLayerOrder
                 }]
             }]
         }, {
@@ -402,10 +406,21 @@
             canvas.viewport.render();
         }
 
+        const changeLayerOrder = ({
+            number, operation, repeat=1
+        }) => {
+            //console.log({number, operation, repeat});
+            (new Array(repeat)).fill().forEach(x => {
+                canvas.layers[number][operation]();
+            });
+            canvas.viewport.render();
+        };
+
         const definition = sidebarDef({
             toggleLayerVisible,
             getLayerThumb,
-            changeLayerAlpha
+            changeLayerAlpha,
+            changeLayerOrder
         });
 
         start({ sidebarDef: definition }, () => {
