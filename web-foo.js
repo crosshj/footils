@@ -613,15 +613,14 @@
                         console.warn(`UNHANDLED: Dragged item ${draggedItem} to position ${dropTarget}`);
 
 
-
                         /*TODO: handle reorder
                             1) trigger external changes
-                            2) change internal model and re-render sidebar
+                            X) change internal model and re-render sidebar
 
                             still some issues with drag and drop:
-                                - weird flashing back and forth when hovering over some places
+                                X weird flashing back and forth when hovering over some places
                                 - dragging element should be constrained to y axis
-                                - while dragging, should original disappear?
+                                X while dragging, should original disappear?
 
                             references:
                                 https://forums.adobe.com/thread/1598080
