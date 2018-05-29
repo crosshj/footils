@@ -68,12 +68,15 @@
         height: unset !important;
         image-rendering: pixelated;
         /* background: #7e7e7e; */
-        /* filter: invert(20%) grayscale(100%); */
 
         /* below to deal with weird border artifacts */
         outline: 2px solid #292828;
         outline-offset: -2px;
 
+    }
+
+    .layers .image, #canvasContainer canvas {
+        filter: invert(20%) grayscale(80%);
     }
 
     #loading-spinner {
@@ -199,6 +202,12 @@
                 type: 'layers',
                 name: 'layers',
                 layers: [{
+                    name: 'Uber Layer',
+                    onToggle: toggleLayerVisible,
+                    getThumb: getLayerThumb,
+                    changeLayerAlpha,
+                    changeLayerOrder
+                }, {
                     name: 'Top Layer',
                     onToggle: toggleLayerVisible,
                     getThumb: getLayerThumb,
@@ -274,8 +283,27 @@
         thumbs[thumbNumber] = layer.scene.canvas.toDataURL('image/png');
     };
 
+    const renderShape = renderContext(0, ({ ctx, width, height }) => {
+        //ctx.globalAlpha /= 3;
+        ctx.fillStyle = '#880';
+
+        var numberOfSides = 6;
+            size = 100;
+            Xcenter = 150;
+            Ycenter = height * 0.735;
+
+        ctx.beginPath();
+        ctx.moveTo (Xcenter +  size * Math.cos(0), Ycenter +  size *  Math.sin(0));          
+
+        for (var i = 1; i <= numberOfSides; i += 1) 
+        {
+            ctx.lineTo (Xcenter + size * Math.cos(i * 2 * Math.PI / numberOfSides), Ycenter + size * Math.sin(i * 2 * Math.PI / numberOfSides));
+        }
+        ctx.fill();
+    });
+
     var hatchPat;
-    const renderTriangle = renderContext(0, ({ ctx, width, height }) => {
+    const renderTriangle = renderContext(1, ({ ctx, width, height }) => {
         const originX = width/2;
         const twidth = 695; //-300;
         const theight = 0.866 * twidth;
@@ -288,7 +316,7 @@
 
         //ctx.fillStyle=hatchPat;
 
-        ctx.fillStyle = 'rgb(110,110,110)';
+        ctx.fillStyle = '#0700d6';
         //ctx.filter = "grayscale(100%)"
         //ctx.filter = "hue-rotate(180deg)";
 
@@ -300,15 +328,15 @@
     });
 
     var needlesPat;
-    const renderCircle = renderContext(1, ({ ctx, width, height }) => {
+    const renderCircle = renderContext(2, ({ ctx, width, height }) => {
         // if (!needlesPat){
         //     var texture = document.getElementById('pattern-needles');
         //     needlesPat = ctx.createPattern(texture, "repeat");
         //     ctx.fillStyle = needlesPat;
         // }
 
-        ctx.globalAlpha /= 3;
-        ctx.fillStyle = '#666';
+        //ctx.globalAlpha /= 3;
+        ctx.fillStyle = '#934200';
         //ctx.filter = "grayscale(10)"
         //ctx.filter = "blur(100px)";
         ctx.arc(width/2, height/2, 400, 0, 2*Math.PI, false);
@@ -316,10 +344,11 @@
         //ctx.drawImage(texture, 0, 0);
     });
 
-    const renderSquare = renderContext(2, ({ ctx, width, height }) => {
+    const renderSquare = renderContext(3, ({ ctx, width, height }) => {
         var grd=ctx.createLinearGradient(0,0,0,height);
-        grd.addColorStop(0,"#aaa"); //top
-        grd.addColorStop(1,"#555"); //bottom
+        grd.addColorStop(0,"rgba(170, 0, 170, 1)"); //top
+        grd.addColorStop(0.6, 'rgba(170, 0, 0, 0.8)'); //middle
+        grd.addColorStop(1, 'rgba(0, 0, 170, 0.2)'); //bottom
         ctx.fillStyle=grd;
         //ctx.fillStyle = 'rgb(100,100,100)';
         ctx.fillRect(0, 0, width, height);
@@ -335,10 +364,9 @@
         const cool = ' ☫〄〠☬ 〯☫㉲☬༖☫☬☫☬';
         const tibetan = 'ༀ ༁ ༂ ༃ ༄ ༅ ༆ ༇ ༈ ༉ ༊ ་ ༌ ། ༎ ༏ ༐ ༑ ༒ ༓ ༔ ༕ ༖ ༗ ༘ ༙ ༚ ༛ ༜ ༝ ༞ ༟ ༠ ༡ ༢ ༣ ༤ ༥ ༦ ༧ ༨ ༩ ༪ ༫ ༬ ༭ ༮ ༯ ༰ ༱ ༲ ༳ ༴ ༵ ༶ ༷ ༸ ༹ ༺ ༻ ༼ ༽ ༾ ༿ ཀ ཁ ག གྷ ང ཅ ཆ ཇ ཉ ཊ ཋ ཌ ཌྷ ཎ ཏ ཐ ད དྷ ན པ ཕ བ བྷ མ ཙ ཚ ཛ ཛྷ ཝ ཞ ཟ འ ཡ ར ལ ཤ ཥ ས ཧ ཨ ཀྵ ཱ ི ཱི ུ ཱུ ྲྀ ཷ ླྀ ཹ ེ ཻ ོ ཽ ཾ ཿ ྀ ཱྀ ྂ ྃ ྄ ྅ ྆ ྇ ';
         const tamil = 'ஂ ஃ அ ஆ இ ஈ உ ஊ எ ஏ ஐ ஒ ஓ ஔ க ங ச ஜ ஞ ட ண த ந ன ப ம ய ர ற ல ள ழ வ ஷ ஸ ஹ ா ி ீ ு ூ ெ ே ை ொ ோ ௌ ் ௗ ௧ ௨ ௩ ௪ ௫ ௬ ௭ ௮ ௯ ௰ ௱ ௲';
-        const choice = tibetan;
+        const choice = kanji;
         ctx.fillText(choice.slice(choice.length-60,-1).replace(' ', ''), 0, height-110, width);
     });
-
 
     const width = 1000;
     const height = 850;
@@ -362,8 +390,13 @@
         viewport.add(triangle);
         renderTriangle({ layer: triangle, alpha: 1.0, width, height });
 
+        var shape = new Concrete.Layer();
+        viewport.add(shape);
+        renderShape({ layer: shape, alpha: 1.0, width, height });
+
         viewport.render();
         return { viewport, layers: [
+            shape,
             triangle,
             circle,
             square
@@ -393,6 +426,7 @@
         const changeLayerAlpha = ({ number, alpha }) => {
             //console.log(number);
             const renderFunctions = [
+                renderShape,
                 renderTriangle,
                 renderCircle,
                 renderSquare
