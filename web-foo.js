@@ -648,15 +648,17 @@
 
                             still some issues with drag and drop:
                                 X weird flashing back and forth when hovering over some places
-                                - dragging element should be constrained to y axis
+                                X dragging element should be constrained to y axis
                                 X while dragging, should original disappear?
-                                - dropping on layer label (and maybe other children) is buggy
+                                X dropping on layer label (and maybe other children) is buggy
+                                X hide drag image?
+                                - mobile drag and drop
 
                             references:
                                 https://forums.adobe.com/thread/1598080
                                 https://www.youtube.com/watch?v=v96u1srGg1w
 
-                            hide drag image?
+                             
                         */
                        window.enterTarget = null;
                        window.draggedIndex = null;
@@ -673,7 +675,14 @@
                         draggable: true,
                         onDragStart: ({nativeEvent: e}) => {
                             //console.log(`started dragging ${layersIndex}`)
+                            e.target.classList.add('dragging');
                             window.draggedIndex = layersIndex;
+                            const hideDragGhost = true;
+                            if(hideDragGhost){
+                                var img = new Image(); 
+                                img.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg"/>'; 
+                                e.dataTransfer.setDragImage(img, 10, 10);
+                            }
                         },
                         onDragEnter: ({nativeEvent: e}) => {
                             const realTarget = layers.map(x => x.number).indexOf(layersIndex);

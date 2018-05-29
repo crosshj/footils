@@ -288,6 +288,12 @@ select:focus {
     padding-left: 0px;
     border: 1px solid transparent;
 }
+
+.layers li.dragging {
+    filter: brightness(.6);
+    background: #444;
+}
+
 .layers li.selected {
     background-color: #343942;
     border-radius: 0px;
@@ -309,7 +315,7 @@ select:focus {
     background-color: var(--second-color);
     pointer-events: none;
 }
-.layers > span.label {
+.layers span.label {
     margin-bottom: 4px;
     padding-left: 0px;
     pointer-events: none;
