@@ -664,6 +664,81 @@
                        window.draggedIndex = null;
                        window.dropTarget = null;
                     };
+
+                    function dragStartHandler(layersIndex, e){
+                        //console.log(`started dragging ${layersIndex}`)
+                        e.target.classList.add('dragging');
+                        window.draggedIndex = layersIndex;
+                        const hideDragGhost = true;
+                        if(hideDragGhost){
+                            var img = new Image(); 
+                            img.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg"/>'; 
+                            e.dataTransfer.setDragImage(img, 10, 10);
+                        }
+                    }
+
+                    function dragEnterHandler(layersIndex, layers, e){
+                        const realTarget = layers.map(x => x.number).indexOf(layersIndex);
+                        const realDragged = layers.map(x => x.number).indexOf(window.draggedIndex)
+                        if(e.target.tagName.toLowerCase() !== 'li'){
+                            return false;
+                        }
+                        
+                        if(realTarget === realDragged || window.enterTarget
+                        ){
+                            //window.enterTarget = null;
+                            window.dropText = null;
+                            return;
+                        }
+
+                        //console.log(`entered dragging ${e.target.id}`)
+                        window.enterTarget = e.target;
+                        if(realDragged > realTarget){
+                            window.dropText = realTarget > 0
+                                ? `AFTER ${realTarget-1}`
+                                : `BEFORE 0`;
+                            e.target.previousSibling.classList.add('active');
+                        } else {
+                            window.dropText = `AFTER ${realTarget}`;
+                            e.target.nextSibling.classList.add('active');
+                        }
+                        e.stopPropagation();
+                        e.preventDefault();
+                        return false;
+                    }
+
+                    function dragLeaveHandler(layersIndex, e){
+                        if(e.target.tagName.toLowerCase() !== 'li'
+                        ){
+                            return false;
+                        }
+                        var newElement = document.elementFromPoint(e.pageX, e.pageY);
+                        if((window.enterTarget && window.enterTarget.contains(newElement))){
+                            return false;
+                        }
+                        document.querySelectorAll('.layer-drop').forEach(node => node.classList.remove('active'))
+                        window.enterTarget = null;
+                        e.stopPropagation();
+                        e.preventDefault();
+                        return false;
+                    }
+
+                    function dragEndHandler(layersIndex, layers, e){
+                        if(!window.dropText){
+                            return false;
+                        }
+                        document.querySelectorAll('.layer-drop').forEach(node => node.classList.remove('active'))
+                        handleReOrder({
+                            item, layers,
+                            draggedItem: window.draggedIndex,
+                            dropTarget: window.dropText
+                        });
+                        window.enterTarget = null;
+                        window.draggedIndex = null;
+                        e.stopPropagation();
+                        e.preventDefault();
+                        return false;
+                    }
                     
                     //use Math.random to force re-evaluation of drag handlers
                     const getLayer = (layer, layersIndex, layers) => li({
@@ -673,77 +748,10 @@
                         onClick: () => layerSelectedChanged(layersIndex),
                         className: layersSelected.includes(layersIndex) ? 'selected' : '',
                         draggable: true,
-                        onDragStart: ({nativeEvent: e}) => {
-                            //console.log(`started dragging ${layersIndex}`)
-                            e.target.classList.add('dragging');
-                            window.draggedIndex = layersIndex;
-                            const hideDragGhost = true;
-                            if(hideDragGhost){
-                                var img = new Image(); 
-                                img.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg"/>'; 
-                                e.dataTransfer.setDragImage(img, 10, 10);
-                            }
-                        },
-                        onDragEnter: ({nativeEvent: e}) => {
-                            const realTarget = layers.map(x => x.number).indexOf(layersIndex);
-                            const realDragged = layers.map(x => x.number).indexOf(window.draggedIndex)
-                            if(e.target.tagName.toLowerCase() !== 'li'){
-                                return false;
-                            }
-                            
-                            if(realTarget === realDragged || window.enterTarget
-                            ){
-                                //window.enterTarget = null;
-                                window.dropText = null;
-                                return;
-                            }
-
-                            //console.log(`entered dragging ${e.target.id}`)
-                            window.enterTarget = e.target;
-                            if(realDragged > realTarget){
-                                window.dropText = realTarget > 0
-                                    ? `AFTER ${realTarget-1}`
-                                    : `BEFORE 0`;
-                                e.target.previousSibling.classList.add('active');
-                            } else {
-                                window.dropText = `AFTER ${realTarget}`;
-                                e.target.nextSibling.classList.add('active');
-                            }
-                            e.stopPropagation();
-                            e.preventDefault();
-                            return false;
-                        },
-                        onDragLeave: ({nativeEvent: e}) => {
-                            if(e.target.tagName.toLowerCase() !== 'li'
-                            ){
-                                return false;
-                            }
-                            var newElement = document.elementFromPoint(e.pageX, e.pageY);
-                            if((window.enterTarget && window.enterTarget.contains(newElement))){
-                                return false;
-                            }
-                            document.querySelectorAll('.layer-drop').forEach(node => node.classList.remove('active'))
-                            window.enterTarget = null;
-                            e.stopPropagation();
-                            e.preventDefault();
-                            return false;
-                        },
-                        onDragEnd: ({nativeEvent: e}) => {
-                            if(!window.dropText){
-                                return false;
-                            }
-                            document.querySelectorAll('.layer-drop').forEach(node => node.classList.remove('active'))
-                            handleReOrder({
-                                item, layers,
-                                draggedItem: window.draggedIndex,
-                                dropTarget: window.dropText
-                            });
-                            window.enterTarget = null;
-                            window.draggedIndex = null;
-                            e.stopPropagation();
-                            e.preventDefault();
-                            return false;
-                        }
+                        onDragStart: ({nativeEvent: e}) => dragStartHandler(layersIndex, e),
+                        onDragEnter: ({nativeEvent: e}) => dragEnterHandler(layersIndex, layers, e),
+                        onDragLeave: ({nativeEvent: e}) => dragLeaveHandler(layersIndex, e),
+                        onDragEnd: ({nativeEvent: e}) => dragEndHandler(layersIndex, layers, e)
                     }, [
                         eyeToggle({
                             svg, g, path, circle, hidden: layersHidden.includes(layersIndex),
