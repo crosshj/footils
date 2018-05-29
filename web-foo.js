@@ -681,11 +681,15 @@
                             }
                             document.querySelectorAll('.layer-drop').forEach(node => node.classList.remove('active'))
                             window.enterTarget = null;
+                            window.dropText = null;
                             e.stopPropagation();
                             e.preventDefault();
                             return false;
                         },
                         onDragEnd: ({nativeEvent: e}) => {
+                            if(!window.dropText){
+                                return false;
+                            }
                             document.querySelectorAll('.layer-drop').forEach(node => node.classList.remove('active'))
                             handleReOrder({
                                 item, layers,
