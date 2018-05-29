@@ -14,10 +14,11 @@
 
 
 #sidebar {
-    position: absolute;
+    position: fixed;
     right: 0px;
     top: 0px;
-    bottom: 0px;
+    height: 100vh;
+    /* bottom: 0px; */
     background: #333;
     width: 220px;
     color: #aaa;

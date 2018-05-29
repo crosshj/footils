@@ -62,8 +62,8 @@
     }
 
     #canvasContainer canvas {
-        max-width: 90%;
-        max-height: 90%;
+        max-width: 97%;
+        max-height: 97%;
         width: unset !important;
         height: unset !important;
         image-rendering: pixelated;
@@ -309,10 +309,10 @@
         const theight = 0.866 * twidth;
         const originY = (height/2) - (theight/1.5);
 
-        // if (!hatchPat){
-        //     var texture = document.getElementById('pattern-hatch');
-        //     hatchPat=ctx.createPattern(texture, "repeat");
-        // }
+        if (!hatchPat){
+            var texture = document.getElementById('pattern-hatch');
+            hatchPat=ctx.createPattern(texture, "repeat");
+        }
 
         //ctx.fillStyle=hatchPat;
 
@@ -325,35 +325,8 @@
         ctx.lineTo(originX+twidth/2, originY + theight);
         ctx.lineTo(originX-twidth/2, originY + theight);
         ctx.fill();
-    });
 
-    var needlesPat;
-    const renderCircle = renderContext(2, ({ ctx, width, height }) => {
-        // if (!needlesPat){
-        //     var texture = document.getElementById('pattern-needles');
-        //     needlesPat = ctx.createPattern(texture, "repeat");
-        //     ctx.fillStyle = needlesPat;
-        // }
-
-        //ctx.globalAlpha /= 3;
-        ctx.fillStyle = '#934200';
-        //ctx.filter = "grayscale(10)"
-        //ctx.filter = "blur(100px)";
-        ctx.arc(width/2, height/2, 400, 0, 2*Math.PI, false);
-        ctx.fill();
-        //ctx.drawImage(texture, 0, 0);
-    });
-
-    const renderSquare = renderContext(3, ({ ctx, width, height }) => {
-        var grd=ctx.createLinearGradient(0,0,0,height);
-        grd.addColorStop(0,"rgba(170, 0, 170, 1)"); //top
-        grd.addColorStop(0.6, 'rgba(170, 0, 0, 0.8)'); //middle
-        grd.addColorStop(1, 'rgba(0, 0, 170, 0.2)'); //bottom
-        ctx.fillStyle=grd;
-        //ctx.fillStyle = 'rgb(100,100,100)';
-        ctx.fillRect(0, 0, width, height);
-
-        ctx.fillStyle = '#555';
+                ctx.fillStyle = '#555';
         ctx.font = 'bold 120px sans-serif';
 
         const kanji = ' 丳 临 丵 丧 乶 不 擄 ㍼ 书'; 
@@ -366,6 +339,33 @@
         const tamil = 'ஂ ஃ அ ஆ இ ஈ உ ஊ எ ஏ ஐ ஒ ஓ ஔ க ங ச ஜ ஞ ட ண த ந ன ப ம ய ர ற ல ள ழ வ ஷ ஸ ஹ ா ி ீ ு ூ ெ ே ை ொ ோ ௌ ் ௗ ௧ ௨ ௩ ௪ ௫ ௬ ௭ ௮ ௯ ௰ ௱ ௲';
         const choice = kanji;
         ctx.fillText(choice.slice(choice.length-60,-1).replace(' ', ''), 0, height-110, width);
+    });
+
+    var needlesPat;
+    const renderCircle = renderContext(2, ({ ctx, width, height }) => {
+        if (!needlesPat){
+            var texture = document.getElementById('pattern-needles');
+            needlesPat = ctx.createPattern(texture, "repeat");
+            ctx.fillStyle = needlesPat;
+        }
+
+        //ctx.globalAlpha /= 3;
+        //ctx.fillStyle = '#934200';
+        //ctx.filter = "grayscale(10)"
+        //ctx.filter = "blur(100px)";
+        ctx.arc(width/2, height/2, 400, 0, 2*Math.PI, false);
+        ctx.fill();
+        //ctx.drawImage(texture, 0, 0);
+    });
+
+    const renderSquare = renderContext(3, ({ ctx, width, height }) => {
+        var grd=ctx.createLinearGradient(0,0,0,height);
+        grd.addColorStop(0,"rgba(170, 0, 170, 1)"); //top
+        grd.addColorStop(0.6, 'rgba(170, 0, 0, 0.8)'); //middle
+        grd.addColorStop(1, 'rgba(0, 0, 170, 1)'); //bottom
+        ctx.fillStyle=grd;
+        //ctx.fillStyle = 'rgb(100,100,100)';
+        ctx.fillRect(0, 0, width, height);
     });
 
     const width = 1000;
