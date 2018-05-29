@@ -621,6 +621,7 @@
                                 X weird flashing back and forth when hovering over some places
                                 - dragging element should be constrained to y axis
                                 X while dragging, should original disappear?
+                                - dropping on layer label (and maybe other children) is buggy
 
                             references:
                                 https://forums.adobe.com/thread/1598080
@@ -652,6 +653,8 @@
                                 || e.target.tagName.toLowerCase() !== 'li'
                                 || window.enterTarget
                             ){
+                                //window.enterTarget = null;
+                                window.dropText = null;
                                 return;
                             }
 
@@ -681,7 +684,6 @@
                             }
                             document.querySelectorAll('.layer-drop').forEach(node => node.classList.remove('active'))
                             window.enterTarget = null;
-                            window.dropText = null;
                             e.stopPropagation();
                             e.preventDefault();
                             return false;
