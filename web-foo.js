@@ -670,7 +670,7 @@
                         e.target.classList.add('dragging');
                         window.draggedIndex = layersIndex;
                         const hideDragGhost = true;
-                        if(hideDragGhost){
+                        if(e.dataTransfer && hideDragGhost){
                             var img = new Image(); 
                             img.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg"/>'; 
                             e.dataTransfer.setDragImage(img, 10, 10);
@@ -679,7 +679,7 @@
 
                     function dragEnterHandler(layersIndex, layers, e){
                         const realTarget = layers.map(x => x.number).indexOf(layersIndex);
-                        const realDragged = layers.map(x => x.number).indexOf(window.draggedIndex)
+                        const realDragged = layers.map(x => x.number).indexOf(window.draggedIndex);
                         if(e.target.tagName.toLowerCase() !== 'li'){
                             return false;
                         }
@@ -703,7 +703,7 @@
                             e.target.nextSibling.classList.add('active');
                         }
                         e.stopPropagation();
-                        e.preventDefault();
+                        //e.preventDefault();
                         return false;
                     }
 
@@ -712,14 +712,17 @@
                         ){
                             return false;
                         }
-                        var newElement = document.elementFromPoint(e.pageX, e.pageY);
-                        if((window.enterTarget && window.enterTarget.contains(newElement))){
-                            return false;
+                        if(e.pageX && e.pageY){
+                            var newElement = document.elementFromPoint(e.pageX, e.pageY);
+                            if((window.enterTarget && window.enterTarget.contains(newElement))){
+                                return false;
+                            }
                         }
+                        //console.log(`left dragging ${e.target.id}`)
                         document.querySelectorAll('.layer-drop').forEach(node => node.classList.remove('active'))
                         window.enterTarget = null;
-                        e.stopPropagation();
-                        e.preventDefault();
+                        e.stopPropagation && e.stopPropagation();
+                        e.preventDefault && e.preventDefault();
                         return false;
                     }
 
@@ -739,6 +742,79 @@
                         e.preventDefault();
                         return false;
                     }
+
+                    // TOUCH -> DRAG/DROP
+                    // patterned off https://github.com/Bernardo-Castilho/dragdroptouch/blob/master/DragDropTouch.js
+                    var dragTouchSource;
+                    var enteredElement;
+                    function touchStartHandler(layersIndex, e){
+                        //console.log('touch start');
+                        dragStartHandler(layersIndex, e);
+                        dragTouchSource = e.target;
+                        //e.preventDefault();
+                        e.stopPropagation();
+                    }
+
+                    function getPoint(e, page) {
+                        if (e && e.touches) {
+                            e = e.touches[0];
+                        }
+                        return { x: page ? e.pageX : e.clientX, y: page ? e.pageY : e.clientY };
+                    }
+                    function touchMoveHandler(layersIndex, layers, e){
+                        const pt = getPoint(e);
+                        const hoveredElement = document.elementFromPoint(pt.x, pt.y);
+                        if(hoveredElement.classList.contains('dragging')){
+                            if(enteredElement){
+                                // trigger leave handler of previously entered element
+                                var leaveEvent = document.createEvent('Event');
+                                leaveEvent.initEvent('dragleave', true, true);
+                                enteredElement.dispatchEvent(leaveEvent);
+                                enteredElement = null;
+                            }
+                            return;
+                        }
+                        if(hoveredElement.tagName.toLowerCase() !== 'li'){
+                            return false;
+                        }
+                        if(enteredElement && enteredElement.isEqualNode(hoveredElement)){
+                            return;
+                        }
+                        //console.log('touch move', hoveredElement);
+                        if(enteredElement){
+                            // trigger leave handler of previously entered element
+                            var leaveEvent = document.createEvent('Event');
+                            leaveEvent.initEvent('dragleave', true, true);
+                            enteredElement.dispatchEvent(leaveEvent);
+                        }
+                        enteredElement = hoveredElement;
+                        
+                        //trigger enter handler or new element
+                        var enterEvent = document.createEvent('Event');
+                        enterEvent.initEvent('dragenter', true, true);
+                        enteredElement.dispatchEvent(enterEvent);
+                        
+                        //e.preventDefault();
+                        e.stopPropagation();
+                   }
+
+                    function touchEndHandler(layersIndex, layers, e){
+                        //console.log('touch end');
+                        var enterEvent = document.createEvent('Event');
+                        enterEvent.initEvent('dragend', true, true);
+                        dragTouchSource.dispatchEvent(enterEvent);
+                        dragTouchSource = null;
+                        enteredElement = null;
+                    }
+
+                    function touchCancelHandler(layersIndex, e){
+                        console.log('touch cancel');
+                        var enterEvent = document.createEvent('Event');
+                        enterEvent.initEvent('dragend', true, true);
+                        dragTouchSource.dispatchEvent(enterEvent);
+                        dragTouchSource = null;
+                        enteredElement = null;
+                    }
                     
                     //use Math.random to force re-evaluation of drag handlers
                     const getLayer = (layer, layersIndex, layers) => li({
@@ -751,7 +827,11 @@
                         onDragStart: ({nativeEvent: e}) => dragStartHandler(layersIndex, e),
                         onDragEnter: ({nativeEvent: e}) => dragEnterHandler(layersIndex, layers, e),
                         onDragLeave: ({nativeEvent: e}) => dragLeaveHandler(layersIndex, e),
-                        onDragEnd: ({nativeEvent: e}) => dragEndHandler(layersIndex, layers, e)
+                        onDragEnd: ({nativeEvent: e}) => dragEndHandler(layersIndex, layers, e),
+                        onTouchStart: ({nativeEvent: e}) => touchStartHandler(layersIndex, e),
+                        onTouchMove: ({nativeEvent: e}) => touchMoveHandler(layersIndex, layers, e),
+                        onTouchEnd: ({nativeEvent: e}) => touchEndHandler(layersIndex, layers, e),
+                        onTouchCancel: ({nativeEvent: e}) => touchCancelHandler(layersIndex, layers, e)
                     }, [
                         eyeToggle({
                             svg, g, path, circle, hidden: layersHidden.includes(layersIndex),
