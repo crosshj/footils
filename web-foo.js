@@ -727,7 +727,10 @@
                     }
 
                     function dragEndHandler(layersIndex, layers, e){
+
                         if(!window.dropText){
+                            window.enterTarget = null;
+                            window.draggedIndex = null;
                             return false;
                         }
                         document.querySelectorAll('.layer-drop').forEach(node => node.classList.remove('active'))
@@ -772,12 +775,18 @@
                                 enteredElement.dispatchEvent(leaveEvent);
                                 enteredElement = null;
                             }
+                            //e.preventDefault();
+                            e.stopPropagation();
                             return;
                         }
                         if(hoveredElement.tagName.toLowerCase() !== 'li'){
+                            //e.preventDefault();
+                            e.stopPropagation();
                             return false;
                         }
                         if(enteredElement && enteredElement.isEqualNode(hoveredElement)){
+                            //e.preventDefault();
+                            e.stopPropagation();
                             return;
                         }
                         //console.log('touch move', hoveredElement);
@@ -800,18 +809,22 @@
 
                     function touchEndHandler(layersIndex, layers, e){
                         //console.log('touch end');
+                        if(enteredElement){
                         var enterEvent = document.createEvent('Event');
-                        enterEvent.initEvent('dragend', true, true);
-                        dragTouchSource.dispatchEvent(enterEvent);
+                            enterEvent.initEvent('dragend', true, true);
+                            dragTouchSource.dispatchEvent(enterEvent);
+                        }
                         dragTouchSource = null;
                         enteredElement = null;
                     }
 
                     function touchCancelHandler(layersIndex, e){
-                        console.log('touch cancel');
-                        var enterEvent = document.createEvent('Event');
-                        enterEvent.initEvent('dragend', true, true);
-                        dragTouchSource.dispatchEvent(enterEvent);
+                        //console.log('touch cancel');
+                        if(enteredElement){
+                            var enterEvent = document.createEvent('Event');
+                                enterEvent.initEvent('dragend', true, true);
+                                dragTouchSource.dispatchEvent(enterEvent);
+                        }
                         dragTouchSource = null;
                         enteredElement = null;
                     }
