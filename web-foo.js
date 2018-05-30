@@ -652,7 +652,7 @@
                                 X while dragging, should original disappear?
                                 X dropping on layer label (and maybe other children) is buggy
                                 X hide drag image?
-                                - mobile drag and drop
+                                X mobile drag and drop
 
                             references:
                                 https://forums.adobe.com/thread/1598080
@@ -752,6 +752,7 @@
                     var enteredElement;
                     function touchStartHandler(layersIndex, e){
                         //console.log('touch start');
+                        // TODO: only fire this event after big enough move in touchMove
                         dragStartHandler(layersIndex, e);
                         dragTouchSource = e.target;
                         //e.preventDefault();
