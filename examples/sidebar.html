@@ -16,7 +16,6 @@
     TODO:
     - layers
         - layer blend - https://codepen.io/chriscoyier/pen/Kkliq
-        - drag/drop order
         - add new
         - remove layer
         - same width components / smart labels : done for slider, do for boolean
@@ -179,7 +178,9 @@
         toggleLayerVisible,
         getLayerThumb,
         changeLayerAlpha,
-        changeLayerOrder
+        changeLayerOrder,
+        addLayer,
+        removeLayer
     }) => ({
         title: 'Sidebar Demo',
         pinHandler,
@@ -201,6 +202,8 @@
             }, {
                 type: 'layers',
                 name: 'layers',
+                addLayer,
+                removeLayer,
                 layers: [{
                     name: 'Uber Layer',
                     onToggle: toggleLayerVisible,
@@ -219,16 +222,6 @@
                     getThumb: getLayerThumb,
                     changeLayerAlpha,
                     changeLayerOrder
-                // }, {
-                //     name: 'Middle Layer 2',
-                //     onToggle: toggleLayerVisible,
-                //     getThumb: getLayerThumb,
-                //     changeLayerAlpha
-                // }, {
-                //     name: 'Middle Layer 3',
-                //     onToggle: toggleLayerVisible,
-                //     getThumb: getLayerThumb,
-                //     changeLayerAlpha
                 }, {
                     name: 'Bottom Layer',
                     onToggle: toggleLayerVisible,
@@ -440,6 +433,14 @@
             canvas.viewport.render();
         }
 
+        const addLayer = ({ name, def, type, callback }) => {
+            console.log({ name, def, type, callback });
+            callback();
+        };
+        const removeLayer = ({ number, callback }) => {
+            console.log({ number, callback });
+        };
+
         const changeLayerOrder = ({
             number, operation, repeat=1
         }) => {
@@ -454,7 +455,9 @@
             toggleLayerVisible,
             getLayerThumb,
             changeLayerAlpha,
-            changeLayerOrder
+            changeLayerOrder,
+            addLayer,
+            removeLayer
         });
 
         start({ sidebarDef: definition }, () => {

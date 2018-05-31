@@ -20,6 +20,16 @@
             - refer to docs for context / use case
     */
 
+
+    /* Layers: handle reorder
+        - TODO: still some issues with mobile drag and drop
+
+        references:
+            https://forums.adobe.com/thread/1598080
+            https://www.youtube.com/watch?v=v96u1srGg1w
+
+    */
+
    function addCssLink({ id, href }){
         if (document.getElementById(id)){
             return;
@@ -641,25 +651,6 @@
                         // multiple moveUp's and moveDown's?
                         console.warn(`UNHANDLED: Dragged item ${draggedItem} to position ${dropTarget}`);
 
-
-                        /*TODO: handle reorder
-                            X) trigger external changes
-                            X) change internal model and re-render sidebar
-
-                            still some issues with drag and drop:
-                                X weird flashing back and forth when hovering over some places
-                                X dragging element should be constrained to y axis
-                                X while dragging, should original disappear?
-                                X dropping on layer label (and maybe other children) is buggy
-                                X hide drag image?
-                                X mobile drag and drop
-
-                            references:
-                                https://forums.adobe.com/thread/1598080
-                                https://www.youtube.com/watch?v=v96u1srGg1w
-
-                             
-                        */
                        window.enterTarget = null;
                        window.draggedIndex = null;
                        window.dropTarget = null;
