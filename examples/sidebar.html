@@ -16,14 +16,21 @@
     TODO:
     - layers
         - layer blend - https://codepen.io/chriscoyier/pen/Kkliq
-        - add new
         - remove layer
         - same width components / smart labels : done for slider, do for boolean
         - spinner for actions (like those that require canvas re-render)
         - rename layer
         - add to layer
+        - edit layer
         - move layer
-    - move menu to left
+        - move items in layer
+        - combine layers
+        - link layers
+        - add layer
+            - types of layers (2d, 3d)
+            - how to define layer (with popup, bottom docking console, blank then draw layer, import picture, ???)
+        - set canvas size
+    - menu to left mode
     - top menu
     - bottom status bar
     - floating menu (?)
@@ -35,7 +42,6 @@
     - eliminate all "violation click handler took" warnings
         - many of these were coming from get thumbnail
         - other areas?
-    - custom scrollbars (native on windows looks crappy)
 -->
 
 <style>
@@ -434,8 +440,7 @@
         }
 
         const addLayer = ({ name, def, type, callback }) => {
-            console.log({ name, def, type, callback });
-
+            //console.log({ name, def, type, callback });
             const newLayer = new Concrete.Layer();
             canvas.viewport.add(newLayer);
             const newLayerRender = renderContext(canvas.layers.length, def)
