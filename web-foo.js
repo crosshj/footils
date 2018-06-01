@@ -951,7 +951,8 @@
                                                 type: '2d',
                                                 callback: (layer) => addLayerItem({
                                                     layers: item.layers,
-                                                    newLayer: layer
+                                                    newLayer: layer,
+                                                    layerOrder: layerOrder.length ? layerOrder : null
                                                 })
                                             });
                                         }
@@ -1036,9 +1037,13 @@
                             //TODO: there should be a state.layers =(
                             //console.log(state.layers);
 
+                            //action.payload.layers = [action.payload.newLayer].concat(action.payload.layers);
+                            
+                            var layerOrder = action.payload.layerOrder
+                                || (new Array(action.payload.layers.length)).fill().map((x,i) => i);
+                            layerOrder = [action.payload.layers.length].concat(layerOrder);
+                            newState = Object.assign({}, state, { layerOrder });
                             action.payload.layers.push(action.payload.newLayer);
-                            //const layerOrder = state.layerOrder;
-                            //newState = Object.assign({}, state, { layerOrder });
                             break;
                         }
                         case 'REORDER_LAYERS': {

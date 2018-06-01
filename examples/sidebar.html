@@ -416,15 +416,15 @@
         //             : 1
         // ];
 
+        canvas.renderFunctions = [
+            renderShape,
+            renderTriangle,
+            renderCircle,
+            renderSquare
+        ];
         const changeLayerAlpha = ({ number, alpha }) => {
             //console.log(number);
-            const renderFunctions = [
-                renderShape,
-                renderTriangle,
-                renderCircle,
-                renderSquare
-            ];
-            const renderFunction = renderFunctions[number];
+            const renderFunction = canvas.renderFunctions[number];
 
             renderFunction({
                 layer: canvas.layers[number],
@@ -439,6 +439,8 @@
             const newLayer = new Concrete.Layer();
             canvas.viewport.add(newLayer);
             const newLayerRender = renderContext(canvas.layers.length, def)
+            canvas.layers.push(newLayer);
+            canvas.renderFunctions.push(newLayerRender);
             newLayerRender({ layer: newLayer, width, height });
             canvas.viewport.render();
 
