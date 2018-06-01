@@ -184,7 +184,8 @@
     // RXREACT -----------------------------------------------------------------
     function rxReact(){ return returnProps(rxReact); }
     rxReact.scripts = [
-        'https://unpkg.com/rxjs@beta/bundles/rxjs.umd.js',
+        'https://cdnjs.cloudflare.com/ajax/libs/rxjs/6.2.0/rxjs.umd.min.js',
+        //'https://unpkg.com/rxjs@beta/bundles/rxjs.umd.js',
         [    // react and react-dom should waterfall
             'https://unpkg.com/react@16/umd/react.development.js',
             'https://unpkg.com/react-dom@16/umd/react-dom.development.js'
@@ -526,7 +527,7 @@
                     index, layersHidden, layersSelected, globalState, layerOrder
                 }){
                     const layerDropZone = (number) => li({
-                        key: `layer-drop-zone-${number}-${Math.random()}`,
+                        key: `layer-drop-zone-${number}}`,
                         className: 'layer-drop',
                         style: { display: 'none' }
                     });
@@ -665,6 +666,7 @@
 
                     function dragStartHandler(layersIndex, e){
                         //console.log(`started dragging ${layersIndex}`)
+                        document.querySelector('.layers ul').classList.add('contains-dragging');
                         e.target.classList.add('dragging');
                         window.draggedIndex = layersIndex;
                         const hideDragGhost = true;
@@ -725,12 +727,17 @@
                     }
 
                     function dragEndHandler(layersIndex, layers, e){
+                        document.querySelector('.contains-dragging')
+                            .classList.remove('contains-dragging');
+                        document.querySelectorAll('.dragging')
+                            .forEach(node => node.classList.remove('dragging'))
 
                         if(!window.dropText){
                             window.enterTarget = null;
                             window.draggedIndex = null;
                             return false;
                         }
+                        
                         document.querySelectorAll('.layer-drop').forEach(node => node.classList.remove('active'))
                         handleReOrder({
                             item, layers,
@@ -831,8 +838,8 @@
                     //use Math.random to force re-evaluation of drag handlers
                     const getLayer = (layer, layersIndex, layers) => li({
                         disabled: true,
-                        key: `${section.name}-${item.name}-${index}-li-${layersIndex}-${Math.random()}`,
-                        id: `${section.name}-${item.name}-${index}-li-${layersIndex}-${Math.random()}`,
+                        key: `${section.name}-${item.name}-${index}-li-${layersIndex}}`,
+                        id: `${section.name}-${item.name}-${index}-li-${layersIndex}}`,
                         onClick: () => layerSelectedChanged(layersIndex),
                         className: layersSelected.includes(layersIndex) ? 'selected' : '',
                         draggable: true,

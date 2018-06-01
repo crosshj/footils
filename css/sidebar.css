@@ -290,6 +290,11 @@ select:focus {
     touch-action: none;
 }
 
+.layers .contains-dragging {
+    cursor: move;
+    cursor: -webkit-grabbing;
+}
+
 .layers li.dragging {
     filter: brightness(.6);
     background: #444;
