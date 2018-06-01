@@ -1,3 +1,31 @@
+:root {
+    --main-bg-color: #333;
+    --bg-highlight-color: #333b4c;
+    --bg-light-color: #444;
+    --bg-lighter-color: #666;
+    --bg-lightest-color: #888;
+    --bg-dark-color: #222;
+        
+    --main-text-color: #aaa;
+    --light-text-color: #bbb;
+    --disabled-text-color: #777;
+}
+
+/*
+lighter
+
+:root {
+    --main-bg-color: #c7c6be;
+    --bg-highlight-color: #3c4456;
+    --bg-light-color: #8a8989;
+    --bg-lighter-color: #625f73;
+    --bg-lightest-color: #e61010;
+    --bg-dark-color: #2af300;
+    --main-text-color: #333;
+    --light-text-color: #bbb;
+    --disabled-text-color: #8e8787;
+}
+*/
 #sidebar ::-webkit-scrollbar {
     width: 6px;
 }
@@ -9,7 +37,7 @@
  
 #sidebar ::-webkit-scrollbar-thumb {
     border-radius: 0px;
-    background: #393939;
+    background: var(--bg-light-color);
 }
 
 
@@ -19,10 +47,10 @@
     top: 0px;
     height: 100vh;
     /* bottom: 0px; */
-    background: #333;
+    background: var(--main-bg-color);
     width: 220px;
-    color: #aaa;
-    border-left: 1px solid #4c4c4c;
+    color: var(--main-text-color);
+    border-left: 1px solid var(--bg-light-color);
     user-select: none;
 }
 #sidebar div.scrollContainer {
@@ -60,12 +88,12 @@
 #sidebar input:focus {
     border-radius: 0px;
     border: 0px;
-    background: #6a6a6a;
+    background: var(--bg-lighter-color);
 }
 input[type=text] {
     border: none;
     height: 16px;
-    color: #bbb;
+    color: var(--main-text-color);
     padding-right: 5px;
     padding-left: 5px;
     text-align: right;
@@ -85,14 +113,14 @@ input[type=range]::-webkit-slider-thumb {
     height: 17px;
     width: 10px;
     border-radius: 0px;
-    background: #888;
+    background: var(--bg-lightest-color);
     cursor: pointer;
 }
 input[type=range]::-webkit-slider-runnable-track,
 input[type=text],
 .slider,
 select {
-    background: #444;
+    background: var(--bg-light-color);
 }
 input[type=range]::-webkit-slider-runnable-track {
     width: 100%;
@@ -102,7 +130,7 @@ input[type=range]::-webkit-slider-runnable-track {
     border: 0px;
 }
 input[type=range]:focus::-webkit-slider-runnable-track {
-    background: #666;
+    background: var(--bg-lighter-color);
 }
 div#header {
     margin: 0px;
@@ -111,10 +139,10 @@ div#header {
     top: 0px;
     height: 20px;
     right: 0px;
-    background: #454545;
+    background: var(--bg-lighter-color);;
     padding-left: 6px;
     line-height: 20px;
-    color: #acacac;
+    color: var(--main-text-color);
     font-size: 10px;
     text-transform: capitalize;
     padding-right: 5px;
@@ -135,20 +163,23 @@ div#header {
     user-select: none;
 }
 #openSettings {
-    background: #444;
-    color: #ddd;
+    background: var(--bg-light-color);
+    color: var(--main-text-color);
     position: absolute;
     top: 4px;
     right: 5px;
     /* font-family: monospace; */
     font-family: 'Lucida Grande', sans-serif;
 }
-#closeSettings:hover:not([disabled]), #openSettings:hover {
-    background: #eee;
-    color: #222;
+#closeSettings:hover:not([disabled]),
+#openSettings:hover,
+#pinButton:hover
+ {
+    background: var(--bg-dark-color);
+    color: var(--main-text-color);
 }
 #closeSettings[disabled] {
-    color: #777;
+    color: var(--disabled-text-color);
 }
 .sliderValue {
     /* padding-right: 5px;
@@ -189,18 +220,18 @@ div#header {
     width: 10px;
     left: 4px;
     bottom: 4px;
-    background-color: #999;
+    background-color: var(--bg-lightest-color);
     -webkit-transition: .4s;
     transition: .4s;
 }
 input:checked + .slider {
-    /* background-color: #777; */
+    /* background-color: var(--bg-lighter-color); */
 }
 input:checked + .slider:before {
-    /* background-color: #ccc; */
+    /* background-color: var(--main-text-color); */
 }
 input:focus + .slider {
-    background-color: #777;
+    background-color: var(--bg-lightest-color);
 }
 input:checked + .slider:before {
     -webkit-transform: translateX(12px);
@@ -217,7 +248,7 @@ input:checked + .slider:before {
 }
 
 select {
-    color: #aaa;
+    color: var(--main-text-color);
     text-transform: uppercase;
     /* font-family: monospace; */
     font-family: 'Lucida Grande', sans-serif;
@@ -245,7 +276,7 @@ select:focus {
     border: 0px;
     border-radius: 0px;
     font-size: 10px;
-    color: #aaa;
+    color: var(--main-text-color);
     width: -webkit-fill-available;
     text-transform: uppercase;
     height: 23px;
@@ -253,17 +284,17 @@ select:focus {
     min-height: unset;
     margin: 3px 0px;
     transition: unset;
-    background: #454545;
+    background: var(--bg-light-color);
 }
 #sidebar .buttonContainer > button:hover {
-    background-color: #666;
+    background-color: var(--bg-lighter-color);
 }
 #sidebar div.divider:nth-child(n+3) {
     margin-top: 19px !important;
 }
 #sidebar div.divider {
     margin-left: -3px;
-    border-bottom: 1px solid #444;
+    border-bottom: 1px solid var(--bg-light-color);
     font-style: italic;
 }
 
@@ -293,17 +324,19 @@ select:focus {
 .layers .contains-dragging {
     cursor: move;
     cursor: -webkit-grabbing;
+    cursor: -moz-grabbing;
+    cursor: grabbing;
 }
 
 .layers li.dragging {
     filter: brightness(.6);
-    background: #444;
+    background: var(--bg-light-color);
 }
 
 .layers li.selected {
-    background-color: #343942;
+    background-color: var(--bg-highlight-color);
     border-radius: 0px;
-    border: 1px solid #282828;
+    border: 1px solid var(--bg-dark-color);
 }
 .layers input[type='checkbox'] {
     width: 20px !important;
@@ -311,10 +344,10 @@ select:focus {
 .layers .image {
     max-height: 100%;
     max-width: 80px;
-    /* background: #666; */
+    /* background: var(--bg-lighter-color); */
     margin-left: 4px;
-    --main-color: #a2a2a2;
-    --second-color: #aeaeae;
+    --main-color: var(--main-text-color);
+    --second-color: var(--light-text-color);
     background-image: linear-gradient(45deg, var(--main-color) 25%, transparent 25%), linear-gradient(-45deg, var(--main-color) 25%, transparent 25%), linear-gradient(45deg, transparent 75%, var(--main-color) 75%), linear-gradient(-45deg, transparent 75%, var(--main-color) 75%);
     background-size: 10px 10px;
     background-position: 0 0, 0 5px, 5px -5px, -5px 0px;
@@ -342,7 +375,7 @@ select:focus {
     position: relative;
 }
 .layerProps .slider-component {
-    width: 50% !important;;
+    width: 50% !important;
     margin-left: 5px !important;
 }
 .layerProps .select-component {
@@ -355,7 +388,7 @@ select:focus {
 .layerTools {
     height: 29px;
     margin-top: 5px;
-    background: #2c2c2c;
+    background: var(--bg-dark-color);
     padding-left: 3px;
     padding-right: 3px;
     display: flex;
@@ -370,7 +403,7 @@ select:focus {
 .eyeToggle {
     width: 19px;
     height: 25px;
-    fill: #666;
+    fill: var(--bg-lighter-color);
     padding-right: 2px;
     padding-left: 2px;
 }
@@ -378,18 +411,13 @@ select:focus {
     margin-right: 12px;
     margin-left: auto;
     font-size: smaller;
-    /* border: 0.5px solid #999; */
+    /* border: 0.5px solid var(--bg-lighter-color); */
     padding: 2px 3px 2px 3px;
     margin-top: 6px;
     margin-bottom: 5px;
     line-height: 4px;
     cursor: pointer;
-    color: #ccc;
-}
-#pinButton:hover {
-    background: #eee;
-    color: black;
-    /* border: 1px solid #eee; */
+    color: var(--main-text-color);
 }
 #pinIcon {
     margin-right: 6px;
@@ -398,7 +426,7 @@ select:focus {
     margin-left: auto;
 }
 #pinIcon path {
-    fill: #aaa;
+    fill: var(--main-text-color);
 }
 #pinIcon path:hover {
     fill: turquoise;
