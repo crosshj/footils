@@ -180,7 +180,7 @@
         changeLayerAlpha,
         changeLayerOrder,
         addLayer,
-        removeLayer
+        removeLayers
     }) => ({
         title: 'Sidebar Demo',
         pinHandler,
@@ -203,7 +203,7 @@
                 type: 'layers',
                 name: 'layers',
                 addLayer,
-                removeLayer,
+                removeLayers,
                 layers: [{
                     name: 'Uber Layer',
                     onToggle: toggleLayerVisible,
@@ -435,10 +435,25 @@
 
         const addLayer = ({ name, def, type, callback }) => {
             console.log({ name, def, type, callback });
-            callback();
+
+            const newLayer = new Concrete.Layer();
+            canvas.viewport.add(newLayer);
+            const newLayerRender = renderContext(canvas.layers.length, def)
+            newLayerRender({ layer: newLayer, width, height });
+            canvas.viewport.render();
+
+            const newSidebarLayer = {
+                name,
+                onToggle: toggleLayerVisible,
+                getThumb: getLayerThumb,
+                changeLayerAlpha,
+                changeLayerOrder
+            };
+
+            callback(newSidebarLayer);
         };
-        const removeLayer = ({ number, callback }) => {
-            console.log({ number, callback });
+        const removeLayers = ({ numbers, callback }) => {
+            console.log({ numbers, callback });
         };
 
         const changeLayerOrder = ({
@@ -457,7 +472,7 @@
             changeLayerAlpha,
             changeLayerOrder,
             addLayer,
-            removeLayer
+            removeLayers
         });
 
         start({ sidebarDef: definition }, () => {

@@ -353,6 +353,13 @@
                     });
                 };
 
+                const addLayerItem = (payload) => {
+                    return dispatcher({
+                        type: 'ADD_LAYER_ITEM',
+                        payload
+                    })
+                };
+
                 if(sidebarDef.hidden){
                     // NOTE: is this safe since dispatcher called?
                     toggleClick();
@@ -931,11 +938,34 @@
                                 className: 'layerTools'
                             },[
                                 buttonComponent({ div, button, section, item: {
-                                        name: '+'
+                                        name: '+',
+                                        onClick: () => {
+                                            item.addLayer({
+                                                //TODO: should get all of this from UI somehow
+                                                name: 'New Layer',
+                                                def: function({ ctx, width, height}){
+                                                    ctx.fillStyle = '#ff8c00';
+                                                    ctx.arc(width/4, height/4, width/6, 0, 2*Math.PI, false);
+                                                    ctx.fill();
+                                                },
+                                                type: '2d',
+                                                callback: (layer) => addLayerItem({
+                                                    layers: item.layers,
+                                                    newLayer: layer
+                                                })
+                                            });
+                                        }
                                     }
                                 }),
                                 buttonComponent({ div, button, section, item: {
-                                    name: '-'
+                                    name: '-',
+                                    onClick: () => {
+                                        item.removeLayers({
+                                            callback: (args) => {
+                                                console.log(args);
+                                            }
+                                        });
+                                    }
                                 }
                             })
                             ])
@@ -1002,6 +1032,15 @@
                 const reducer = (state, action) => {
                     var newState = clone(state);
                     switch(action.type){
+                        case 'ADD_LAYER_ITEM': {
+                            //TODO: there should be a state.layers =(
+                            //console.log(state.layers);
+
+                            action.payload.layers.push(action.payload.newLayer);
+                            //const layerOrder = state.layerOrder;
+                            //newState = Object.assign({}, state, { layerOrder });
+                            break;
+                        }
                         case 'REORDER_LAYERS': {
                             const layerOrder = action.payload.order;
                             newState = Object.assign({}, state, { layerOrder });
