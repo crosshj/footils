@@ -666,14 +666,14 @@
 
                     function dragStartHandler(layersIndex, e){
                         //console.log(`started dragging ${layersIndex}`)
-                        e.dataTransfer.dropEffect = 'none'
-                        e.dataTransfer.effectAllowed = 'none'
-
+                        
                         document.querySelector('.layers ul').classList.add('contains-dragging');
                         e.target.classList.add('dragging');
                         window.draggedIndex = layersIndex;
                         const hideDragGhost = true;
                         if(e.dataTransfer && hideDragGhost){
+                            e.dataTransfer.dropEffect = 'none';
+                            e.dataTransfer.effectAllowed = 'none';
                             var img = new Image(); 
                             img.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg"/>'; 
                             e.dataTransfer.setDragImage(img, 10, 10);
