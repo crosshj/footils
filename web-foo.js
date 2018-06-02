@@ -666,6 +666,9 @@
 
                     function dragStartHandler(layersIndex, e){
                         //console.log(`started dragging ${layersIndex}`)
+                        e.dataTransfer.dropEffect = 'none'
+                        e.dataTransfer.effectAllowed = 'none'
+
                         document.querySelector('.layers ul').classList.add('contains-dragging');
                         e.target.classList.add('dragging');
                         window.draggedIndex = layersIndex;
@@ -703,7 +706,7 @@
                             e.target.nextSibling.classList.add('active');
                         }
                         e.stopPropagation();
-                        //e.preventDefault();
+                        e.preventDefault();
                         return false;
                     }
 
@@ -834,7 +837,110 @@
                         dragTouchSource = null;
                         enteredElement = null;
                     }
-                    
+
+                    function createElementFromHTML(htmlString) {
+                        var div = document.createElement('div');
+                        div.innerHTML = htmlString.trim();
+                        
+                        // Change this to div.childNodes to support multiple top-level nodes
+                        return div.firstChild; 
+                    }
+
+                    function parseFunction(string){
+                        var func = new Function("return " + string)();
+                        return func;
+                    }
+
+                    function constructLayer(goFn, cancelFn){
+                        const container = createElementFromHTML(`
+                            <div id="layer-create">
+                                <div id="topBar">
+                                    <div>
+                                        <label>Name</label>
+                                        <input type="text" id="layerName" placeHolder="Enter Layer Name"/>
+                                    </div>
+                                    <div>
+                                        <label>Type</label>
+                                        <select id="layerType">
+                                            <option>2D</option>
+                                            <option>3D</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <textarea id="layerDef"
+                                    autocomplete="off" autocorrect="off"
+                                    autocapitalize="off" spellcheck="false"
+                                ></textarea>
+                                
+                                <div id="bottomBar">
+                                    <div class="buttonContainer">
+                                        <button id="layerAddCancel">Cancel</button>
+                                    </div>
+                                    <div class="buttonContainer">
+                                        <button id="layerAddSubmit">Add Layer</button>
+                                    </div>
+                                </div>
+                            </div>
+                        `);
+                        const getChildId = container.querySelector;
+                        
+                        const layerName = container.querySelector('#layerName');
+                        const layerType = container.querySelector('#layerType');
+                        const layerDef = container.querySelector('#layerDef');
+                        const layerAddCancel = container.querySelector('#layerAddCancel');
+                        const layerAddSubmit = container.querySelector('#layerAddSubmit');
+
+                        layerDef.value = ''
+                            + "var centerX = width / 2;\n"
+                            + "var centerY = height / 2;\n"
+                            + "var radius = 70;\n"
+                            + "var eyeRadius = 10;\n"
+                            + "var eyeXOffset = 25;\n"
+                            + "var eyeYOffset = 20;\n"
+
+                            + "\n// face\n"
+                            + "ctx.beginPath();\n"
+                            + "ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI, false);\n"
+                            + "ctx.fillStyle = 'yellow';\n"
+                            + "ctx.fill();\n"
+                            + "ctx.lineWidth = 3;\n"
+                            + "ctx.strokeStyle = 'black';\n"
+                            + "ctx.stroke();\n"
+
+                            + "\n// eyes\n"
+                            + "ctx.beginPath();\n"
+                            + "var eyeX = centerX - eyeXOffset;\n"
+                            + "var eyeY = centerY - eyeXOffset;\n"
+                            + "ctx.arc(eyeX, eyeY, eyeRadius, 0, 2 * Math.PI, false);\n"
+                            + "var eyeX = centerX + eyeXOffset;\n"
+                            + "ctx.arc(eyeX, eyeY, eyeRadius, 0, 2 * Math.PI, false);\n"
+                            + "ctx.fillStyle = 'black';\n"
+                            + "ctx.fill();\n"
+
+                            + "\n// mouth\n"
+                            + "ctx.beginPath();\n"
+                            + "ctx.arc(centerX, centerY+7, 25, Math.PI, 2*Math.PI, false);\n"
+                            + "ctx.stroke();\n"
+                        + '';
+
+                        layerAddCancel.onclick = () => {
+                            document.getElementById('sidebar').removeChild(container);
+                        };
+                        layerAddSubmit.onclick = () => {
+                            goFn({
+                                def: parseFunction(`function({ ctx, width, height}){
+                                    ${container.querySelector('#layerDef').value}
+                                }`),
+                                name: container.querySelector('#layerName').value || 'New Layer',
+                                type: container.querySelector('#layerType').value
+                            });
+                            document.getElementById('sidebar').removeChild(container);
+                        };
+
+                        document.getElementById('sidebar').appendChild(container);
+                    }
+
                     //use Math.random to force re-evaluation of drag handlers
                     const getLayer = (layer, layersIndex, layers) => li({
                         disabled: true,
@@ -850,7 +956,8 @@
                         onTouchStart: ({nativeEvent: e}) => touchStartHandler(layersIndex, e),
                         onTouchMove: ({nativeEvent: e}) => touchMoveHandler(layersIndex, layers, e),
                         onTouchEnd: ({nativeEvent: e}) => touchEndHandler(layersIndex, layers, e),
-                        onTouchCancel: ({nativeEvent: e}) => touchCancelHandler(layersIndex, layers, e)
+                        onTouchCancel: ({nativeEvent: e}) => touchCancelHandler(layersIndex, layers, e),
+                        onDrop: () => { return false; }
                     }, [
                         eyeToggle({
                             svg, g, path, circle, hidden: layersHidden.includes(layersIndex),
@@ -946,23 +1053,23 @@
                             },[
                                 buttonComponent({ div, button, section, item: {
                                         name: '+',
-                                        onClick: () => {
-                                            item.addLayer({
-                                                //TODO: should get all of this from UI somehow
-                                                name: 'New Layer',
-                                                def: function({ ctx, width, height}){
-                                                    ctx.fillStyle = '#ff8c00';
-                                                    ctx.arc(width/4, height/4, width/6, 0, 2*Math.PI, false);
-                                                    ctx.fill();
-                                                },
-                                                type: '2d',
-                                                callback: (layer) => addLayerItem({
-                                                    layers: item.layers,
-                                                    newLayer: layer,
-                                                    layerOrder: layerOrder.length ? layerOrder : null
-                                                })
-                                            });
-                                        }
+                                        onClick: () => constructLayer(
+                                            ({ name, def, type }) => {
+                                                item.addLayer({
+                                                    name,
+                                                    def,
+                                                    type,
+                                                    callback: (layer) => addLayerItem({
+                                                        layers: item.layers,
+                                                        newLayer: layer,
+                                                        layerOrder: layerOrder.length ? layerOrder : null
+                                                    })
+                                                });
+                                            },
+                                            () => {
+                                                console.log('TODO: cancel layer add');
+                                            }
+                                        )
                                     }
                                 }),
                                 buttonComponent({ div, button, section, item: {
