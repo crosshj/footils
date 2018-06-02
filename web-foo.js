@@ -862,8 +862,10 @@
                                     <div>
                                         <label>Type</label>
                                         <select id="layerType">
-                                            <option>2D</option>
-                                            <option>3D</option>
+                                            <option>2D Canvas</option>
+                                            <option>3D Canvas</option>
+                                            <option>Image</option>
+                                            <option>SVG</option>
                                         </select>
                                     </div>
                                 </div>
