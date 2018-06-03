@@ -361,6 +361,13 @@
                     })
                 };
 
+                const removeLayers = (payload) => {
+                    return dispatcher({
+                        type: 'REMOVE_LAYERS',
+                        payload
+                    });
+                }
+
                 if(sidebarDef.hidden){
                     // NOTE: is this safe since dispatcher called?
                     toggleClick();
@@ -666,7 +673,7 @@
 
                     function dragStartHandler(layersIndex, e){
                         //console.log(`started dragging ${layersIndex}`)
-                        
+
                         document.querySelector('.layers ul').classList.add('contains-dragging');
                         e.target.classList.add('dragging');
                         window.draggedIndex = layersIndex;
@@ -977,7 +984,7 @@
                             className: "image",
                             tabIndex: 0,
                             draggable: false,
-                            src: layer.getThumb({ number: layersIndex }),
+                            src: layer.getThumb ? layer.getThumb({ number: layersIndex }) : '',
                             key: `${section.name}-${item.name}-${index}-thumbnail-${layersIndex}`,
                         }),
                         span({
@@ -1076,13 +1083,7 @@
                                 }),
                                 buttonComponent({ div, button, section, item: {
                                     name: '-',
-                                    onClick: () => {
-                                        item.removeLayers({
-                                            callback: (args) => {
-                                                console.log(args);
-                                            }
-                                        });
-                                    }
+                                    onClick: () => removeLayers(item)
                                 }
                             })
                             ])
@@ -1149,6 +1150,35 @@
                 const reducer = (state, action) => {
                     var newState = clone(state);
                     switch(action.type){
+                        case 'REMOVE_LAYERS': {
+                            const selectedLayers = newState.layersSelected || [0];
+                            console.log(`removing ${selectedLayers}`)
+                            const callback = () => {
+                                action.payload.layers = action.payload.layers
+                                    .filter((x, i) => !selectedLayers.includes(i));
+                            };
+                            if(action.payload.removeLayers){
+                                action.payload.removeLayers({
+                                    numbers: selectedLayers,
+                                    callback
+                                });
+                            }
+                            var layerOrder = newState.layerOrder
+                                || (new Array(action.payload.layers.length)).fill().map((x,i) => i);
+                            layerOrder = layerOrder.filter(number => !selectedLayers.includes(number));
+                            newState = Object.assign({}, state, { layerOrder, layersSelected: [0] });
+
+                            // action.payload.layers = action.payload.layers
+                            //     .filter((x, i) => !selectedLayers.includes(i));
+
+                            
+                            // layers.forEach(layer => {
+
+                            // });
+                            //layers=layers.filter((x, i) => !selectedLayers.includes(i));
+                            //debugger;
+                            break;
+                        }
                         case 'ADD_LAYER_ITEM': {
                             //TODO: there should be a state.layers =(
                             //console.log(state.layers);

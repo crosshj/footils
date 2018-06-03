@@ -463,7 +463,16 @@
             callback(newSidebarLayer);
         };
         const removeLayers = ({ numbers, callback }) => {
-            console.log({ numbers, callback });
+            //console.log({ numbers, callback });
+            canvas.layers.forEach((layer, i) => {
+                if(numbers.includes(i)){
+                    layer.destroy();
+                }
+            });
+            canvas.layers = canvas.layers.filter((layer, i) => !numbers.includes(i));
+            thumbs = thumbs.filter((thumb, i) => !numbers.includes(i));
+            canvas.viewport.render();
+            callback();
         };
 
         const changeLayerOrder = ({
