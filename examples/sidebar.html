@@ -470,7 +470,8 @@
                 }
             });
             canvas.layers = canvas.layers.filter((layer, i) => !numbers.includes(i));
-            thumbs = thumbs.filter((thumb, i) => !numbers.includes(i));
+            thumbs = thumbs.filter((thumb, i)=>!numbers.includes(i))
+            //thumbs.map((thumb, i) => numbers.includes(i) ? ()=>{} : thumb);
             canvas.viewport.render();
             callback();
         };
@@ -493,6 +494,15 @@
             addLayer,
             removeLayers
         });
+
+        // number each layer
+        definition.sections.forEach(section => {
+            section.items
+                .filter(item => item.type === 'layer')
+                .forEach((layer, i)=> {
+                    layer.number = i;
+                })
+        })
 
         start({ sidebarDef: definition }, () => {
             const loaderStyle = document.getElementById('loading-spinner').style

@@ -1151,7 +1151,7 @@
                     var newState = clone(state);
                     switch(action.type){
                         case 'REMOVE_LAYERS': {
-                            const selectedLayers = newState.layersSelected || [0];
+                            const selectedLayers = newState.layersSelected || [action.payload.layers[0].number];
                             console.log(`removing ${selectedLayers}`)
                             const callback = () => {
                                 action.payload.layers = action.payload.layers
@@ -1166,7 +1166,12 @@
                             var layerOrder = newState.layerOrder
                                 || (new Array(action.payload.layers.length)).fill().map((x,i) => i);
                             layerOrder = layerOrder.filter(number => !selectedLayers.includes(number));
-                            newState = Object.assign({}, state, { layerOrder, layersSelected: [0] });
+                            newState = Object.assign({}, state, {
+                                layerOrder,
+                                layersSelected: layerOrder
+                                    ? [layerOrder[0]]
+                                    : [0]
+                            });
 
                             // action.payload.layers = action.payload.layers
                             //     .filter((x, i) => !selectedLayers.includes(i));
