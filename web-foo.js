@@ -1041,10 +1041,12 @@
                                             // call function for alpha change setup in sidebar def
                                             const changeSelectedAlpha = () => {
                                                 (layersSelected || [0] ).forEach(layerNumber => {
-                                                    item.layers[layerNumber].changeLayerAlpha({
-                                                        number: layerNumber,
-                                                        alpha: Number(value)/100
-                                                    })
+                                                    item.layers
+                                                        .find(x => x.number === layerNumber)
+                                                        .changeLayerAlpha({
+                                                            number: layerNumber,
+                                                            alpha: Number(value)/100
+                                                        })
                                                 });
                                             };
                                             changeSelectedAlpha();
