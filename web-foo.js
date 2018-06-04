@@ -996,7 +996,7 @@
                     ]);
 
                     const reorderedLayers = layerOrder.length && layerOrder.length === item.layers.length
-                        ? layerOrder.map(number => Object.assign({}, item.layers[number], { number }))
+                        ? layerOrder.map(number => item.layers.find(x => x.number === number))
                         : item.layers.map((x,i) => Object.assign({}, x, { number: i }));
 
                     const layersList = reorderedLayers.reduce((allLayerLi, oneLayerLi, layersIndex) => {
@@ -1154,8 +1154,9 @@
                             const selectedLayers = newState.layersSelected || [action.payload.layers[0].number];
                             console.log(`removing ${selectedLayers}`)
                             const callback = () => {
-                                action.payload.layers = action.payload.layers
-                                    .filter((x, i) => !selectedLayers.includes(i));
+                                const newLayers = action.payload.layers
+                                    .filter((x, i) => !selectedLayers.includes(x.number));
+                                action.payload.layers = newLayers;
                             };
                             if(action.payload.removeLayers){
                                 action.payload.removeLayers({
@@ -1164,24 +1165,12 @@
                                 });
                             }
                             var layerOrder = newState.layerOrder
-                                || (new Array(action.payload.layers.length)).fill().map((x,i) => i);
+                                || action.payload.layers.map(layer => layer.number);
                             layerOrder = layerOrder.filter(number => !selectedLayers.includes(number));
                             newState = Object.assign({}, state, {
                                 layerOrder,
-                                layersSelected: layerOrder
-                                    ? [layerOrder[0]]
-                                    : [0]
+                                layersSelected: [layerOrder[0]]
                             });
-
-                            // action.payload.layers = action.payload.layers
-                            //     .filter((x, i) => !selectedLayers.includes(i));
-
-                            
-                            // layers.forEach(layer => {
-
-                            // });
-                            //layers=layers.filter((x, i) => !selectedLayers.includes(i));
-                            //debugger;
                             break;
                         }
                         case 'ADD_LAYER_ITEM': {
@@ -1191,8 +1180,8 @@
                             //action.payload.layers = [action.payload.newLayer].concat(action.payload.layers);
                             
                             var layerOrder = action.payload.layerOrder
-                                || (new Array(action.payload.layers.length)).fill().map((x,i) => i);
-                            layerOrder = [action.payload.layers.length].concat(layerOrder);
+                                || action.payload.layers.map(layer => layer.number);
+                            layerOrder = [action.payload.newLayer.number].concat(layerOrder);
                             newState = Object.assign({}, state, { layerOrder });
                             action.payload.layers.push(action.payload.newLayer);
                             break;

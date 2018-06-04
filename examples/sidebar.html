@@ -416,14 +416,9 @@
             canvas.layers[number].visible = visible;
             canvas.viewport.render();
         };
-        const getLayerThumb = ({ number }) => thumbs[number];
-        // const getLayerThumb = ({ number }) => thumbs[
-        //     number === 0
-        //         ? number
-        //         : number === 4
-        //             ? 2
-        //             : 1
-        // ];
+        const getLayerThumb = ({ number }) => {
+            return thumbs[number]
+        };
 
         canvas.renderFunctions = [
             renderShape,
@@ -454,6 +449,7 @@
 
             const newSidebarLayer = {
                 name,
+                number: canvas.layers.length-1,
                 onToggle: toggleLayerVisible,
                 getThumb: getLayerThumb,
                 changeLayerAlpha,
@@ -469,8 +465,8 @@
                     layer.destroy();
                 }
             });
-            canvas.layers = canvas.layers.filter((layer, i) => !numbers.includes(i));
-            thumbs = thumbs.filter((thumb, i)=>!numbers.includes(i))
+            //canvas.layers = canvas.layers.filter((layer, i) => !numbers.includes(i));
+            //thumbs = thumbs.filter((thumb, i)=>!numbers.includes(i))
             //thumbs.map((thumb, i) => numbers.includes(i) ? ()=>{} : thumb);
             canvas.viewport.render();
             callback();
@@ -498,9 +494,11 @@
         // number each layer
         definition.sections.forEach(section => {
             section.items
-                .filter(item => item.type === 'layer')
-                .forEach((layer, i)=> {
-                    layer.number = i;
+                .filter(item => item.type === 'layers')
+                .forEach(item => {
+                    item.layers.forEach((layer, i) => {
+                        layer.number = i;
+                    })
                 })
         })
 
