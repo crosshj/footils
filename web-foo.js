@@ -943,6 +943,14 @@
                                     </div>
                                 </div>
 
+                                <div class="tabBar">
+                                    <div class="tab active">Smiley</div>
+                                    <div class="tab">Triangle</div>
+                                    <div class="tab">Text</div>
+                                    <div class="tab">Circle</div>
+                                    <div class="tab">Square</div>
+                                </div>
+
                                 <textarea id="layerDef"
                                     autocomplete="off" autocorrect="off"
                                     autocapitalize="off" spellcheck="false"
@@ -965,6 +973,14 @@
                         const layerDef = container.querySelector('#layerDef');
                         const layerAddCancel = container.querySelector('#layerAddCancel');
                         const layerAddSubmit = container.querySelector('#layerAddSubmit');
+
+                        const tabs = Array.from(container.querySelectorAll('.tab')).forEach(tab => {
+                            tab.onclick = (e) => {
+                                container.querySelector('.tab.active').classList.remove('active');
+                                e.target.classList.add('active');
+                                // TODO: also change text of layerDef and name and type !!
+                            };
+                        });
 
                         layerDef.value = ''
                             + "var centerX = width / 2;\n"

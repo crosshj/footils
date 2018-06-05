@@ -521,3 +521,29 @@ div#layer-create #topBar > *, div#layer-create #bottomBar > *{
     height: 100%;
     margin-left: 2px;
 }
+
+.tabBar {
+    display: flex;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 5px 2px;
+}
+
+.tab {
+    flex: 1;
+    background: var(--bg-dark-color);
+    text-align: center;
+    margin: 0px 3px;
+    color: var(--disabled-text-color);
+}
+
+.tab:hover {
+    background: var(--bg-highlight-color);
+    color: var(--light-text-color);
+    outline: 1px solid var(--bg-lighter-color);
+}
+
+.tab.active {
+    background: var(--bg-lighter-color);
+    color: var(--light-text-color);
+}
