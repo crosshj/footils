@@ -206,8 +206,8 @@
         };
         [
             'div', 'textarea', 'input', 'h1', 'h2', 'h3', 'h4', 'h5', 'p',
-            'span', 'ul', 'li', 'img', 'svg', 'canvas', 'label', 'form', 'button',
-            'select', 'option', 'svg', 'g', 'path', 'circle'
+            'span', 'ul', 'li', 'img', 'canvas', 'label', 'form', 'button',
+            'select', 'option', 'svg', 'g', 'path', 'circle', 'rect', 'polygon'
         ].forEach(el => {
             components[el] = (props, children) => createElement(el, props, children);
         });
@@ -290,7 +290,8 @@
             const getRoot = (components, dispatcher) => {
                 const {
                     div, textarea, h4, label, fragment, form, span, button,
-                    input, select, option, ul, li, svg, g, path, circle, img
+                    input, select, option, ul, li, svg, g, path, circle, rect, polygon,
+                    img
                 } = components;
                 const action = (type) => (e) => dispatcher({type, payload: e.target.value});
 
@@ -526,6 +527,71 @@
                                     })
                                     : null
                             ])
+                        )
+                    );
+                }
+
+                function editIcon({ key, svg, g, rect, polygon, editClick}){
+                    // const pencilStyle = {
+                    //     highlight: "#C4C8F5",
+                    //     shadow: "#A7ADF0",
+                    //     tip: "#FFB655",
+                    //     eraserHighlight: "#1E81CE",
+                    //     eraserShadow: "#165C92"
+                    // }
+                    const pencilStyle = {
+                        shadow: "rgba(140, 140, 140, 1)",
+                        tip: "rgba(255, 255, 255, .6)",
+                        eraserShadow: "rgba(0, 0, 0, .7)"
+                    }
+                    return (
+                        div({
+                            key,
+                            className: 'buttonContainer editIcon'
+                        },
+                            div(null,
+                                svg({
+                                    xmlns:"http://www.w3.org/2000/svg",
+                                    xmlnsXlink: "http://www.w3.org/1999/xlink",
+                                    version: "1.1",
+                                    viewBox: "0 0 504.034 504.034",
+                                    preserveAspectRatio: "none",
+                                    // tabIndex: 0,
+                                    onClick: editClick
+                                },
+                                    g(null, [
+                                        rect({
+                                            key: `${key}-g-rect`,
+                                            style: { fill: pencilStyle.shadow },
+                                            //style: { fill: pencilStyle.highlight},
+                                            x: "169.782", y: "41.048",
+                                            transform: "matrix(0.7071 0.7071 -0.7071 0.7071 224.208 -84.0257)",
+                                            width: "87.5", height: "375.164"
+                                        }),
+                                        polygon({
+                                            key: `${key}-g-polygon-1`,
+                                            style: { fill: pencilStyle.shadow },
+                                            points: "408.044,157.861 377.109,126.926 111.827,392.207 173.699,454.078 438.98,188.797"
+                                        }),
+                                        polygon({
+                                            key: `${key}-g-polygon-2`,
+                                            style: { fill: pencilStyle.tip },
+                                            points: "49.956,330.335 0,504.034 173.699,454.078"
+                                        }),
+                                        polygon({
+                                            key: `${key}-g-polygon-3`,
+                                            style: { fill: pencilStyle.eraserShadow },
+                                            //style: { fill: pencilStyle.eraserHighlight},
+                                            points: "442.162,61.872 504.034,123.743 380.291,0 315.237,65.054 377.108,126.925"
+                                        }),
+                                        polygon({
+                                            key: `${key}-g-polygon-4`,
+                                            style: { fill: pencilStyle.eraserShadow },
+                                            points: "442.162,61.872 377.108,126.925 408.044,157.861 438.98,188.797 504.034,123.743"
+                                        })
+                                    ])
+                                )
+                            )
                         )
                     );
                 }
@@ -1062,6 +1128,11 @@
                                 key: `${section.name}-${item.name}-${index}-tools`,
                                 className: 'layerTools'
                             },[
+                                editIcon({
+                                    key: `${section.name}-${item.name}-${index}-edit-icon`,
+                                    svg, g, rect, polygon,
+                                    editClick: () => { console.log('---TODO: edit icon click!') }
+                                }),
                                 buttonComponent({ div, button, section, item: {
                                         name: '+',
                                         onClick: () => constructLayer(

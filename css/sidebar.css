@@ -499,3 +499,25 @@ div#layer-create #topBar > *, div#layer-create #bottomBar > *{
     flex: 1 1 0;
     margin: 5px;
 }
+
+.editIcon div {
+    margin: 3px;
+    margin-right: 0px;
+    padding: 3px;
+    background: var(--bg-light-color);
+    height: 17px;
+    width: 20px;
+}
+
+.editIcon div:hover {
+    background: var(--bg-lighter-color);
+}
+.editIcon div:hover svg {
+    filter: drop-shadow( 1px 1px 1px rgba(0,0,0,.5));
+}
+
+.editIcon svg {
+    /* filter: grayscale(100%) contrast(1.5); */
+    height: 100%;
+    margin-left: 2px;
+}
