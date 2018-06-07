@@ -11,8 +11,9 @@
     --disabled-text-color: #777;
 }
 
+/* lighter */
+
 /*
-lighter
 
 :root {
     --main-bg-color: #c7c6be;
@@ -25,8 +26,10 @@ lighter
     --light-text-color: #bbb;
     --disabled-text-color: #8e8787;
 }
+
 */
-#sidebar ::-webkit-scrollbar {
+
+ #sidebar ::-webkit-scrollbar {
     width: 6px;
 }
  
@@ -444,7 +447,7 @@ select:focus {
 
 div#layer-create {
     position: fixed;
-    background: var(--bg-light-color);
+    background: var(--main-bg-color);
     border: 1px solid var(--bg-lighter-color);
     bottom: 0px;
     top: 0px;
@@ -487,7 +490,7 @@ div#layer-create #layerDef {
 
 div#layer-create input, div#layer-create select, div#layer-create textarea {
     background: var(--bg-dark-color);
-    color: var(--bg-lightest-color);
+    color: var(--main-text-color);
 }
 
 div#layer-create #topBar, div#layer-create #bottomBar {
@@ -531,7 +534,7 @@ div#layer-create #topBar > *, div#layer-create #bottomBar > *{
 
 .tab {
     flex: 1;
-    background: var(--bg-dark-color);
+    background: var(--bg-light-color);
     text-align: center;
     margin: 0px 3px;
     color: var(--disabled-text-color);
