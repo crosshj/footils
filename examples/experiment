@@ -1,0 +1,33 @@
+
+looking at gradients
+
+
+
+const numberOfSides = 9;
+const largest = 700;
+
+for( x=largest; x > 1; x-=1){
+
+var size = x;
+const Xcenter = width / 2;
+const Ycenter = height / 2;
+var value = (size-10) * 256 / largest;
+ctx.fillStyle = `rgb(${value}, ${value}, ${value})`;
+
+ctx.beginPath();
+const rotateOffset = (numberOfSides % 2 ? 0.5 : 1) * Math.PI / numberOfSides;
+ctx.moveTo (
+   Xcenter +  size * Math.cos(0 + rotateOffset),
+   Ycenter +  size *  Math.sin(0 + rotateOffset)
+);
+
+(new Array(numberOfSides)).fill().forEach((x, i) => {
+   j = i + 1;
+   ctx.lineTo(
+       Xcenter + size * Math.cos(j / numberOfSides * 2 * Math.PI + rotateOffset),
+       Ycenter + size * Math.sin(j / numberOfSides * 2 * Math.PI + rotateOffset)
+   );
+});
+
+ctx.fill();
+}

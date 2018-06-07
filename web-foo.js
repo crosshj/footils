@@ -943,13 +943,7 @@
                                     </div>
                                 </div>
 
-                                <div class="tabBar">
-                                    <div class="tab active">Smiley</div>
-                                    <div class="tab">Triangle</div>
-                                    <div class="tab">Text</div>
-                                    <div class="tab">Circle</div>
-                                    <div class="tab">Square</div>
-                                </div>
+                                <div class="tabBar"></div>
 
                                 <textarea id="layerDef"
                                     autocomplete="off" autocorrect="off"
@@ -973,47 +967,116 @@
                         const layerDef = container.querySelector('#layerDef');
                         const layerAddCancel = container.querySelector('#layerAddCancel');
                         const layerAddSubmit = container.querySelector('#layerAddSubmit');
+                        const tabBar = container.querySelector('.tabBar');
 
-                        const tabs = Array.from(container.querySelectorAll('.tab')).forEach(tab => {
-                            tab.onclick = (e) => {
+                        const smiley = [
+                            "var centerX = width / 2;",
+                            "var centerY = height / 2;",
+                            "var radius = 70;",
+                            "var eyeRadius = 10;",
+                            "var eyeXOffset = 25;",
+                            "var eyeYOffset = 20;",
+
+                            "\n// face",
+                            "ctx.beginPath();",
+                            "ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI, false);",
+                            "ctx.fillStyle = 'yellow';",
+                            "ctx.fill();",
+                            "ctx.lineWidth = 3;",
+                            "ctx.strokeStyle = 'black';",
+                            "ctx.stroke();",
+
+                            "\n// eyes",
+                            "ctx.beginPath();",
+                            "var eyeX = centerX - eyeXOffset;",
+                            "var eyeY = centerY - eyeXOffset;",
+                            "ctx.arc(eyeX, eyeY, eyeRadius, 0, 2 * Math.PI, false);",
+                            "var eyeX = centerX + eyeXOffset;",
+                            "ctx.arc(eyeX, eyeY, eyeRadius, 0, 2 * Math.PI, false);",
+                            "ctx.fillStyle = 'black';",
+                            "ctx.fill();",
+
+                            "\n// mouth",
+                            "ctx.beginPath();",
+                            "ctx.arc(centerX, centerY+7, 25, Math.PI, 2*Math.PI, false);",
+                            "ctx.stroke();",
+                        ].join('\n');
+
+                        const colors = [
+                            'red', 'orange', 'yellow', 'green', 'indigo', 'violet'
+                        ];
+
+                        const getNgonCode = (sides) => [
+                            `const numberOfSides = ${sides};`,
+                            "const size = 200;",
+                            "Xcenter = width / 2;",
+                            "Ycenter = height / 2",
+                            `ctx.fillStyle = '${colors[Math.floor(Math.random()*colors.length)]}';`,
+
+                            "\nctx.beginPath();",
+                            "const rotateOffset = (numberOfSides % 2 ? 0.5 : 1) * Math.PI / numberOfSides;",
+                            "ctx.moveTo (",
+                            "   Xcenter +  size * Math.cos(0 + rotateOffset),",
+                            "   Ycenter +  size *  Math.sin(0 + rotateOffset)",
+                            ");",
+                    
+                            "\n(new Array(numberOfSides)).fill().forEach((x, i) => {",
+                            "   j = i + 1;",
+                            "   ctx.lineTo(",
+                            "       Xcenter + size * Math.cos(j / numberOfSides * 2 * Math.PI + rotateOffset),",
+                            "       Ycenter + size * Math.sin(j / numberOfSides * 2 * Math.PI + rotateOffset)",
+                            "   );",
+                            "});",
+                            
+                            "\nctx.fill();"
+                        ].join('\n');
+
+                        const triangle = getNgonCode(3);
+                        const square = getNgonCode(4);
+                        const octagon = getNgonCode(8);
+
+                        const text = [
+                            "const canvasText = 'hello sidebar';",
+                            "ctx.font = 'bold 120px sans-serif';",
+                            `ctx.fillStyle = '${colors[Math.floor(Math.random()*colors.length)]}';`,
+                            "ctx.fillText(canvasText, 20, height/2, width);"
+                        ].join('\n');
+
+                        const circle = [
+                            "const radius = 300;",
+                            "const Xcenter = width/2;",
+                            "const Ycenter = height/2;",
+                            "ctx.font = 'bold 120px sans-serif';",
+                            `ctx.fillStyle = '${colors[Math.floor(Math.random()*colors.length)]}';`,
+                            "ctx.arc(Xcenter, Ycenter, radius, 0, 2*Math.PI, false);",
+                            "ctx.fill();"
+                        ].join('\n');
+
+                        const examples = {
+                            triangle,
+                            square,
+                            octagon,
+                            circle,
+                            smiley,
+                            text
+                        }
+                        const defaultExample = 'triangle';
+                        layerDef.value = examples[defaultExample];
+                        layerName.value = defaultExample;
+
+                        Object.keys(examples).forEach(key => {
+                            var tabItem = createElementFromHTML(
+                                `<div class="tab${key===defaultExample ? ' active' : ''}">${key}</div>`
+                            );
+                            tabItem.onclick = (e) => {
                                 container.querySelector('.tab.active').classList.remove('active');
                                 e.target.classList.add('active');
+                                layerDef.value = examples[key];
+                                layerName.value = key;
                                 // TODO: also change text of layerDef and name and type !!
-                            };
+                            }
+                            tabBar.appendChild(tabItem);
                         });
-
-                        layerDef.value = ''
-                            + "var centerX = width / 2;\n"
-                            + "var centerY = height / 2;\n"
-                            + "var radius = 70;\n"
-                            + "var eyeRadius = 10;\n"
-                            + "var eyeXOffset = 25;\n"
-                            + "var eyeYOffset = 20;\n"
-
-                            + "\n// face\n"
-                            + "ctx.beginPath();\n"
-                            + "ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI, false);\n"
-                            + "ctx.fillStyle = 'yellow';\n"
-                            + "ctx.fill();\n"
-                            + "ctx.lineWidth = 3;\n"
-                            + "ctx.strokeStyle = 'black';\n"
-                            + "ctx.stroke();\n"
-
-                            + "\n// eyes\n"
-                            + "ctx.beginPath();\n"
-                            + "var eyeX = centerX - eyeXOffset;\n"
-                            + "var eyeY = centerY - eyeXOffset;\n"
-                            + "ctx.arc(eyeX, eyeY, eyeRadius, 0, 2 * Math.PI, false);\n"
-                            + "var eyeX = centerX + eyeXOffset;\n"
-                            + "ctx.arc(eyeX, eyeY, eyeRadius, 0, 2 * Math.PI, false);\n"
-                            + "ctx.fillStyle = 'black';\n"
-                            + "ctx.fill();\n"
-
-                            + "\n// mouth\n"
-                            + "ctx.beginPath();\n"
-                            + "ctx.arc(centerX, centerY+7, 25, Math.PI, 2*Math.PI, false);\n"
-                            + "ctx.stroke();\n"
-                        + '';
 
                         layerAddCancel.onclick = () => {
                             document.getElementById('sidebar').removeChild(container);

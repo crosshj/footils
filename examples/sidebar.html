@@ -184,6 +184,21 @@
             document.documentElement.webkitRequestFullScreen();
         }
     }
+    const toggleFilter = ({ test, set }) => {
+        const allFilteredNodes = document.querySelectorAll('.layers .image, #canvasContainer canvas');
+        const someFilterNull = Array.from(allFilteredNodes).some(node => !node.style.filter);
+
+        Array.from(allFilteredNodes)
+            .forEach(node => node.style.filter = someFilterNull ? 'unset' : null);
+    };
+
+    const matchCanvasFilter = () => {
+        const canvasFilterUnset = document.querySelectorAll('#canvasContainer canvas');
+        const allFilteredNodes = document.querySelectorAll('.layers .image, #canvasContainer canvas');
+        const someFilterNull = Array.from(canvasFilterUnset).some(node => !node.style.filter);
+        Array.from(allFilteredNodes)
+            .forEach(node => node.style.filter = someFilterNull ? 'null' : 'unset');
+    };
 
     const sidebarDef = ({
         toggleLayerVisible,
@@ -207,6 +222,10 @@
                     document.location = document.location;
                 }
             }, {
+                type: 'button',
+                name: 'filter',
+                onClick: toggleFilter
+            },{
                 type: 'button',
                 name: 'fullscreen',
                 onClick: (e) => fullscreen()
@@ -458,7 +477,7 @@
                 changeLayerAlpha,
                 changeLayerOrder
             };
-
+            setTimeout(matchCanvasFilter, 150);
             callback(newSidebarLayer);
         };
         const removeLayers = ({ numbers, callback }) => {
