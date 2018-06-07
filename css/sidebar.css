@@ -7,6 +7,7 @@
     --bg-dark-color: #222;
         
     --main-text-color: #aaa;
+    --text-secondary-color: #191919;
     --light-text-color: #bbb;
     --disabled-text-color: #777;
 }
@@ -28,6 +29,19 @@
 }
 
 */
+
+::-webkit-input-placeholder { /* Chrome/Opera/Safari */
+    color: var(--text-secondary-color);
+}
+::-moz-placeholder { /* Firefox 19+ */
+    color: var(--text-secondary-color);
+}
+:-ms-input-placeholder { /* IE 10+ */
+    color: var(--text-secondary-color);
+}
+:-moz-placeholder { /* Firefox 18- */
+    color: var(--text-secondary-color);
+}
 
  #sidebar ::-webkit-scrollbar {
     width: 6px;
@@ -469,6 +483,12 @@ div#layer-create input {
     text-align: unset;
 }
 
+div#layer-create textarea:focus,
+div#layer-create input:focus,
+div#layer-create select:focus {
+    outline: 1px;
+}
+
 div#layer-create label {
     display: block;
 }
@@ -488,7 +508,7 @@ div#layer-create #layerDef {
     padding: 15px;
 }
 
-div#layer-create input, div#layer-create select, div#layer-create textarea {
+div#layer-create textarea {
     background: var(--bg-dark-color);
     color: var(--main-text-color);
 }
