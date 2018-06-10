@@ -36,9 +36,9 @@
                 - (2d, 3d)
                 - svg http://bl.ocks.org/biovisualize/8187844
             - webgl layers
-                - had to modify ConcreteJS
+                X had to modify ConcreteJS
                 - alpha doesn't work
-                - canvas is not stretched properly
+                X canvas is not stretched properly
             - how to define layer (with popup, bottom docking console, blank then draw layer, import picture, ???)
     - menu to left mode
     - top menu
@@ -323,7 +323,12 @@
             console.error('WebGL not currently supported!');
             return;
         }
-        fn({ gl, width, height});
+
+        fn({ 
+            gl,
+            width: width*(layer.scene.pixelRatio || 1),
+            height: height*(layer.scene.pixelRatio || 1)
+        });
         thumbs[thumbNumber] = layer.scene.canvas.toDataURL('image/png');
     };
 

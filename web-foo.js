@@ -1062,7 +1062,7 @@
                             -1.0, -2, 
                             5.0, -3,
                             */
-                            "var vertices = [-1.0, 1.05, -1.0, -1.0, 1.05, -1.0,];",
+                            "var vertices = [-0.99, 0.99, -0.99, -0.99, 0.99, -0.99,];",
                             "",
                             "// Create a new buffer object",
                             "var vertex_buffer = gl.createBuffer();",
