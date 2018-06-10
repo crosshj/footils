@@ -152,6 +152,9 @@
       if (!config) {
         config = {};
       }
+      const type = config.type;
+      const blendMode = config.blendMode;
+
       this.x = 0;
       this.y = 0;
       this.width = 0;
@@ -159,7 +162,7 @@
       this.visible = true;
       this.id = idCounter++;
       this.hit = new Concrete.Hit();
-      this.scene = new Concrete.Scene();
+      this.scene = new Concrete.Scene({ type, blendMode });
   
       if (config.x && config.y) {
         this.setPosition(config.x, config.y);
@@ -304,7 +307,7 @@
       this.canvas = document.createElement('canvas');
       this.canvas.className = 'concrete-scene-canvas';
       this.canvas.style.display = 'inline-block';
-      this.context = this.canvas.getContext('2d');
+      this.context = this.canvas.getContext(config.type || '2d');
   
       if (config.width && config.height) {
         this.setSize(config.width, config.height);
@@ -328,7 +331,7 @@
         this.canvas.height = height * this.pixelRatio;
         this.canvas.style.height = height + 'px'; 
   
-        if (this.pixelRatio !== 1) {
+        if (this.pixelRatio !== 1 && this.context.scale) {
           this.context.scale(this.pixelRatio, this.pixelRatio);
         }
   

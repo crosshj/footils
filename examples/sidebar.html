@@ -8,7 +8,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="mobile-web-app-capable" content="yes">
     <!-- <script src="https://crosshj.com/footils/web-foo.js"></script> -->
-    <script src="https://rawgit.com/ericdrowell/concrete/master/build/concrete.min.js"></script>
+    <script src="../concrete3d.js"></script>
     <script src="../web-foo.js"></script>
 </head>
 
@@ -35,6 +35,10 @@
             - types of layers
                 - (2d, 3d)
                 - svg http://bl.ocks.org/biovisualize/8187844
+            - webgl layers
+                - had to modify ConcreteJS
+                - alpha doesn't work
+                - canvas is not stretched properly
             - how to define layer (with popup, bottom docking console, blank then draw layer, import picture, ???)
     - menu to left mode
     - top menu
@@ -308,6 +312,21 @@
         thumbs[thumbNumber] = layer.scene.canvas.toDataURL('image/png');
     };
 
+    const render3dContext = (thumbNumber, fn) => ({ layer, alpha, width, height }) => {
+
+        const gl = layer.scene.context;
+        //ctx.clearRect(0, 0, width, height);
+        // ctx.globalAlpha = alpha == 0
+        //      ? 0
+        //      : alpha || 1.0;
+        if(!gl){
+            console.error('WebGL not currently supported!');
+            return;
+        }
+        fn({ gl, width, height});
+        thumbs[thumbNumber] = layer.scene.canvas.toDataURL('image/png');
+    };
+
     const renderShape = renderContext(0, ({ ctx, width, height }) => {
         //ctx.globalAlpha /= 3;
         ctx.fillStyle = '#880';
@@ -462,9 +481,15 @@
 
         const addLayer = ({ name, def, type, callback }) => {
             //console.log({ name, def, type, callback });
-            const newLayer = new Concrete.Layer();
+            const layerType = type.toLowerCase().includes('3d')
+                ? 'webgl'
+                : '2d';
+            const newLayer = new Concrete.Layer({ type: layerType });
             canvas.viewport.add(newLayer);
-            const newLayerRender = renderContext(canvas.layers.length, def)
+
+            const newLayerRender = type.toLowerCase().includes('3d')
+                ? render3dContext(canvas.layers.length, def)
+                : renderContext(canvas.layers.length, def)
             canvas.layers.push(newLayer);
             canvas.renderFunctions.push(newLayerRender);
             newLayerRender({ layer: newLayer, width, height });
