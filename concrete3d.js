@@ -308,7 +308,12 @@
       this.canvas = document.createElement('canvas');
       this.canvas.className = 'concrete-scene-canvas';
       this.canvas.style.display = 'inline-block';
-      this.context = this.canvas.getContext(config.type || '2d');
+
+      var contextOptions = {};
+      if(config.type && config.type === 'webgl'){
+        contextOptions.premultipliedAlpha = false;
+      }
+      this.context = this.canvas.getContext(config.type || '2d', contextOptions);
   
       if (config.width && config.height) {
         this.setSize(config.width, config.height);
