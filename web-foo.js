@@ -1092,6 +1092,15 @@
                             "gl.clearDepth(1.0);",
                             "gl.viewport(0.0, 0.0, width, height);",
                             "gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);",
+
+                            "",
+                            "/* BLENDING ? */",
+                            "//https://mrdoob.github.io/webgl-blendfunctions/blendfunc.html",
+                            "//https://mrdoob.github.io/webgl-blendfunctions/blendfunc.html",
+                            "gl.enable(gl.BLEND);",
+                            "//gl.blendEquation( gl.FUNC_ADD );",
+                            "gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);",
+
                             "",
                             "/* Step1: Define the geometry and store it in buffer objects */",
                             "",
@@ -1184,6 +1193,8 @@
                             "",
                             "// Draw the triangle",
                             "gl.drawArrays(gl.TRIANGLES, 0, vertices.length/2);",
+
+
                         ].join('\n')
 
                         const examples = {
