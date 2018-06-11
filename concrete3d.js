@@ -132,6 +132,7 @@
   
         this.layers.forEach(function(layer) {
           if (layer.visible) {
+            scene.context.globalCompositeOperation = layer.blendMode || 'normal';
             scene.context.drawImage(layer.scene.canvas, 0, 0, layer.width, layer.height);
           }
         });

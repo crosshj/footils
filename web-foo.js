@@ -1050,10 +1050,48 @@
                             `ctx.fillStyle = '${colors[Math.floor(Math.random()*colors.length)]}';`,
                             "ctx.arc(Xcenter, Ycenter, radius, 0, 2*Math.PI, false);",
                             "ctx.fill();"
-                        ].join('\n');
+                        ].join('\t\n');
+
+
+                        const vertShader = [
+                            '',
+                            'attribute vec2 coordinates;',
+                            'void main(void) {',
+                            '   gl_Position = vec4(coordinates, 0.0, 1.0);',
+                            '}',
+                            // '',
+                            // 'attribute vec3 coordinates;',
+                            // 'attribute vec3 color;',
+                            // 'varying vec3 vColor;',
+                            // 'void main(void) {',
+                            // '   gl_Position = vec4(coordinates, 1.0);',
+                            // '   vColor = color;',
+                            // '}'
+                        ].join('\n\t') + '\n';
+
+                        const fragShader = [
+                            '',
+                            'void main(void) {',
+                            '   gl_FragColor = vec4(1.0, 0.0, 0.0, ${alpha || 1.0});',
+                            '}',
+                            // '',
+                            // 'precision mediump float;',
+                            // 'varying vec3 vColor;',
+                            // 'void main(void) {',
+                            // '   gl_FragColor = vec4(vColor, 1.0);',
+                            // '}'
+                        ].join('\n\t') + '\n';
 
                         const webgl = [
-                            "// example from - https://www.tutorialspoint.com/webgl/webgl_sample_application.htm",
+                            "// example modded from - https://www.tutorialspoint.com/webgl/webgl_sample_application.htm",
+                            "",
+                            "/* Step 0: reset everything */",
+                            "gl.enable(gl.DEPTH_TEST);",
+                            "gl.depthFunc(gl.LEQUAL);",
+                            "gl.clearColor(0.0, 0.0, 0.0, 0.0);",
+                            "gl.clearDepth(1.0);",
+                            "gl.viewport(0.0, 0.0, width, height);",
+                            "gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);",
                             "",
                             "/* Step1: Define the geometry and store it in buffer objects */",
                             "",
@@ -1062,7 +1100,7 @@
                             -1.0, -2, 
                             5.0, -3,
                             */
-                            "var vertices = [-0.99, 0.99, -0.99, -0.99, 0.99, -0.99,];",
+                            "var vertices = [0, 0.99, -0.99, -0.99, 0.99, -0.99,];",
                             "",
                             "// Create a new buffer object",
                             "var vertex_buffer = gl.createBuffer();",
@@ -1079,10 +1117,7 @@
                             "/* Step2: Create and compile Shader programs */",
 
                             "// Vertex shader source code",
-                            "var vertCode =",
-                            "    'attribute vec2 coordinates;' + ",
-                            "    'void main(void) {' + ' gl_Position = vec4(coordinates,0.0, 1.0);' + '}';",
-                            "",
+                            `var vertCode = \`${vertShader}\`;`,
                             "// Create a vertex shader object",
                             "var vertShader = gl.createShader(gl.VERTEX_SHADER);",
                             "",
@@ -1093,8 +1128,7 @@
                             "gl.compileShader(vertShader);",
                             "",
                             "// Fragment shader source code",
-                            "var fragCode = 'void main(void) {' + 'gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);' + '}';",
-                            //"var fragCode = 'void main(void) {' + 'gl_FragColor = vec4(0.0, 0.0, 0.0, 0.1);' + '}';",
+                            `var fragCode = \`${fragShader}\`;`,
                             "",
                             "// Create fragment shader object",
                             "var fragShader = gl.createShader(gl.FRAGMENT_SHADER);",
@@ -1149,7 +1183,7 @@
                             "gl.viewport(0,0, width, height);",
                             "",
                             "// Draw the triangle",
-                            "gl.drawArrays(gl.TRIANGLES, 0, 3);",
+                            "gl.drawArrays(gl.TRIANGLES, 0, vertices.length/2);",
                         ].join('\n')
 
                         const examples = {
@@ -1186,7 +1220,8 @@
                         };
                         layerAddSubmit.onclick = () => {
                             goFn({
-                                def: parseFunction(`function({ ctx, gl, width, height}){
+                                // build canvas function here
+                                def: parseFunction(`function({ ctx, gl, alpha, width, height}){
                                     ${container.querySelector('#layerDef').value}
                                 }`),
                                 name: container.querySelector('#layerName').value || 'New Layer',
@@ -1273,8 +1308,25 @@
                                 selectComponent({ div, span, select, option, section,
                                     item: {
                                         name: 'layer-blend-select',
-                                        options: ['Normal', 'Darken', 'Lighten', 'Burn'],
-                                        onChange: (value) => console.log(`TODO: change layer blend to: ${value}`)
+                                        options: [
+                                            'Normal', 'Multiply', 'Screen', 'Overlay',
+                                            'Darken', 'Lighten', 'Color-Dodge', 'Color-Burn',
+                                            'Hard-Light', 'Soft-Light', 'Difference', 'Exclusion',
+                                            'Hue', 'Saturation', 'Color', 'Luminosity'
+                                        ],
+                                        onChange: (value) => {
+                                            (layersSelected || [0] ).forEach(layerNumber => {
+                                                const sel = item.layers
+                                                    .find(x => x.number === layerNumber);
+                                                if(!sel || !sel.changeLayerBlendMode){
+                                                    return;
+                                                }
+                                                sel.changeLayerBlendMode({
+                                                    number: layerNumber,
+                                                    mode: value.toLowerCase()
+                                                });
+                                            });
+                                        }
                                     },
                                     index, showLabel:false
                                 }),

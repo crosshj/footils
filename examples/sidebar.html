@@ -209,6 +209,7 @@
         toggleLayerVisible,
         getLayerThumb,
         changeLayerAlpha,
+        changeLayerBlendMode,
         changeLayerOrder,
         addLayer,
         removeLayers
@@ -244,24 +245,28 @@
                     onToggle: toggleLayerVisible,
                     getThumb: getLayerThumb,
                     changeLayerAlpha,
+                    changeLayerBlendMode,
                     changeLayerOrder
                 }, {
                     name: 'Top Layer',
                     onToggle: toggleLayerVisible,
                     getThumb: getLayerThumb,
                     changeLayerAlpha,
+                    changeLayerBlendMode,
                     changeLayerOrder
                 }, {
                     name: 'Middle Layer',
                     onToggle: toggleLayerVisible,
                     getThumb: getLayerThumb,
                     changeLayerAlpha,
+                    changeLayerBlendMode,
                     changeLayerOrder
                 }, {
                     name: 'Bottom Layer',
                     onToggle: toggleLayerVisible,
                     getThumb: getLayerThumb,
                     changeLayerAlpha,
+                    changeLayerBlendMode,
                     changeLayerOrder
                 }]
             }]
@@ -326,6 +331,7 @@
 
         fn({ 
             gl,
+            alpha,
             width: width*(layer.scene.pixelRatio || 1),
             height: height*(layer.scene.pixelRatio || 1)
         });
@@ -481,8 +487,14 @@
                 layer: canvas.layers[number],
                 alpha, width, height
             });
+
             canvas.viewport.render();
         }
+
+        const changeLayerBlendMode = ({ number, mode }) => {
+            canvas.layers[number].blendMode = mode;
+            canvas.viewport.render();
+        };
 
         const addLayer = ({ name, def, type, callback }) => {
             //console.log({ name, def, type, callback });
@@ -539,6 +551,7 @@
             toggleLayerVisible,
             getLayerThumb,
             changeLayerAlpha,
+            changeLayerBlendMode,
             changeLayerOrder,
             addLayer,
             removeLayers
