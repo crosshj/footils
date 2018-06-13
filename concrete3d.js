@@ -311,7 +311,7 @@
 
       var contextOptions = {};
       if(config.type && config.type === 'webgl'){
-        contextOptions.premultipliedAlpha = true;
+        contextOptions.premultipliedAlpha = false;
       }
       this.context = this.canvas.getContext(config.type || '2d', contextOptions);
   
