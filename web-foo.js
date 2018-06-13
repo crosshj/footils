@@ -478,6 +478,8 @@
                     const currentValue = (globalState.find(x => x.key === key) || {}).value;
                     const value = currentValue || item.default;
 
+                    console.log('item disabled: ', item.disabled)
+
                     return (
                         div({
                             key,
@@ -488,6 +490,7 @@
                                 : undefined,
                             select({
                                 key: `${key}-select`,
+                                disabled: item.disabled,
                                 value,
                                 onChange: e => {
                                     setGlobalState({ key, value: e.target.value });
@@ -611,6 +614,8 @@
                         className: 'layer-drop',
                         style: { display: 'none' }
                     });
+
+                    console.log({item})
 
                     const handleReOrder = ({ item, layers, draggedItem, dropTarget}) => {
                         var order = layers.map((x,i) => isNumeric(x.number) ? x.number : i);
@@ -1310,6 +1315,8 @@
                         return allLayerLi;
                     }, [ layerDropZone(0) ]);
 
+                    const selectedLayers = reorderedLayers.filter((x, i) => (layersSelected||[]).includes(x.number) );
+                    console.log({selectedLayers});
 
                     return (
                         div({
@@ -1327,6 +1334,7 @@
                                 selectComponent({ div, span, select, option, section,
                                     item: {
                                         name: 'layer-blend',
+                                        disabled: (selectedLayers).some(layer => layer.type && layer.type.includes('3D')),
                                         default: 'Normal',
                                         options: [
                                             'Normal', 'Multiply', 'Screen', 'Overlay',
@@ -1400,7 +1408,7 @@
                                                     type,
                                                     callback: (layer) => addLayerItem({
                                                         layers: item.layers,
-                                                        newLayer: layer,
+                                                        newLayer: Object.assign({}, layer, {type}),
                                                         layerOrder: layerOrder.length ? layerOrder : null
                                                     })
                                                 });

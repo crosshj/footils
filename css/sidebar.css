@@ -389,6 +389,11 @@ select:focus {
     border-radius: 0px;
     display: flex;
 }
+.layerProps select:disabled {
+    color: var(--disabled-text-color);
+    opacity: 0.5;
+}
+
 .slider-component {
     position: relative;
 }
