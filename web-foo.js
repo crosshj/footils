@@ -478,8 +478,6 @@
                     const currentValue = (globalState.find(x => x.key === key) || {}).value;
                     const value = currentValue || item.default;
 
-                    console.log('item disabled: ', item.disabled)
-
                     return (
                         div({
                             key,
@@ -614,8 +612,6 @@
                         className: 'layer-drop',
                         style: { display: 'none' }
                     });
-
-                    console.log({item})
 
                     const handleReOrder = ({ item, layers, draggedItem, dropTarget}) => {
                         var order = layers.map((x,i) => isNumeric(x.number) ? x.number : i);
@@ -1316,7 +1312,7 @@
                     }, [ layerDropZone(0) ]);
 
                     const selectedLayers = reorderedLayers.filter((x, i) => (layersSelected||[]).includes(x.number) );
-                    console.log({selectedLayers});
+                    //console.log({selectedLayers});
 
                     return (
                         div({
@@ -1487,10 +1483,50 @@
             const getReducer = () => {
                 const reducer = (state, action) => {
                     var newState = clone(state);
+
+                    function updateSelectedLayers(state, layersSelected){
+                        const found = (state.layersProperties || []).find(x => layersSelected.includes(x.number));
+                        var newGlobalState = clone(state.globalState || []) || [];
+                        
+                        // NOTE: "predicate" - another word I wanted to use instead of "condition"
+                        const upsert = ({ item, array, condition }) => {
+                            const found = array.find(condition);
+                            if( found ){
+                                Object.keys(item)
+                                    .forEach(key => found[key] = item[key]);
+                            } else {
+                                array.push(item);
+                            }
+                        }
+
+                        if( found && found.alpha && found.alpha.key){
+                            upsert({
+                                item: found.alpha,
+                                array: newGlobalState,
+                                condition: x => x.key === found.alpha.key
+                            }); 
+                        }
+                        if( found && found.blend && found.blend.key){
+                            upsert({
+                                item: found.blend,
+                                array: newGlobalState,
+                                condition: x => x.key === found.blend.key
+                            }); 
+                        }
+                        if(!found){
+                            newGlobalState = newGlobalState
+                                .filter(x => !x.key.includes('layer-alpha')
+                                    && !x.key.includes('layer-blend')
+                                );
+                        }
+                        newState = Object.assign({}, state, { layersSelected, globalState: newGlobalState });
+                        return newState;
+                    }
+
                     switch(action.type){
                         case 'REMOVE_LAYERS': {
                             const selectedLayers = newState.layersSelected || [action.payload.layers[0].number];
-                            console.log(`removing ${selectedLayers}`)
+                            //console.log(`removing ${selectedLayers}`)
                             const callback = () => {
                                 const newLayers = action.payload.layers
                                     .filter((x, i) => !selectedLayers.includes(x.number));
@@ -1516,12 +1552,14 @@
                             //console.log(state.layers);
 
                             //action.payload.layers = [action.payload.newLayer].concat(action.payload.layers);
-                            
+
                             var layerOrder = action.payload.layerOrder
                                 || action.payload.layers.map(layer => layer.number);
                             layerOrder = [action.payload.newLayer.number].concat(layerOrder);
                             newState = Object.assign({}, state, { layerOrder });
                             action.payload.layers.push(action.payload.newLayer);
+                            
+                            newState = updateSelectedLayers(newState, [action.payload.newLayer.number]);
                             break;
                         }
                         case 'REORDER_LAYERS': {
@@ -1570,41 +1608,7 @@
                             //TODO: case where all layers are deselected
                             //TODO: case where multiple layers are selected
                             const layersSelected = [ action.payload ];
-                            const found = (state.layersProperties || []).find(x => x.number === action.payload);
-                            var newGlobalState = clone(state.globalState || []) || [];
-                            
-                            // NOTE: "predicate" - another word I wanted to use instead of "condition"
-                            const upsert = ({ item, array, condition }) => {
-                                const found = array.find(condition);
-                                if( found ){
-                                    Object.keys(item)
-                                        .forEach(key => found[key] = item[key]);
-                                } else {
-                                    array.push(item);
-                                }
-                            }
-
-                            if( found && found.alpha && found.alpha.key){
-                                upsert({
-                                    item: found.alpha,
-                                    array: newGlobalState,
-                                    condition: x => x.key === found.alpha.key
-                                }); 
-                            }
-                            if( found && found.blend && found.blend.key){
-                                upsert({
-                                    item: found.blend,
-                                    array: newGlobalState,
-                                    condition: x => x.key === found.blend.key
-                                }); 
-                            }
-                            if(!found){
-                                newGlobalState = newGlobalState
-                                    .filter(x => !x.key.includes('layer-alpha')
-                                        && !x.key.includes('layer-blend')
-                                    );
-                            }
-                            newState = Object.assign({}, state, { layersSelected, globalState: newGlobalState });
+                            newState = updateSelectedLayers(state, layersSelected);
                             break;
                         }
                         case 'LAYERS_PROPERTIES_CHANGE': {
@@ -1629,7 +1633,7 @@
                                     .filter(x => x.number === selected)
                                     .forEach(x => {
                                         if(action.payload.blend){
-                                            console.log(`change ${selected} blend from ${x.blend.value} to ${action.payload.blend.value}`);
+                                            //console.log(`change ${selected} blend from ${x.blend.value} to ${action.payload.blend.value}`);
                                             x.blend = action.payload.blend;
                                         }
                                         if(action.payload.alpha){
