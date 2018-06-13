@@ -367,7 +367,7 @@
                         type: 'REMOVE_LAYERS',
                         payload
                     });
-                }
+                };
 
                 if(sidebarDef.hidden){
                     // NOTE: is this safe since dispatcher called?
@@ -473,23 +473,30 @@
                     );
                 }
 
-                function selectComponent({ div, span, select, option, section, item, index, showLabel=true }){
+                function selectComponent({ div, span, select, option, section, item, index, showLabel=true, globalState=[] }){
+                    const key = `${section.name}-${item.name}-${index}-select`;
+                    const currentValue = (globalState.find(x => x.key === key) || {}).value;
+                    const value = currentValue || item.default;
+
                     return (
                         div({
-                            key: `${section.name}-${item.name}-${index}`,
+                            key,
                             className: 'select-component'
                         }, [
                             showLabel
-                                ? span({ key: `${section.name}-${item.name}-${index}-span`, className: 'label' }, item.name)
+                                ? span({ key: `${key}-span`, className: 'label' }, item.name)
                                 : undefined,
                             select({
-                                key: `${section.name}-${item.name}-${index}-select`,
-                                defaultValue: item.default,
-                                onChange: e => console.log(`TODO: should update reducer state!`) & item.onChange(e.target.value)
+                                key: `${key}-select`,
+                                value,
+                                onChange: e => {
+                                    setGlobalState({ key, value: e.target.value });
+                                    item.onChange({ key, value: e.target.value });
+                                },
                             },
                                 item.options.map((opt, i) => 
                                     option(
-                                        { key: `${section.name}-${item.name}-${index}-option${i}`},
+                                        { key: `${key}-option${i}`},
                                         opt
                                     )
                                 )
@@ -1228,6 +1235,7 @@
 
                         layerAddCancel.onclick = () => {
                             document.getElementById('sidebar').removeChild(container);
+                            cancelFn();
                         };
                         layerAddSubmit.onclick = () => {
                             goFn({
@@ -1318,14 +1326,18 @@
                             }, [
                                 selectComponent({ div, span, select, option, section,
                                     item: {
-                                        name: 'layer-blend-select',
+                                        name: 'layer-blend',
+                                        default: 'Normal',
                                         options: [
                                             'Normal', 'Multiply', 'Screen', 'Overlay',
                                             'Darken', 'Lighten', 'Color-Dodge', 'Color-Burn',
                                             'Hard-Light', 'Soft-Light', 'Difference', 'Exclusion',
                                             'Hue', 'Saturation', 'Color', 'Luminosity'
                                         ],
-                                        onChange: (value) => {
+                                        onChange: ({ key, value}) => {
+                                            // store in reducer
+                                            layersPropertiesChanged({ blend: { key, value } });
+
                                             (layersSelected || [0] ).forEach(layerNumber => {
                                                 const sel = item.layers
                                                     .find(x => x.number === layerNumber);
@@ -1339,7 +1351,7 @@
                                             });
                                         }
                                     },
-                                    index, showLabel:false
+                                    index, showLabel:false, globalState
                                 }),
                                 sliderComponent({
                                     span, div, input, section,
@@ -1443,10 +1455,10 @@
                                 .map((item, j) => {
                                     return ({
                                         text: () => textComponent({div, span, section, item, index: j}),
-                                        slider: () => sliderComponent({ span, div, input, section, item, index: j, globalState }),
+                                        slider: () => sliderComponent({ div, span, input, section, item, index: j, globalState }),
                                         boolean: () => booleanComponent({ div, span, label, input, section, item, index: j }),
                                         button: () => buttonComponent({ div, button, section, item, index: j }),
-                                        select: () => selectComponent({ div, span, select, option, section, item, index: j}),
+                                        select: () => selectComponent({ div, span, select, option, section, item, index: j, globalState}),
                                         layers: () => layersComponent({ div, span, section, item, img, index: j,
                                             layersHidden, layersSelected, globalState, layerOrder
                                         })
@@ -1592,8 +1604,8 @@
                                 ? clone(state.layersProperties)
                                 : [];
                             const currentSelectedLayers = state.layersSelected || [ 0 ];
+                            console.log(`current selected layers ${currentSelectedLayers}`);
                             currentSelectedLayers.forEach(selected => {
-
                                 // ensure existence
                                 const exists = (newLayersProperties || []).map(prop => prop.number).includes(selected);
                                 if(!exists && newLayersProperties){
@@ -1609,6 +1621,7 @@
                                     .filter(x => x.number === selected)
                                     .forEach(x => {
                                         if(action.payload.blend){
+                                            console.log(`change ${selected} blend from ${x.blend.value} to ${action.payload.blend.value}`);
                                             x.blend = action.payload.blend;
                                         }
                                         if(action.payload.alpha){
