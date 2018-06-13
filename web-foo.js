@@ -1333,7 +1333,7 @@
                                 selectComponent({ div, span, select, option, section,
                                     item: {
                                         name: 'layer-blend',
-                                        disabled: (selectedLayers).some(layer => layer.type && layer.type.includes('3D')),
+                                        disabled: false,
                                         default: 'Normal',
                                         options: [
                                             'Normal', 'Multiply', 'Screen', 'Overlay',
