@@ -1104,7 +1104,7 @@
                             "",
                             "/* BLENDING ? */",
                             "//https://mrdoob.github.io/webgl-blendfunctions/blendfunc.html",
-                            "//https://mrdoob.github.io/webgl-blendfunctions/blendfunc.html",
+                            "//https://stackoverflow.com/a/39354174/1627873",
                             "gl.enable(gl.BLEND);",
                             "//gl.blendEquation( gl.FUNC_ADD );",
                             "//gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);",
