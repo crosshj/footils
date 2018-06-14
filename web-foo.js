@@ -232,8 +232,7 @@
         RXConnector.prototype = Object.create(Component.prototype);
         const Connector = (props, children) => createElement(RXConnector, props, children);
 
-        const start = ({reducer, root, attach}, reactStartCallback) => {
-            const initialState = {};
+        const start = ({reducer, root, attach, initialState = {}}, reactStartCallback) => {
             const store$ = action$
               .pipe(
                 scan(reducer, initialState)
@@ -1483,21 +1482,22 @@
 
                 return root;
             }
-            
-            //TODO: initial state ???
+
+            const getInitialState = () => ({
+                layersHidden: sidebarDef.sections[0].items
+                    .find(x => x.type === 'layers').layersHidden,
+                globalState: [],
+                layersProperties: [],
+                layersSelected: [0],
+                layerOrder: undefined, //TODO:
+                pinned: undefined, //TODO:
+                hidden: undefined, //TODO:
+            });
 
             // reducer should be built with respect to sidebar definition
             const getReducer = () => {
-                const initialState = {
-                    layersHidden: sidebarDef.sections[0].items
-                        .find(x => x.type === 'layers').layersHidden
-                };
-                const reducer = (state, action) => {
+                const reducer = (state, action) => {    
                     var newState = clone(state);
-                    // TODO: this is the wrong way to do initial state !!!
-                    if(!state.layersHidden){
-                        state.layersHidden = initialState.layersHidden;
-                    }
 
                     function updateSelectedLayers(state, layersSelected){
                         const found = (state.layersProperties || []).find(x => layersSelected.includes(x.number));
@@ -1677,7 +1677,8 @@
                 start({
                     reducer: getReducer(),
                     root: getRoot(components, dispatcher),
-                    attach: sidebarRoot
+                    attach: sidebarRoot,
+                    initialState: getInitialState()
                 }, startCallback);
             }
 
