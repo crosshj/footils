@@ -244,6 +244,7 @@
                 name: 'layers',
                 addLayer,
                 removeLayers,
+                layersHidden: [0, 1, 2],
                 layers: [{
                     name: 'Uber Layer',
                     onToggle: toggleLayerVisible,
@@ -429,7 +430,7 @@
 
     const width = 1000;
     const height = 850;
-    function setupCanvas(){
+    function setupCanvas({ sideBarDef }){
         var container = document.getElementById('canvasContainer');
         var viewport = new Concrete.Viewport({
             width,
@@ -453,13 +454,21 @@
         viewport.add(shape);
         renderShape({ layer: shape, alpha: 1.0, width, height });
 
-        viewport.render();
-        return { viewport, layers: [
+        const layers = [
             shape,
             triangle,
             circle,
             square
-        ] };
+        ];
+
+        // LAME (but so is starting with layers predefined:
+        // hide any layers that should not be visible
+        const hiddenLayers = sideBarDef.sections[0].items
+            .find(x => x.type === 'layers').layersHidden;
+        hiddenLayers.forEach(x => layers[x].visible=false);
+
+        viewport.render();
+        return { viewport, layers };
     }
 
     function sidebarReady(err, { start } = {}) {
@@ -468,7 +477,7 @@
             return;
         }
 
-        const canvas = setupCanvas();
+        const canvas = setupCanvas({ sideBarDef: sidebarDef({})});
         const toggleLayerVisible = ({ number, visible }) => {
             canvas.layers[number].visible = visible;
             canvas.viewport.render();

@@ -607,6 +607,9 @@
                 function layersComponent({ div, span, section, item, img,
                     index, layersHidden, layersSelected, globalState, layerOrder
                 }){
+                    if (!layersHidden){
+                        layersHidden = item.layersHidden;
+                    }
                     const layerDropZone = (number) => li({
                         key: `layer-drop-zone-${number}}`,
                         className: 'layer-drop',
@@ -1441,7 +1444,7 @@
                     globalState = [],
                     pinned = sidebarDef.pinned,
                     hidden = sidebarDef.hidden,
-                    layersHidden = [],
+                    layersHidden,
                     layersSelected = [ 0 ],
                     layersProperties = [{
                         number: 0,
@@ -1481,12 +1484,20 @@
                 return root;
             }
             
-            //TODO: default state ???
+            //TODO: initial state ???
 
             // reducer should be built with respect to sidebar definition
             const getReducer = () => {
+                const initialState = {
+                    layersHidden: sidebarDef.sections[0].items
+                        .find(x => x.type === 'layers').layersHidden
+                };
                 const reducer = (state, action) => {
                     var newState = clone(state);
+                    // TODO: this is the wrong way to do initial state !!!
+                    if(!state.layersHidden){
+                        state.layersHidden = initialState.layersHidden;
+                    }
 
                     function updateSelectedLayers(state, layersSelected){
                         const found = (state.layersProperties || []).find(x => layersSelected.includes(x.number));
