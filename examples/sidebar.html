@@ -14,20 +14,23 @@
 
 <!-- 
     TODO:
-    - layers
+    - canvas lib:
         - redraw canvas on fullscreen in/out and resize(?)
         - set/specify canvas size
-
-        - same width components / smart labels : done for slider, do for boolean
         - spinner for actions (like those that require canvas re-render)
+        - move items in layer
+
+    - layers
+        - same width components / smart labels : done for slider, do for boolean
+        - callback architecture
 
         - rename layer
         - add to layer
         - edit layer (WIP)
 
-        - move layer
+        - move layer order
             - minor UI issues across platforms
-        - move items in layer
+
         - combine layers (merge down? flatten?)
         - link layers
         - add layer
@@ -41,7 +44,12 @@
                 X alpha doesn't work
                 X canvas is not stretched properly
                 X blend modes not working for 3d layers (DISABLE BLEND)
-            - how to define layer (with popup, bottom docking console, blank then draw layer, import picture, ???)
+            - define layer
+                X with popup
+                - bottom docking console
+                - blank layer, then edit layer
+                - import picture
+                - something else ???
     - menu to left mode
     - top menu
     - bottom status bar
