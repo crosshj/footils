@@ -75,10 +75,16 @@
     void main(void) {
        gl_Position = vec4(coordinates, 0.0, 1.0);
        vColor =  vec4(
-           1.0 + coordinates[0],
-           0.75 + coordinates[1],
-           (0.6 + coordinates[1]) / (0.75 + coordinates[0]),
-           ${alpha===undefined ? 1.0 : alpha}
+            coordinates[0] >= 0.0 && coordinates[1] <= 0.0
+                ? 1.0
+                : 0.0,
+            coordinates[0] <= 0.0 && coordinates[1] <= 0.0
+                ? 1.0
+                : 0.0,
+            coordinates[0] <= 0.0 && coordinates[1] >= 0.0
+                ? 1.0
+                : 0.0,
+            ${alpha===undefined ? 1.0 : alpha}
         );
     }
 </script>
