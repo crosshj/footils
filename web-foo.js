@@ -1139,8 +1139,9 @@
                             "",
                             "/* Step2: Create and compile Shader programs */",
 
+                            // vertex shader
                             "// Vertex shader source code",
-                            `var vertCode = \`${vertShader}\`;`,
+                            "var vertCode = document.getElementById('vertex-shader').text;",
                             "// Create a vertex shader object",
                             "var vertShader = gl.createShader(gl.VERTEX_SHADER);",
                             "",
@@ -1150,8 +1151,9 @@
                             "// Compile the vertex shader",
                             "gl.compileShader(vertShader);",
                             "",
+                            // fragment shader
                             "// Fragment shader source code",
-                            `var fragCode = \`${fragShader}\`;`,
+                            "var fragCode = document.getElementById('fragment-shader').text;",
                             "",
                             "// Create fragment shader object",
                             "var fragShader = gl.createShader(gl.FRAGMENT_SHADER);",

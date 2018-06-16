@@ -37,6 +37,8 @@
             - types of layers
                 X 2d
                 X 3d
+                    - shaders defined in script tag
+                    - shaders defined in external file
                 - upload image
                 - svg http://bl.ocks.org/biovisualize/8187844
             - webgl layers
@@ -63,6 +65,20 @@
         - many of these were coming from get thumbnail
         - other areas?
 -->
+
+<script id="vertex-shader" type="shader">
+    attribute vec2 coordinates;
+    void main(void) {
+       gl_Position = vec4(coordinates, 0.0, 1.0);
+    }
+</script>
+
+<script id="fragment-shader" type="shader">
+    void main(void) {
+        gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+    }
+</script>
+
 
 <style>
     body {
@@ -91,7 +107,7 @@
         max-height: 97%;
         width: unset !important;
         height: unset !important;
-        image-rendering: pixelated;
+        /* image-rendering: pixelated; */
         /* background: #7e7e7e; */
 
         /* below to deal with weird border artifacts */
@@ -102,6 +118,10 @@
 
     .layers .image, #canvasContainer canvas {
         filter: invert(20%) grayscale(80%);
+    }
+
+    .layers .image, #canvasContainer canvas {
+        filter: unset;
     }
 
     #loading-spinner {
