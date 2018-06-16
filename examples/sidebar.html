@@ -37,15 +37,17 @@
             - types of layers
                 X 2d
                 X 3d
-                    - shaders defined in script tag
-                    - shaders defined in external file
                 - upload image
                 - svg http://bl.ocks.org/biovisualize/8187844
+                - when change layer example, change layer type
             - webgl layers
                 X had to modify ConcreteJS
                 X alpha doesn't work
                 X canvas is not stretched properly
                 X blend modes not working for 3d layers (DISABLE BLEND)
+                - shaders defined in script tag
+                - shaders defined in external file
+
             - define layer
                 X with popup
                 - bottom docking console
@@ -68,14 +70,24 @@
 
 <script id="vertex-shader" type="shader">
     attribute vec2 coordinates;
+    varying lowp vec4 vColor;
+
     void main(void) {
        gl_Position = vec4(coordinates, 0.0, 1.0);
+       vColor =  vec4(
+           1.0 + coordinates[0],
+           0.75 + coordinates[1],
+           (0.6 + coordinates[1]) / (0.75 + coordinates[0]),
+           ${alpha===undefined ? 1.0 : alpha}
+        );
     }
 </script>
 
 <script id="fragment-shader" type="shader">
+    varying lowp vec4 vColor;
+
     void main(void) {
-        gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+        gl_FragColor = vColor;
     }
 </script>
 

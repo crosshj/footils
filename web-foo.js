@@ -1095,6 +1095,13 @@
                         const webgl = [
                             "// example modded from - https://www.tutorialspoint.com/webgl/webgl_sample_application.htm",
                             "",
+                            "// Vertex shader source code",
+                            `var vertCode = \`${document.getElementById('vertex-shader').text}\`;`,
+                            "",
+                            "// Fragment shader source code",
+                            `var fragCode = \`${document.getElementById('fragment-shader').text.replace('\n\r','')}\`;`,
+                            "",
+
                             "/* Step 0: reset everything */",
                             "gl.enable(gl.DEPTH_TEST);",
                             "gl.depthFunc(gl.LEQUAL);",
@@ -1139,9 +1146,6 @@
                             "",
                             "/* Step2: Create and compile Shader programs */",
 
-                            // vertex shader
-                            "// Vertex shader source code",
-                            "var vertCode = document.getElementById('vertex-shader').text;",
                             "// Create a vertex shader object",
                             "var vertShader = gl.createShader(gl.VERTEX_SHADER);",
                             "",
@@ -1150,10 +1154,6 @@
                             "",
                             "// Compile the vertex shader",
                             "gl.compileShader(vertShader);",
-                            "",
-                            // fragment shader
-                            "// Fragment shader source code",
-                            "var fragCode = document.getElementById('fragment-shader').text;",
                             "",
                             "// Create fragment shader object",
                             "var fragShader = gl.createShader(gl.FRAGMENT_SHADER);",
