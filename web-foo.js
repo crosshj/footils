@@ -1063,35 +1063,6 @@
                         ].join('\t\n');
 
 
-                        const vertShader = [
-                            '',
-                            'attribute vec2 coordinates;',
-                            'void main(void) {',
-                            '   gl_Position = vec4(coordinates, 0.0, 1.0);',
-                            '}',
-                            // '',
-                            // 'attribute vec3 coordinates;',
-                            // 'attribute vec3 color;',
-                            // 'varying vec3 vColor;',
-                            // 'void main(void) {',
-                            // '   gl_Position = vec4(coordinates, 1.0);',
-                            // '   vColor = color;',
-                            // '}'
-                        ].join('\n\t') + '\n';
-
-                        const fragShader = [
-                            '',
-                            'void main(void) {',
-                            '   gl_FragColor = vec4(1.0, 0.0, 0.0, ${alpha || 1.0});',
-                            '}',
-                            // '',
-                            // 'precision mediump float;',
-                            // 'varying vec3 vColor;',
-                            // 'void main(void) {',
-                            // '   gl_FragColor = vec4(vColor, 1.0);',
-                            // '}'
-                        ].join('\n\t') + '\n';
-
                         const webgl = [
                             "// example modded from - https://www.tutorialspoint.com/webgl/webgl_sample_application.htm",
                             "",
