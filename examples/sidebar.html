@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>sidebar</title>
+    <meta name="description" content="Add a sidebar!">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="mobile-web-app-capable" content="yes">
+    <!-- <script src="https://crosshj.com/footils/web-foo.js"></script> -->
+    <script src="../concrete3d.js"></script>
+    <script src="../web-foo.js"></script>
+</head>
+
+<!-- 
+    TODO:
+    - canvas lib:
+        - redraw canvas on fullscreen in/out and resize(?)
+        - set/specify canvas size
+        - spinner for actions (like those that require canvas re-render)
+        - move items in layer
+
+    - layers
+        - same width components / smart labels : done for slider, do for boolean
+        - callback architecture
+
+        - rename layer
+        - add to layer
+        - edit layer (WIP)
+
+        - move layer order
+            - minor UI issues across platforms
+
+        - combine layers (merge down? flatten?)
+        - link layers
+        - add layer
+            - types of layers
+                X 2d
+                X 3d
+                - upload image
+                - svg http://bl.ocks.org/biovisualize/8187844
+                - when change layer example, change layer type
+            - webgl layers
+                X had to modify ConcreteJS
+                X alpha doesn't work
+                X canvas is not stretched properly
+                X blend modes not working for 3d layers (DISABLE BLEND)
+                - shaders defined in script tag
+                - shaders defined in external file
+
+            - define layer
+                X with popup
+                - bottom docking console
+                - blank layer, then edit layer
+                - import picture
+                - something else ???
+    - menu to left mode
+    - top menu
+    - bottom status bar
+    - floating menu (?)
+    - right click menu?
+    - auto sidebar show screen edge hover
+    - link nodes together with wires
+    - error messages
+    - add collapse to sections
+    - eliminate all "violation click handler took" warnings
+        - many of these were coming from get thumbnail
+        - other areas?
+-->
+
+<script id="vertex-shader" type="shader">
+    attribute vec4 coordinates;
+    varying lowp vec4 vColor;
+    
+    uniform mat4 u_matrix;
+
+    void main(void) {
+       gl_Position = coordinates * u_matrix;
+       vColor =  vec4(
+            coordinates[0] >= 0.0 && coordinates[1] <= 0.0
+                ? 1.0 + (coordinates[2] / 15.0)
+                : 0.0,
+            coordinates[0] <= 0.0 && coordinates[1] <= 0.0
+                ? 1.0 + (coordinates[2] / 9.0)
+                : 0.0,
+            coordinates[0] <= 0.0 && coordinates[1] >= 0.0
+                ? 1.0 + (coordinates[2] / 3.0)
+                : 0.0,
+            ${alpha===undefined ? 1.0 : alpha}
+        );
+    }
+</script>
+
+<script id="fragment-shader" type="shader">
+    varying lowp vec4 vColor;
+
+    void main(void) {
+        gl_FragColor = vColor;
+    }
+</script>
+
+<script id="gl-function" type="webgl">
+    /* Step 0: reset everything */
+    gl.enable(gl.DEPTH_TEST);
+    gl.depthFunc(gl.LEQUAL);
+    gl.clearColor(0.0, 0.0, 0.0, 0.0);
+    gl.clearDepth(1.0);
+    gl.viewport(0.0, 0.0, width, height);
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+    var m4 = {
+        perspective: function(fieldOfViewInRadians, aspect, near, far) {
+          var f = Math.tan(Math.PI * 0.5 - 0.5 * fieldOfViewInRadians);
+          var rangeInv = 1.0 / (near - far);
+          return [
+            f / aspect, 0, 0, 0,
+            0, f, 0, 0,
+            0, 0, (near + far) * rangeInv, -1,
+            0, 0, near * far * rangeInv * 2, 0
+          ];
+        },
+        projection: function(width, height, depth) {
+          // Note: This matrix flips the Y axis so 0 is at the top.
+          return [
+             2 / width, 0, 0, 0,
+             0, -2 / height, 0, 0,
+             0, 0, 2 / depth, 0,
+            -1, 1, 0, 1,
+          ];
+        },
+        multiply: function(a, b) {
+          var a00 = a[0 * 4 + 0];
+          var a01 = a[0 * 4 + 1];
+          var a02 = a[0 * 4 + 2];
+          var a03 = a[0 * 4 + 3];
+          var a10 = a[1 * 4 + 0];
+          var a11 = a[1 * 4 + 1];
+          var a12 = a[1 * 4 + 2];
+          var a13 = a[1 * 4 + 3];
+          var a20 = a[2 * 4 + 0];
+          var a21 = a[2 * 4 + 1];
+          var a22 = a[2 * 4 + 2];
+          var a23 = a[2 * 4 + 3];
+          var a30 = a[3 * 4 + 0];
+          var a31 = a[3 * 4 + 1];
+          var a32 = a[3 * 4 + 2];
+          var a33 = a[3 * 4 + 3];
+          var b00 = b[0 * 4 + 0];
+          var b01 = b[0 * 4 + 1];
+          var b02 = b[0 * 4 + 2];
+          var b03 = b[0 * 4 + 3];
+          var b10 = b[1 * 4 + 0];
+          var b11 = b[1 * 4 + 1];
+          var b12 = b[1 * 4 + 2];
+          var b13 = b[1 * 4 + 3];
+          var b20 = b[2 * 4 + 0];
+          var b21 = b[2 * 4 + 1];
+          var b22 = b[2 * 4 + 2];
+          var b23 = b[2 * 4 + 3];
+          var b30 = b[3 * 4 + 0];
+          var b31 = b[3 * 4 + 1];
+          var b32 = b[3 * 4 + 2];
+          var b33 = b[3 * 4 + 3];
+          return [
+            b00 * a00 + b01 * a10 + b02 * a20 + b03 * a30,
+            b00 * a01 + b01 * a11 + b02 * a21 + b03 * a31,
+            b00 * a02 + b01 * a12 + b02 * a22 + b03 * a32,
+            b00 * a03 + b01 * a13 + b02 * a23 + b03 * a33,
+            b10 * a00 + b11 * a10 + b12 * a20 + b13 * a30,
+            b10 * a01 + b11 * a11 + b12 * a21 + b13 * a31,
+            b10 * a02 + b11 * a12 + b12 * a22 + b13 * a32,
+            b10 * a03 + b11 * a13 + b12 * a23 + b13 * a33,
+            b20 * a00 + b21 * a10 + b22 * a20 + b23 * a30,
+            b20 * a01 + b21 * a11 + b22 * a21 + b23 * a31,
+            b20 * a02 + b21 * a12 + b22 * a22 + b23 * a32,
+            b20 * a03 + b21 * a13 + b22 * a23 + b23 * a33,
+            b30 * a00 + b31 * a10 + b32 * a20 + b33 * a30,
+            b30 * a01 + b31 * a11 + b32 * a21 + b33 * a31,
+            b30 * a02 + b31 * a12 + b32 * a22 + b33 * a32,
+            b30 * a03 + b31 * a13 + b32 * a23 + b33 * a33,
+          ];
+        },
+        translation: function(tx, ty, tz) {
+          return [
+             1,  0,  0,  0,
+             0,  1,  0,  0,
+             0,  0,  1,  0,
+             tx, ty, tz, 1,
+          ];
+        },
+        xRotation: function(angleInRadians) {
+          var c = Math.cos(angleInRadians);
+          var s = Math.sin(angleInRadians);
+          return [
+            1, 0, 0, 0,
+            0, c, s, 0,
+            0, -s, c, 0,
+            0, 0, 0, 1,
+          ];
+        },
+        yRotation: function(angleInRadians) {
+          var c = Math.cos(angleInRadians);
+          var s = Math.sin(angleInRadians);
+          return [
+            c, 0, -s, 0,
+            0, 1, 0, 0,
+            s, 0, c, 0,
+            0, 0, 0, 1,
+          ];
+        },
+        zRotation: function(angleInRadians) {
+          var c = Math.cos(angleInRadians);
+          var s = Math.sin(angleInRadians);
+          return [
+             c, s, 0, 0,
+            -s, c, 0, 0,
+             0, 0, 1, 0,
+             0, 0, 0, 1,
+          ];
+        },
+        scaling: function(sx, sy, sz) {
+          return [
+            sx, 0,  0,  0,
+            0, sy,  0,  0,
+            0,  0, sz,  0,
+            0,  0,  0,  1,
+          ];
+        },
+        translate: function(m, tx, ty, tz) {
+          return m4.multiply(m, m4.translation(tx, ty, tz));
+        },
+        xRotate: function(m, angleInRadians) {
+          return m4.multiply(m, m4.xRotation(angleInRadians));
+        },
+        yRotate: function(m, angleInRadians) {
+          return m4.multiply(m, m4.yRotation(angleInRadians));
+        },
+        zRotate: function(m, angleInRadians) {
+          return m4.multiply(m, m4.zRotation(angleInRadians));
+        },
+        scale: function(m, sx, sy, sz) {
+          return m4.multiply(m, m4.scaling(sx, sy, sz));
+        },
+      };
+      
+
+
+
+    /* Step1: Define the geometry and store it in buffer objects */
+    var vertices = [
+        0.000,  0.0, -50.00,
+        -0.99, -0.99, -1.00,
+        0.99, -0.99, -1.00,
+        0.995, -0.990, -1.0,
+        0.995, 0.995, -1.0,
+        0.00, 0.995, -1.0,
+        -0.995, -0.990, -1.0,
+        0.00, 0.995, -1.0,
+        -0.995, 0.995, -1.0
+    ];
+
+    // Create buffer, bind buffer, add data to buffer, unbind buffer
+    var vertex_buffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, vertex_buffer);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+    gl.bindBuffer(gl.ARRAY_BUFFER, null);
+
+    /* Step2: Create and compile Shader programs */
+
+    // vertex shader: create, attach, compile
+    var vertShader = gl.createShader(gl.VERTEX_SHADER);
+    gl.shaderSource(vertShader, vertCode);
+    gl.compileShader(vertShader);
+
+    // fragment shader: create, attach, compile
+    var fragShader = gl.createShader(gl.FRAGMENT_SHADER);
+    gl.shaderSource(fragShader, fragCode);
+    gl.compileShader(fragShader);
+
+    // shader program: create, attach shaders, link, use
+    var shaderProgram = gl.createProgram();
+    gl.attachShader(shaderProgram, vertShader);
+    gl.attachShader(shaderProgram, fragShader);
+    
+    gl.linkProgram(shaderProgram);
+    
+    gl.useProgram(shaderProgram);
+
+    /* Step 3: Associate the shader programs to buffer objects */
+
+    // Bind vertex buffer object
+    gl.bindBuffer(gl.ARRAY_BUFFER, vertex_buffer);
+
+    // Get the attribute location
+    var coord = gl.getAttribLocation(shaderProgram, 'coordinates');
+
+    // lookup uniforms
+    var matrixLocation = gl.getUniformLocation(shaderProgram, "u_matrix");
+
+    // matrix
+    // https://webglfundamentals.org/webgl/frustum-diagram.html
+    function degToRad(d) {
+        return d * Math.PI / 180;
+    }
+    var aspect = width / height;
+    var zNear = 1;
+    var zFar = 50;
+    var fieldOfViewRadians = degToRad(52.25);
+    var matrix = m4.perspective(fieldOfViewRadians, 1, zNear, zFar);
+    //var matrix = m4.projection(width, height, 400);
+    
+    // Set the matrix.
+    gl.uniformMatrix4fv(matrixLocation, false, matrix);
+
+    // point an attribute to the currently bound VBO
+    const size = 3;
+    gl.vertexAttribPointer(coord, size, gl.FLOAT, false, 0, 0);
+
+    // Enable the attribute
+    gl.enableVertexAttribArray(coord);
+
+    /* Step4: Drawing the required object (triangle) */
+    gl.drawArrays(gl.TRIANGLES, 0, vertices.length/3);
+
+</script>
+
+
+<style>
+    body {
+        background: #888;
+        margin: 0px;
+        background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEYAAABGBAMAAACDAP+3AAAAGFBMVEUfHx8eHh4dHR0bGxshISEiIiIlJSUjIyM9IpsJAAAFjUlEQVR4AT3UuZLcOBaF4QuI2XJxboIhF/eQFe1WovoBAAqccpkaZpc5+4yrXa8/RGpx/lrIXPjFCYjTp9z8REqF4VYNWB3Av3zQJ6b6xBwlKB/9kRkCjXVwGH3ziK5UcjFHVkmgY6osiBsGDFfseqq2ZbTz7E00qBDpzOxnD7ToABeros1vM6MX0rBQaG1ith1A/HJkvkHxsPGJ82dP8vVCyWmbyPTaAfGzg40bgIdrv2f3pBVPycUcufx+BSUUWDuCZi6zBqdM50ElKYPODqtLDjc31rBb9CZ59lbN/JScuMxHLUBcGiy6QRH9zpwgZGhRj8qSydPVgNNVgbWqYX3HbM9K2rqTnKVmsmwKWzc1ffEd20+Zq3Ji65kl6TSjALNvzmJt4Pi2f1etytGJmy5erLAgbNY4bjykC3YCLIS3nSZMKgwRsBarWgjdeVzIEDzpTkoOUArTF4WFXYHwxY585sT0nmTYMxmXfs8fzwswfnam8TMU49bvqSRnyRPnqlno4tVQQiH2A9Za8tNTfXQ0lxbSxUaZna0uLlj9Q0XzD96CpsOZUftolINKBWJpAOoAJC0T6QqZnOtfvcfJFcDrD4Cuy5Hng316XrqzJ204HynyHwWed6i+XGF40Uw2T7Lc71HyssngEOrgONfBY7wvW0UZdVAma5xmSNjRp3xkvKJkW6aSg7PK4K0+mbKqYB0WYBgWwxCXiS74zBCVlEFpYQDEwjcA1qccb5yO6ZL8ozt/h3wHSCdWzLuqxU2ZZ9ev9MvRMbMvV9BQgN0qrFjlkzPQanI9nuaGCokVK2LV1Y2egyY1aFQGxjM9I7RBBAgyGEJtpKHP0lUySSeWCpyKHMT2pmM/vyP55u2Rw5lcSeabAfgiG5TPDX3uP3QvcoSipJXQByUCjS4C8VXqxEEZOJxzmJoyogFNJBRsCJs2XmoWWrWFqTsnbwtSn43gNFTTob9/SEpaPJNhUBKDGoZGCMINxvBv8vuKbb//lg/sK0wfPgBica/QsSk5F3KK4Ui6Yw+uv4+DWEOFbhdPOnbY5PLFpzrZMhakeqomY0Vz0TO+elQGTWdCk1IYFAOaoZg0IJQhT+YreXF+yia+O1cgtGufjXxQw28f85RPXfd15zv13ABoD15kB7FKJ/7pbHKP6+9TgNgkVj68NeV8Tp24f7OOndCgJzR3RNJBPNFReCmstMVqvjjzBoeK4GOFoBN32CPxu+4TwwBDa4DJTe/OU9c9ku7EGyfOVxh+fw9g/AATxPqKTEXJKEdCIBkB4iBUlO6MjUrWi6M5Kz31YAqFsYaCeB0KJC5d1+foo3LQWSfRaDrwdAQrMEC27yDZXJf7TlOJ2Bczr1di3OWvZB6XrvvqPuWJPDk9dAHgm7LvuZJTEdKqO3J3XgostArEnvkqgUznx3PX7cSzz1FXZyvakTA4XVVMbCPFPK1cFj66S0WoqQI1XG2uoU7CMPquO2VaUDJFQMdVgXKD2bpz6ufzzxXbxszHQ9fGO/F7A998yBQG6cShE+P+Pk7t1FwfF1QHN1Eui1VapRxCdj8tCtI1bog1Fo011Sx9u3o6c9bufI6wAT26Av9xJ+WWpTKbbBPp3K/1LbC4Vuhv396RCbJw4untjxVPndj+dIB9dVD8z2dylZ+6vMeJwbYChHJkvHV2J3fdHsJPASeHhrXq6QheXu1nBhUr5u6ryT0I13BFKD01ViZ/n3oaziRG7c6Ayg7g1LPeztNdT36ueMqcN4XGv3finjfv+7I/kMJ4d046MUanOA1QtMH1kLlfFasm99NiutSw63yNDeH4zeL1Uu8XKHNfcThPSSNwchGMbgUETScwkCcK77pH2jsgrAssvVyB8FLJ7GrmwyD8eVqsHoY/FwIv9T7lPu9+Yf8/9+w4nS1ma78AAAAASUVORK5CYII=) !important;    background-clip: border-box !important;
+        overflow: hidden;
+    }
+
+    #canvasContainer {
+        width: 100vw;
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    #canvasContainer canvas {
+        background-image: linear-gradient(45deg, #808080 25%, transparent 25%), linear-gradient(-45deg, #808080 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #808080 75%), linear-gradient(-45deg, transparent 75%, #808080 75%);
+        background-size: 20px 20px;
+        background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+        background-color: #bbb;
+    }
+
+    #canvasContainer canvas {
+        max-width: 97%;
+        max-height: 97%;
+        width: unset !important;
+        height: unset !important;
+        /* image-rendering: pixelated; */
+        /* background: #7e7e7e; */
+
+        /* below to deal with weird border artifacts */
+        outline: 2px solid #292828;
+        outline-offset: -2px;
+
+    }
+
+    .layers .image, #canvasContainer canvas {
+        filter: invert(20%) grayscale(80%);
+    }
+
+    .layers .image, #canvasContainer canvas {
+        filter: unset;
+    }
+
+    #loading-spinner {
+        position: absolute;
+        left: 0px;
+        right: 0px;
+        top: 0px;
+        bottom: 0px;
+        z-index: 999;
+        background: #333;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        visibility: visible;
+        opacity: 1;
+        transition: visibility 0s 0.8s, opacity 0.8s;
+    }
+
+    #loading-spinner .icon {
+        width: 9em;
+        fill: #0afff1;
+        shape-rendering: geometricprecision;
+        filter: blur(1px);
+    }
+
+    #loading-spinner .icon-pulse {
+        animation: spin 1s infinite steps(8);
+    }
+
+    #loading-spinner .text {
+        color: white;
+    }
+
+    #loading-spinner .spacer {
+        /* box-shadow: 0px -75px 60px 18px #ffffff47; */
+        width: 0px;
+        height: 0px;
+        margin-bottom: 23%;
+    }
+
+    @keyframes spin {
+        0% {
+            transform: rotate(0deg)
+        }
+
+        100% {
+            transform: rotate(359deg)
+        }
+    }
+</style>
+
+<body>
+    <div id="loading-spinner">
+        <!-- modded from https://loading.io/ -->
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid" class="icon icon-pulse">
+            <path stroke="none" d="M10 50A40 40 0 0 0 90 50A40 42 0 0 1 10 50"></path>
+        </svg>
+        <div class="spacer"></div>
+    </div>
+
+    <div id="canvasContainer">
+        <!-- <img src="sidecar.jpg" alt="sidecar image"> -->
+        <!-- canvas id="canvas" width="1000" height="625"></canvas -->
+    </div>
+
+    <div style="display: none">
+        <img id="pattern-needles" src="data:image/jpeg,%FF%D8%FF%E0%00%10JFIF%00%01%01%00%00%01%00%01%00%00%FF%DB%00%84%00%09%06%07%10%0A%0D%0B%0A%0A%0B%0D%0A%0E%0E%10%0B%10%10%10%0E%10%0F%0A%0A%0E%0B%20%1D%22%22%14%1D%13%25%2004%2C%19%261%27%25%165%3D5157%3F%3A%3A%23%2BJPE8J49%3F7%01%0A%0A%0A%0E%0D%0E%1B%10%10%1B%2B%25%1F%23---1%2F-%2B777-7-6-7-7777%2B--%2B%2B2%2F-5.--0-%2B--%2B--%2B%2B-%2B-%2B---%FF%C0%00%11%08%00%80%00%80%03%01%22%00%02%11%01%03%11%01%FF%C4%00%1A%00%00%03%01%01%01%01%00%00%00%00%00%00%00%00%00%00%03%04%05%02%01%06%00%FF%C4%00%3A%10%00%02%02%00%05%02%05%02%03%07%04%01%05%01%00%00%01%02%03%11%00%04%12%211%13A%05%22Qaq%81%91%232%A1%14BRb%B1%C1%F03%D1%E1%F1%15%24Sr%82%B2%06%FF%C4%00%18%01%01%01%01%01%01%00%00%00%00%00%00%00%00%00%00%00%01%00%02%06%03%FF%C4%00%1F%11%01%01%01%01%00%02%03%01%01%01%00%00%00%00%00%00%01%00%11%21%021%12QaAB%22%FF%DA%00%0C%03%01%00%02%11%03%11%00%3F%00%F3%DE%1F3%24%84%EFAB%BB%10B%A4c%F2%B7%A7%17%C7%BF%CE-%1C%CCr%24%A5%D4%CA%AAv%00%EF%5D%C8%AB%1B%9B%DF~p%BEX%02%CF%14%D2t%D6%DFT%60%2C%A7%A5%5C%8D%FC%C3cc%00%19%07%89%9A8%F5%BAPh%DC%8B%8C%A7%EE%B2%16%F6%E7%1C%FB%8D%EEhrg%FF%00%1E%F2%15%89-%A2%07K%10%A5d%D3_%BCx%3Cs%F1%85%B2%D0%BCe%0C%5DE%2B%D4Z%0A%A5%0B%0A%AB7%BD%8B%17g%8C3%06qU%0Cm%12%B6%A0%E2%CC%8Ee%F7%22%86%E3%0A%1C%CF%EC%C2%86%96%605%2F-1%90%11%40%0F%8Fn%D8%05yN3H%E6%17I%CA%E9%A3c%402%29%AE%C2%BB%FC%D7%3Cay%B3%E04%87Z%2A%BF%E2%15%24%C7%AC%13%FC%BB%9E%FF%00q%F4fL%E2f%A5%11K%00%EA%18%C6%B9%23d%8EI%05yI%07%FDJ%F4%E7%ED%80N%A9%1E%95%FD%9E%25R%15XZ%2B%9F%DE%BA%AEv%FD1%05%3Fd%D4s%C3%24Q%BCaHP%02%84m%03%90G%AD%F6%DB%E7%19%CA%E7%83O%1Af%15U%01%20%9DZT%C6j%9B%FF%00%D7%1C%11%84b-%10Y%91%2A%D0%A1%2A%A5%91%D8%F3c%7D%8E%18%CB%AA%2C%D6Q%DDc%04%D0%60%25%91oa%B7%3B%D6%20%24v%1B%C42%B9%9C%C4L%9A%E1p%A4y%EA%8E%9D%8F%B6%E0%FD%EF%06%F0%EC%C0i%A5y%17%8D%05%94%9A%0Cy%D4Gn%C3l7%E2R%23Le%0CHu%89%96%CA%C8%81%85n%B5%C6%C7%F5%C4%BC%A2%98e%7C%CCnQ%CE%E6%8E%A1%A7%D3~v%C4%E3%0F%1A%A6n9%1EH%E7%CBL%24%86%40%F5%A2%84%B5%FC%C2%F7%3BW%1D%BE%986R%60%20%94%3CgIr%93BB%25%92-%1C%16%E3%D0%F6%D8%FAY_%25%99ML%B9%98%84.%ED%A9YCe%E3qF%C9%AD%89%22%B6%3Fla%A7%2A%F3%8DGL%8A%B6%01%22Rn%C17gk8-%09%EE%0Eg%22%D1J%ED%A9Y%5B%CB%A0%12%87%E0r%7DO%A7%C0%C6%E1%CB%88%94%CCu%CA%0C%88%40%5D2%CC%01%17%A5%F4%EE%A4%0FS%F7%C6%E3%F1%12aX%E4%99%26d%BBF%066j%1E%B6v%F5%1E%B7%82A%A6g%06-q%CCT%82%09%D5%1C%91%FA_%EE%9Eh%FCa%5Edq%B1%95%CF%AA%B3.%A8%DDY%D8V%9A%94%5DP%3C%D6%F7%84%B3%24%06%92U%1A%18%EAZC%A5%8A%1D%80%27%BD_8%27%88%0DL%BDE%21%D46%92E%B0%B09%ECw%1C%FA%FDp6%C9ool%AA5%1D%1AU%02rw%E1O%D7%ED%88%03%B1%D8%B9%99%C3%98%D7%2F%22%C8%B1%22%BC%2C%A3K%A1S%E6%07%F8%81%DF%ED%8AY%2C%DC%5D4%16e%D0%E2%10%A4%2B0%CB%B6%EC%18%F2hP%BFn7%C4%F9%F2%22r%8F%97%CBI%13S5%23%AC%99wa%FC6A%07v%DCz%1A%F5%C0%0C%85AV%8C%AA%EA%244%8D%E5Y%97c%BA%D5o%DF%DF%D3%13%26%8D%BF%10%F0%C0%93K%10%92%40%8CIV%5D2%2A%F3%A4%B8%EE%3F%D8%E0%C9%E1%C1%60%8EE%928%E4%00%AB%10%E4%E5%9E.%C6%FBw%E6%8F%F7%C4%D6%E7%C9-%B2%D1%D2%C5%A2%1AOaCo%EB%80%9F%10e%B0%17R%AD%A7%95O%B5%13%DC%D0%FF%00%06%01%5EG%26%E2c%1C%81s0%C3%2A%3D%AA%B3%F4%A3%91%1C%0BZ%24%80w%15D%7F%B6%0F%99%CA%26~%1C%D4q%E9y%A2%D4%C3%C8C%16_%FD%AF%A0%3Clv%EF%88%99%17%8D%5C%CA%F3%2A%20m%407f%F8%FD%D0%3F%B6%29%C5%9BX%3A%B3%CAQ%BA%BAkpP%EDB%CFn%F8r%7CS2RE%8F%5CE%99%C9%05%90%C7ew%F5K%ED%F9O%D3%1A%CD%2FM%C4j%EC%A2%3A%29%BFJh%D4%EE7%F65%F3%87%60%CA%BEi%2C%9A%8DC%10%CA%1A%FA%97v%07%A6%FE%D8%14%99%23%99%D6%EE%8B%03%D9AZQo%8BR9%BD%B1%18%B5%F1c%FE%D6%DD%40dT%94HJK%AB%CE%0Cm%C05%C5P%FF%008P%3A%ABK%966%92%03v%FA%94%11%F3%DCo%82%E5%F2%EF%94ya%CC%B3%2CL%A2%9C%A5%A1%EEuzU%1F%F8%C7s9SJ%24%06%93%40G%00H%EC%B5%B9%3E%9FB~p~B%2Co%0D%12%A7Q%A5%28%F1%92%14%B7%9Am%0D%ED%E9%B1%C4%EC%BCO%2B%09%15%0C%CDE%8A%EC%9A%14%929%FAz%F6%C58s%01%DC%3C%28%08%91B0e%1B%9D%FD%061%06tE%D4%8E%29%81%90%23%AB%29%A3%1FT%B1%22%C1%DF%F8%AF%D3%08%CEI%E6%A4%B4x%E9MQ1%DA%C9%A7%BA%EFf%B7%F5%C6%9B%A6%C8%85Q%95X%05%F2%9E%A4a%C0%17%C5%ECOa%E9%ED%86%FCG%20%93%93%24d%E9%B1%F9%D9%99%D4%F3%CF%A5%1CLK%FF%00%D4G%13%28%09%220%60%7C%84%83%5E_%D7%EF%88%8C%C9%CC%EB%12%9D%00B%92%80%C6%40%E6N%7B%EE~o%FD%C8%BC%3D%DD%60g%88y%A2%3F%8D%1D%95%D6%95%B9%1D%9B%EB%8C%3Em%A41%C5%B4%40%EE%C1H.w%BE%7F%C1%872y%85%25%93%2B%2CH%FA%ACu%05%82%2Bu%04%7Cw%07%9C%13%EE%DEw4%90%E6E%3BG%A5%24%7D%A8%2B%B6%D7%C7%F9%BE%0F%1BX%26x%A3%CCuW_%E1%1E%8B%8E5X%26%8F%2Bc%9A%F8%C4%2F%15%9Df.%D2.%82Z%28%F6%60%DA%12%CD%F3%DFf8%D4S%B2M%1A1%2C%0D%D9%BD%21M%AD%91%ED%E6%18~%3C%8F%9E1%E0%CB%E8%97%AB%13%88ck%60%1C%B1%92%AFpN%FF%00%1F%18%AF6MQ%09%B4%97IAj76%0Bo%DF%F5%C2%D3L%CE%BC%AB%05%A0%F1%B1%D2%C8x4G%23%FA%FD%B1%9C%BEtK%12~%1A%A4%91%81%1B%E9%02%CA%02t%EF%DE%EC%E3.%B2d%99%C9%AALb%EA%88%B6%05%19K4l%BC%0D%895%DB%9Ck7%E1%A9%0A%B3%BD%C8Y%DC%95%29%A2%5DC%B8e%E4lO%1C%1D%FB%E1y%F2%E5%A4W%FC%29u%A9%0Bd%DE%AB%A1Cj%EE%2F%1D%873%1BG%D3%22%BC%D3Q%3A%88%1Ecw%EBb%B7%F7%C6%B1%B3%CFW2%D9%F9%20j%BF%21%5DV%DA%5BE%13%DE%BE%7F_%A9S%C5%D9%8FK3%2A%C84%D8%E4%1B%E0%0B%1B%9D%C0%F4%C6%7C7.%EF%1D%24K%7B%AE%8D%40%2B%D0%3A%05%FB%FF%00%7CvO%0D%8D%E1%89%86%A5%7DQ%E9.%7F3%1E%DE%D5%BF%CE.I%B9%3A%F9%88%98%17%EB%C8%88Y%09%8A%C3%C6%D7aH%FE%1D%85%60yx%DD%0B%24r%13%12%90%40Kn%90%24%81%DFj%23~%DB%E2s%F8%7B%1C%B9H%88%D4%2C%11%F9%24%3E%A4%83%F5%FB%E1%F4F%CB%FE%26%A3%11%28%18%A1%D4%ACB%F6%1E%A3%8Fo%BE2%E5%0E%CF%BC%D2D_.C2%82%1A%89%F39%3B%83u%F1%DB%11%CAi%90%13%18%F3u%03%87%DAB%A0%81%7F%D7%E8%3E%98o%FF%00%2C%5DP%86%2C%A7%F2%8D%2A%B5%B7%1D%FDA%C63Rkd%2A%1C%B8P%0E%95%F2%C6%BE%9E%83%EB%84%29%04%99%F0l%D4d%C9%04%F2%3AX%3A%5D%29%D5%1C%9D%89%1D%FBay%3C%19%8Cgu%12%02C0%1AA%24%9A%A2h%1F%BF%A6%12%8B%C3ev%92h%9E%9B%F7uR%02%2F%D8%1C%1F%21%0B%BA%B1%D5%23j%1B%80-%00%3By%C0%FF%00%2B%7C9%FB%5B%BCd%E3%90%C3%D4R%1C%95%A8%F9%EB%91%25%0F%E1%E4Q%C0%B2%7B%CC%8C%9AXk%D4%2C8%F3qG%D3%BF8rO%09%CCH%CC%1D%1A-f%D9%B5k%09%FF%00%CC%5D%FD%F9%C0%60%C9%18%26%88%BB%9C%C3%2B%0B%5D%2F%0D%AD%D5%8D%CD%FD%BBs%8D%7F%CF%DD%8Cg%F3%D9%40%2F-%98ve%9C%AC%91%CA%BAYQE%81%AC%1E9%1B%7C%F1%DF%E9%B2%8C%D13f%60h%DBI%E9%B5%28%02J%D8%83%CF%A68%F33%3B%2A%C6%0E%91%A8%5E%A4%2B%5Bo%F4%F4%C3%D0f%90%95%CBg%1B%B7%95%01%1A%18%F3C%ED%DCv%C65%B7%C5%97%CB%03%04%AE%25d%D0%EA%1FQ%26%B7%B3%C7%B6%E3%9C%0ET%8DUL%AF%D3VuT%28J%16%7D%EA%FF%00%87%60h%E2%84%B9P%A5%9C%0E%98%AD%C8%070tq%E6%1Bi%03%D7%FAm%84r%D2%8Df%25U%25%93Z%82%BF%85%D4%15%C0%E4%1B%ED%7C%8CG%DC%FCr%C7%8BeQ%A4C%18%E9%B2%84%5B%7D%96Iw%20%9F%D3%ED%F1%86a%F0%E6%8AG%0C%D6PS%20Mo%A9%B7%24%8B%BA%22%BB%7F%B663m%98X%D8G%18.%AAV%94%3Ai%AD%C0%DC~%BFlnX%98%C2%04gG%A8%BE%AA%C6%BE%C0%F08%E3%8CK8%7B%A6%C9%9A%19YL%B0%C1%BF%E5x%D6C%A5%A2%EE%C4%11a%85%1E%DD%B9%C3%29%96s4%D0%F5%0B%2C%81%A5M%2A%2C%A96%09%DBj%BE%DC%60%124Sh%90%E9%8Bu%04%02C5%F6%F6%BEp%F4%5E%23%A6%24%9A%23%D2%9B%2C%EB%0C%85%E8%A4%91%F9u%13%DDG%E57%ED%8DG%8ES%B3%B1%BE%87%EA%83DME%280aZt%9F%B8%C2%D9l%D4%A1L.%DDx%99%28%02u%0B%3E%9D%C1%BB%EF%87%BCc9S%BA%AA%F5%3C%E8%C8%14%8D%B94%07%A5%13%C8%ED%8CG%2Ca%9Dg%5DTI%2C%5E%9Cz%D7%A5%EF%B9%EEk%11%EA0%D9%7C%BES%CB%19%2Ac%0C%CC%80j%1A%B5Y%22%EFs%C1%FBb%A9%F0%E2%9A%94%3B%19c%3F%E9%00%CC%5D~%83%8E%3B%D5%FCa%3C%E8L%C2%B2%AB%18Y%1C%B3%86%3A%25CF%B6%DF%B5%D8%EF%BE%E3%05%C8x%84%90%84%8D%E6i%1Fr%8C%CA%D2E%D3%A2%05z%03%60%FC%E0u%27%C7%089%FC%AC%91%14%94%23%A8%0D%18d%7DN%8CI%03~%E3%7F%EF%8A%A7%2B%14GTL%CC%C4%AF%95%86%BA%8E%87%3C%9E%FE%A7q%EF%85%F3L%D9%9F%2C%B2%04%90%84eV%07C%11%FB%C0%D7%B1%E7%8C%27.a%CBE4%2A%10%E9Y6%B6%23%83%E6%1Fo%D3%19w%3B%3C%27%B2%B2%19%8C%EB%0A%FE%23%1E%08Q%E6%EF%BFq%CE%FC%DE%00%CBK%AEgW%8D%88WK%D5%22%3F%00%F6%A1%7F%D7%1C%C9g%C4%21%DC%A3%B2%C8%F6%AC%0D%90h~~%E3%B8%C5%09_Z%15%D0%29%FA%97%A7R%EB%21yc%F1c%FBa%CA%E3%22%91%3E%5D4%E89%B4%02%C1%2B%E5Y%14%90%C0%8E%7B%11%B7%AE%26%E6%07Z%22%B1%C6%C8%C1%F6%24%AA%C9%08%E5l%7D%88%C7%A1%9Ch%11%B0P%0B%12KD%BA%98%1A%D8%3F%A8%C7%9F%FD%A9%22%96%3C%C3%B9%26%C0%2A%A6%9C%BF%980%3FN%3F%CB%8Fv%7C%B2hL%F1%C6%19%03F%C2B%5Bp%0B%AD%8D%8F%A8%AA%FBv%C0%A3%8C%D2K%2Bi%05l%15%F2%9B%B2y%E3%92%B8%CC%F1%A4%E6%21%E5%0CL%24%1F%CA%A1%B6%24z%1F%FA%C3p%83%97%19uT29%EA%BD%1F%3B%EC%05%AA%83%EB%87%2AG%F6%96%CB%C8%CB%13%A3%0E%C4%B0%91%00%FE%5E%EB%DF%15%7C%2F7%D5%D5%B1%60h0%24%02%87%D0%FA%F0w%BC%0B%C4%D8%E6%23I%9E%15%DBJ%AB%E8%06%5D%1F%CC7%AF%D3%9C%27%18C%23%29-%14%9A%5C%A5%EB%01%08%A2A%3BZ%9D%FB%FF%00lU%D1%ACK%90%EB%0F%C0x%CB%2B%12M%EB%40%2B%7B%F5%C4%8C%BCh%82R%C5%A7v-%18%8FOM%97%B8%07%9B%07n6%DF%0C%F8k4K%E7%5E%9C%9A%8D%B1mk%24w%40%81%E9c%E9%82%B5%A1R%26%A5v%3ET%D3%10%0B%CF%3E%BB%FF%00%DE%2FL%FB%A4%B2%3A%B2%97I%1E-%1E%5B%16%C1%85_m%AB%8CnHK%B8b%9A5%C4%E3Im%93H%B0%C4v%E3%EB%E9%8AS%E6%3Ff%A6g2%80%C8%1A%27%0Cd%E9%D7%2AG%CF%D6%8F%C68%D2%AFS%AF%1A5F%CC%C2%CE%A0c%20%02%06%D7%7F%9B%06%C2%1E%A9%13d%E5t%0B%AB%A0T%29-%A7S2%93%E4%BE%07%AF%04%EEN3%1C%92F%E5%0A%D2%CA%0A%80%E0%B6%C3m%8D%EFg%DF%17%A3_%DA%1D%C9A4t%FAI%0B%22%EE%3B%7D%C6%13%CF%A3%BCj%81QX9%E9%B2%B1c%A4%91u%7Cq%C7%F2%E1%3C%B7%90%F8%FF%00K9%1F%10%E9%1E%9C%B20o%C6%11%9D%3Dmb%EE%BBQ%BB%23%7F%A67%9D%01%B44jb%D7n%D7%F9%BB%1A%DFq%B9%27%7F%5C%21%9D%87%5E%92%BA%AD%00%BD%23Y%EA%5E%FE%82%F8%3F%5C%18O%D3h%1C%16b-%8D%8A%24~%F0%AD%B9%1D%FD%FEqm%AF%C9%8C%BC%84%2B%22%A1%D2%ADL%14%80A%D8%9B%BF%AE%2A%E4%15dI%23wh%BC%C4B%C4y%BA%81h%028%3D%FD8%C4%CC%A4%A8%AC%E23%A9%1DU%B4%EA%02p%C4%0D%E8%F3TG%AF%CE9%94%CC%0Dz%A1%89%FC%A4%00%0B%F9%F5%F6%FA%EF%81%A1%98%8BR%B9%7BiP%05%065%07%CB%F3cm%BB%7B%E2z%E5%04%A4%82z%CC%E00%2C4JW%D3%F4%3Fn0%ECY%B5R%AFV%E4%F4%C9%20.%AEv%BF%91%85%A5%89X%AB%EB%7B%D6d%20y%5D%8D%F2%0Fn%F8%D6G%96J%E7r%FA%9A%98hT%DD%00%1AT%91wA%87%BE%05%95%9EYJjc%D6%8D%AA9%3C%A0%028%07%82%3B%FC%8CzVf%92%16%1A%9ET%A3%B2%B7Y%D6.%C4%7B%7F%CE%3C%F4%10%3A%BB%C0%11Z7S%E5%95u%86%5B%ED%60%01%B8%1F%E6%F8%8F%5D%84%FE%D4%A0%F1%1B%29%FBT%CA%B2%A9%21%83%03%DF%F3%1F%E6%EEp_%D8%A2%04%99X%C8%B3%83%D3%955%3A%ABv%BD%B7%1B%DF%C0%FA%E1%1C%DCh%08%91%E6F%B2%C3s%A9h%0A%14%40%F7%FE%FF%00%0C%E5%95%CA%C4%92%C6%C8%23%D7%28%2C%CB%1A%17%DC%F7%AE%D7%F3%BE%0C%B4%2Cir%DB%28%94%EBKq%E4%D4%C5H%3Em%AB%83_%7Cq%E3BA%8C%B3%80%03%10%14%B1%D1%DC%8Ck%2F%60y%15%DC%B3%DA%B2%93%1Ah%F9%ECy%F5%C0b2%89%93n%94%94t%B6%A1%7D%CF%23%DB%7Ca%EC%B13%B3Dc%96%19%1C%CA%85c%20%AD%1D%26%FC%D4%7D%2F%7C%03%FF%00%E7%5Dh%B4%CF%D3R%3A%88%EA%9A%F6%A3%A8%109%EF%F1%F1%B6%07%9Be%91Hv%A9%0D~e%24X%ADW%BE%D7%EF%82xk%84%7D.%5D%17Z%14%60%22%8Fz%DCnx%E3%81%EB%8Dg%2C%FF%00%AB-%E0%84%B1%9B%2B%2CL%09%DB%A4zi%277%EF%AB%8F%8Ci%20j%EAf%22a%24k%A8%92CG%20%DDA%F6%3B%9F%B7%BE%1E%7C%E6V5%EA%C3%08%0Bdn%D1%EA-%CE%A1Ml%0E%FE%F8%CBg%11%A8%96%B6%FEfHU%E2%B0%3F%CFL%02%ED%BF%89G%F0%F6%1Di%96I%19%06%95%B0%23yMv%3E%D5%B6%28f%20%28%14%D1%92%27%11%95%25%18%14%00%7D%C1%A2A%C0%A6%F0%A6%8C%B4%CE%E3%8D%D67n%A1%5E%7C%A6%BD%FE%F8c%C1%A6%9A_%DA%203.%9C%B8%21%1C%FF%00%AD%2A%EFTn%89%AC.%7B%B0%7B%BB%93%A9%80%8Em%12i.%C8%D5%F8%8B%7F%24%9B%1D%AB%F5%C2%92%E5Z%2BeS%B3P%3EX%C9NA%24%F1%B5%E1U%95%E0gD%94H%DF%98%00X%ADX%E7%B5%EEx%BCR%F0%BC%E8%CC%A3E4%B5a%99%0Dy%7D%EA%B6%1Bv%C3%8F%B9%E3%C91%28%EB%15%D4%8Bz%95%AC%B2%AFP%1D%FF%00%BE%07%99P%EFl%88%01%0E%AA%E5%980%07%9A%BB%A1%8A%11%40%92%5BHB%9D2ir%DE%5B%B1%5E%A0lq%A5%F0i%88YP%A6b3%B8%3A%95P%AF%26%B7%BB%FA%60%DC%ACad%FC%3D%95ELc%8C%83%E5%060%5B%9D6y%3F%5CjhD%84%AC%9A%0Cl%8C%A0%E8%12%3Co%C7nE%DF%A6%3E%CA%C3%28%24%B0%D1%A4%3F%95%834%8D%1F%20l%0D%E1%09s%A5Z%18%DA%8A%B1%2A%C2%A9J%8A%DFm%8Fo%5C%27c%F9%D9%89%3C%26H%3A%25%27%10%3B%07%D9%8AK%97p8%F7%DFm%FF%00Ls%C3%96F%2C%B1%AFFR%FAJ6%A3%10%24Y%D2%C0og%FC%18%D4%D2%C1%3D%F5ex%E4E%D2%B4%EE%AA%C4%92%14%8E%C2%B6%F4%1C%DD%E2%849%01%94%D6c%EA%10B2%D92G%21%BD%EC%01%B7%DB%7CK%C9%0F%A9%97%CF%1C%D4%0AU4HEH%AC%F4%96x%AEv%ACN%CAB%5Eb%CC%19%81X%D7H%3A%FE%40%1F%18%049%F5G%21%5B%A9%AAF%24%85%F3%17%24%F3%EB_l0c%60%01%E9%A8pK%02%A2%E4%DCv%ECq%9E%16%B7m%E7%7C%25X%B2B%F1%E6O%E7%08%E3%F6v%0B%E8%A7s%60%83%C8%1F8%81%9B%D1%2C%AA%08%96%06F%0Bn%24d%29%7C%8F%E2%03n%3D~%B8%F4%5E-%2B%24qf%9F%F3%22%82%2FJKDlE%8F%5D%B12%7C%DA%3DG%D5pt%EA%20D%CB%25w%60%7Bm%BF%1F%F0%F8%AD%8F0%DA%8A%92%14%22j%84%F9%94%95N%B2%B6%DC%80h%8B%B1%ED%EF%7B%E1%27%10%EB%5DA%E6V%14%DAcX%D1%7D%05U%FA%F6%E7%18O%10%05a%8FiP%EB%23P%D4%CA6%FBs%C7cx%A5%24E%F4%C9%03%B3%B2S4s%21%883qf%FF%000%F7%C4%99h%E9%25%24pS%3B%C9%A1%AE%97%F7%9E%AB%8B%DB%91%DB%7C%2F%04%91G%2Cy%84%90%B2%87%B2%18%E8%B3%7B%15%F4%3B%FA%F6%C6%A2%88%BAN%FBN%AE%01%25%94%F5%1B%D4%7D8%AF%8C%05z%25%944%91%C6%D2%23%E9%D4%1C%A1%3BU%8D%BBP%E7m%B1e%96%EC%FE%20%04%E6U%FCER%C4%02z%80%00mM%9E%08%FD%7Dp%CEW%2C%A3D%C8%7C%B2%06%28%1BH%8Dc6%2A%C1%DC%E2y%0D%14%AE%8AU%A4%0B%1F%00%22%B0%DE%F6%EF%E9%B6%2B%F8%7FOK%23%BBF%1A%BF%0Fe%5B%A3l%84%9D%87%1C%7F%D2%FA%A3%AD-%B3%BD%27%D1%28%2C%8F%D4%F3%29%B0w%DA%C7n%2B%FE%B0%FES%C4%16%D81UU%D0%DAl%AB%1B%BD%AA%B9%BF%EB%85%A0%CA%AFY%CA%B7%91Af%12%0F5%B3%80%00%F9%D5_%FDI%F5%C3R%2CP%C7l%AC%14%06%05%86%90%10sg%D7%8E%C7%12%14l%DB41i%28%F3%22%11%C0w%0Du%C6%DC%8C%02Q%E7I%13Ve%CA%96%D4%E0%19%05%F7%BE%FB%01%89%DE%253%84d%8F%F1G4%056%BF%9FNq%88%9Et0%C8%83%A8%AD%10%25o%9E%FD%B9%3B%8C%07%8F%21%F2%EEB%9F%2C%21c.e%BA%C5%B7%D0%86%96%FB%8D%F7%23%0F%8C%C1%D2%16%04%B8%AFTid0%15%F9%7D6%DF%FD%F0%19%A3%FD%ACG%29%00%BF%E5h%A2V2%03%D8%8A%E7z%3F%7C5%96E%1A%B4%B1eD%F2Y%16%AD%DC%0F%8An%7B%1CO%A8%C6F%0C%B4%AA%C70%17%A2%A4%01M%A5%00r%3Fv%C9%AF%8A%C5%1C%AD%BA%04%12%B7%9E%8D%82%B1%90%3E%2B%FE%F1%9F%0F%CF%89%1D%CB%BE%A3B%82%85f%AB%A1%B7%EB%B7%BF%A6%09%9C%8D%E3%D7%234K%A9%00%DDYU7%F5%1B7~0y%0E%F6%D0gI%7C%FCrH%15%AF%AE%8B%D4CV%CAU%8D%8DC%D0n%3E%B8A%25%E8%3CNU%88T%E0k%E7m%8D%F1%B5%ED%82%26a%F2%F5-%D0%D4%14u%19eBM%10O%7F%7D%C6%28%C73N%04u%11g%F3%10%E8c%8E%FB%82%05Q%E3%7F%D3%1A%ED%9C%D7daU%93D%B3%3A%C4T%B8G%8D%B4i%BE%01%3D%8D%83D%E1%BC%A6j%29%5C%F5%CC%890%0F%A1%C6%A2%18%FE%ED%9F%B7%18%14%91%F4%08%22%21%13%01%BC%9A%19%F2%F2F%7Dt%90%7B%1E~%F8%DFM%A11%E6%1F%29%1C%F1%EA%22%E3%ECv%D8r%1B%E8kl6%89%84%CA.%90%B9v%D7Q%824%B0%D6%23%B1%B9%00%F1%B7%C6%F8%0EN%26U%8F%28%DAf%2A%15%05%B0%7D%98%9D%BBv%1B%FCc%8D8u%9C%C5%AA%23%A9.5Sm%10%A3%F4%AF%BE%C7%01%8E%A5%98%C6%84y%8B%87J%0C%3A%80%0A%D2%7B%1A%D6v%F5%C1%D9X%93D%23%98%D2%BC%40%12%03u-%87%60A%DC%FCa%92%EEr%E6%3C%C4%40%C8%14%15%92%97%A8%80%90%09%04n%0F%1E%FB%60E%C2%3A%2C%AA%CE%C0%5B%B0%05%C9%AA%BD%86%EB%B8%3F%A6%1E%8Ahsh%D2%E5%C3%C8%81Yg%8D%0F%E2%85%EC%D1%7B%8FLRe%FF%D9">
+        <img id="pattern-hatch" src="data:image/png,%89PNG%0D%0A%1A%0A%00%00%00%0DIHDR%00%00%00%80%00%00%00%80%08%02%00%00%00L%5C%F6%9C%00%002.IDATx%DA%85%7D%5B%AFm%D9qVU%8D%B1%F6q%BB%ED%EE%C6%8E%120%0A%20D%90%80%07%82%10B%F2%03%01%C2%1B%3C%00%3F%C3%80%E2%EE%F656D%C1%0A2%96%89%FB%B4%ED%D8%ED%A4%8D%5B%26%18Y%86%60%11%89D%24%0E%22%B2%94%28%FC%21%F6%9A%A3%8A%87%BA%8F9%F7%C9%E9%D3%FB%AC%7D_k%5C%EA%FA%7D_%E1%DF%FD%8F%3F%BA%D1%98%03%07%22%11%12%02%22%A2%20%22%20%02%02%00%20%02%20%8A%3F%00%00%40%FD%17%05%00%40%F4%CB%40%3F%A1%9F%85%F8%5E%D4%2F%01%11%10%01%16Y%22%8Be%09%2F%96%83e%09%E8c%5E%BC%00%98%99%05X%98%C5%1F%03%8B%80%88%88%FE6%FDG%7Fj%BC%23%F6%ABA%E2%1D%01%F1%A7%24bOD%C4%5E%04%0A%88%3FI%7B%F6%98%AF%A2%BC%97%2F%C0%BE%D8_%3A%20%80-%93%2F%0B%A2%3E%06%5BFB%24%04%22%1C%88%840%90%06%01%D9%C7%F5%0B%05%FF%DEw%FF%CF%24%1C%84%83%C8V_%7F%B4%FFv%FB%C9%22%88%FA%A3%25%D6%17%CB%93%C7%DC%02%FF%AC%3D3%FDW%97%C4%D6%91%21%B6A%16%E7~%2C%11%D6%0F%8A%AC%25K%F8%60X%CC%8By%D9%1E%88l%9B%90%0F%AF%B6D%7C3%7C%F5%C0%F7%02l%E9l%29%DB%CB%C8%8FC%3FI%FE%E2P%10%F2%85%E9%9E%10%DAk%25%00%24_%7D%CC%D5%27%00%22%DF2%B1%E7%8A%FF%F07%FFp%0C%1AH%BA%8D%E5D%D8%BF%E8%07%DF%DE%A2%FE%B2%7C%09X%BF%18c%DB%90%F4%D9%E8%86%FB%F1%B0%D7%8A%28%22%AC%7F%19%96%08%0B%2CafYzK%98%8F%25w%E1%FB%92%3B%2F%7D%BCX%98%85E%C4%D7%3D%DF%D8%D9%D7%D7%E5%5B%E3%1F%D4%0D%88c%60%2BhOS%17%B3%1E%A2%BE%D4~%EC%C1_%7B%BEp%7FE%F6zu%DD%21%5Euy%EBw%02%FD%9A%B2%BDd%C1%9F%FF%DE%8F%09%C4%7F%B8%D4%BB%9B%0B%EA%BF%03%ED%2B%F3%B7%22%E6%3D%A8%27%C2%EF%20%0D%C2%01%40z%C9%10%09%F3i%B8%C1%10%D6%9B%01%C0%02%BA1%8B%E5%109%16%3F.~d~%3C%F8%91%E5%BE%D6%C1%B2%F4%0E%F9u%10%88%ED%C8%A7%9D%8B_7%A7%AC%AF_%CE%3C1P.%06%60%B9%FD%D5%0C%E8%F7R%ECA%1E%2C%02D%14%F2%D3%E9%0F%F4%0B%A0%AC%BC%D9a%165%BF%8C%7F%FF7%FF%10%DB%1D.%AF%C4%CFV%B1%2Au%D1%11%F54%03%F8%FD%C9%7D%22%F3%284%08%07%A1Y9%20%7D%60%DBSO%9D%BF%D1%8B%C9%22%0Cr%2C~dy%3C%F8%91%F9%FF%1D%EB%91%E5%BE%D4%1C%09%BBG%89m%A8%97a%B3O%BE%FCa%88%C2b%0B%A6%25%F2%1B%12%EF%87yAhV%17%01%C1%0D%86-%3D%10%82Y%21%D0%C7%EDh%02%DA%09%13%86p%81%EA%FF%F0%A3%EF%FDo%40%04a%11%04%D07%28%E5%FA%C6q%C5pDP.cs%D4%00y%D7%90%10%D5%E7L%A2%818%89%E6%D0%9D%A0%09%BA%0D%F1W%10%91r1%CCc%2FQ%2B%C4%8FK%1E%D7z%5Cr_%7C%88%19%22%06%3BJ%22%C2%02%F5%E6%BA%A1K%93%24Rl%EBv%E8%CF%1B%00%00%E9%EA%B6%9D%28%EE%0D%80H7C%F4f%13%08%E6%26%FA%EF%15%600%7B%1B%9E%EFP%CF%C7%8C%7F%FB%DD%DF%F3%E8%02%00%C5%B6%A1%C6%15%F5n%F7%D8%A6%9D%98%ED~%E4%E2%9A%87%1F%04%93h%12M%D4wq%22%0E%02%8D%BE%06%FA%96%F8%2B%14%11A%5C%2Cw%96%FB%E2%3B%F3%DD%A2%26vK%15%1B%60q%12%C4%1AVkd7%01A%2C%B4%80j%8A%A0%BD%89%FF%B1%19%23%7DJTn%40n%06%95x%C4%CC%B8-%27%8A%1D%0Ea%86%05%BC%18%16%F3%11q%07%0B%03%E0%DF%F8%C6%FFl%8B%1C%C7%28C%03%D8%7CB%DC%86%1EvV7%D0%EEA%89%C6%CC%22%0D%D4m%F0%C7%16%86A%D9%06%F3%D7%0C%B2%18%8Erg%CD%E6%A0Xl%EA%9E%A3n%00%82%3D%B6c%95%97%00%C4_%C2%EE%16%F2%F0%B7u%8FK%90%867%ADq%06%20%E5%AC%0A%00r%5Dza%3B%F2%EA%DB%98u%E9%17%03%8B%E0%CF%BC%FD%3Fj%20-yn%C8%9EyD%FC%D8o%81%9C%83%D0v%5B%3DR%B0%DB%90%11%91_%0B%BB%1C~%21%06%E2%24%18H%96%8E%E85%16%88%93%CE-%C8A%80%8B%40%28%D3%17%D9%9F7hp-%E1%E7%AAE%DAb%CF4%F4P%D7%BA%07%DF%191%BA%C9%10%BF%8E%16%E40%FB%A2%8BF%D2%8Be%81%2C%CDoXX%04%FF%D2%7F%F8o%80%80%02%40%08%D5%E9j%AAb%9F%C3%1E%EB%EF%D1%9A%87%DB%DBQ%CA%EBP%3D%1Da%C6%A9%16%A5%E9f%60FJ%96%AAx%E8%20h%F1%83%FEx%8A%C00%EE%A4d%AC%89%60%8E%B1%3Ci%C9K%AA%D9%23%BA%5D%82%BE%0BD%E5P%E7%96%20n%3E%A4Y7%91%12%3B%88%DA%16Y%CC%8B%E1%10%7D%90%E9%A7F%9Ff9%01%F0%A7%FF%FD%F7%91%EC%C9%83%00%EA6%60MC%10%3Co%0C%FB%0C5%89%D4%83Z-%91%3A%E3~%3F%22%8D%C4%12g%F8%8D%A6L%1D%3DW%C4%E2%93%EB%9E%FBWz%AA%E1%BFA%17%9A%C0%EC%97%25D%60i%BD%1Fa%02%10%04%12%BF%00%02%9B%F1i%8E-7%2F%13%0Dw%27%E0%01%98%08%83%C4%89%5E%12%B9%BD%AE%BB%DE%03%2B%010%0B%0B%08%D8%06%08%00%FE%F9%7F%F7%9F%E3%B7%ED%29I%06%06T%13%B4%5C%3F%F1%E4%B2%EEX%BB%9C%B8y%09D%00%A0%E6%CF%01%81%C2%BCz%F2L%80%7B%F6%A9g%DF%EF%90e%9E%FA%91%9A%2Af%20H%14%F9%91%ED%B1%9F%A0%12%DBI%BDD%A5%0A%609s%7C%26S%F0Xt3%8F%EC%11%0Ex%1A%AF%81%B2%26%F6b%A9%25%0B%08g%C6%23%C2%00%28%02%F8%E7%BE%F0%DD%12%FF%C6%F2KMr5%F5%F0%DB%AF%CFS2%7B%8B%CD%D0%AF%A7%1A1%E5%C5%3F%85%80%DD%FDe%06%DDw%FF%2A%24%C7%08%BA%7DK0%B2%BFr%E45%EDW%FF_%BF%2B%7FUn%80%B4%60%A3V%96P%80A%20%8F%BC9%D8%2C%5B%A9%B3%B5%E5f%81e%5B%A2%9F%05%0F%11D%D0%3D%96%D8%0A%8B%08%FE%D9_%FEN%3A%18%0CK%84%19%EB%E7%D1%EE%A5%12%CF%23%21%2B%3D%998%F7%9A%C6%E9Aw%DD%D0%EA%1F%08%3D%22%EC%DE%06%EA.%D5%F3%EE%F5%AD%B2C%94%7BFY6%88%0A%15x%B8%24%A2%D5%B9p%0A%AD%98%A1%09%94%F8RZ%F8%EB%A5%14%60a%E6%08%13%84%19%04%80%85%23%0C%DD%D3%DB%CD%91%FE%E4%2F%7D%3B%E2%87r%1E%B1%E5%E0q%24%D4%FAJ%3D%90%02%AD%18Q%8F%7B%09%19%B0%C5%1B%27Onn%A3_%95%7D%87P%A0%17%132%3B%0D%23Zr%A5%2C8%94%14%DD%CC%11%5E%D4%3F%F7%02R%2C%9E%AF%BB%5B%FC%B4%FB%22%A2%2B%EE7%C3%BE%ABD%BD%B2%F9%EER%98%D4%17%F5%13%9F%FF%0D%8B~p%7B%9D%19N%86s%A8%C1M%0B%8D.N%7D%2B%BDl%2B%DB7%09NE%E1~c%E4%22%02%DB%B7%15%DB3%B6je%3Es%89%9Aq%DA4%FB%60%0Bi%E2%7F%2F1a%94%60%D3%E5%A2%08%C7G%D0%3F%1Ckn%C1%7B-%C9%96%04%AA%BFtA%FC%F0%E7%DE%01%09%E3S%ED%DF%16%E8%D5X%A1%D8%26w%C5e%F7h%AB%8E%C2y%8D7%C7p%B2Qe%95%E4%C2%91%E0V%B6%0Fw%D93a%8F%D7Ji%A0%3D%23%14%AC%F6%5E4%95%93%5C%CD%E8%40%B4%A3%CD%96Q%FB%D6%60%AB%89W%87R%1Cd%8Fb%22%16%06%FC%D0g%BF%99_%2B%F9J0lK%F4.%BA%05%CF%13%2F%98%AF%BF%17%D1%01j%E4Q%F7%9D%CE%C7y%3B%21x%BE%28%A7%C4%AAm%89%40id%C8%E9k%24%2B%05%B8%97%2A%3C%85%C5R%CF%2BU%EF%D8%09%FD%CF2k%DC%8B%7FR%12T%5B4%F1%1BXo%82%D4%27%8D%7F%E63%BF%D6%5E%92%C8yQ%F0i%0B%8E%B0%DD%1C%EC%11%E9%D9%FDbw4W%BB%B5%FD%9A%0BS%DDW%16%B1%A5%BB%22%BD%94%82%16%CC%D4%F6%8C%AD%D1f%FEK%F5.%DB%0B%7B%D6%FD%C4%5Dl%15%B3s1%07%5B%C17w%05_%FB%F4%D7%DB%06%B6%1A%C9%E5%0An%3D%A3%9A%94Iq%09%90%B9%1BJ%3F%D1X%ADb%0D%B6w%DB%8E%A7%F4%F3%CA%87o%FDHA%84%DE%A8%94%BA%C2%FE%C4%D2%DEc%E4X~~%25R%E5%B2%BA%F9c%E1%C9%A7%27%9B%99%8B%97%23%A7X%DC%FF%7D%EDS_%F7-%2F%87%02%BDn%E2Y%EEi%03%22%9F%C2VB%AC%15I%FD%5E%C4%93S%96%F6%D3%F6%03%8E%FB%C9%3A%95%00%2Cr%CF%5D%DC%2CK%7D%19%BE%0Dj%3A%20%8B%D4e%0F.%23%21%3C%FD%DA%D3%A9%EF%FD%92%F6%95%22%FB%13O%F7%D4%D6%13_%FD%E4%D7%FC%29%8Al%AE%5B%2BZ%E9%06%A5%D7%FF%DD%B5%21%FA%AA%963%8E%97%D1%CB%D9%E8o%AF0%23%CD%DA%CB%AAu%DEj%3Fa%DB%CBbj%BB%7D%C1%ADM%BC%A7%C1%12G%0D%25%EF%04%5E%DA%BCv%A8%E3B%9F%8FJ%9C%5D%28%FD%B0%7D%0B%01_%F9%C4W%BB%23%2A%A7%C4%0E%DA%E6%87%23%C3%C5%DA%D8.%85%838%F8%82%DB9%CA%FEP%04%2B%F5W%C6%D9%D5U%40%90%3D%2Bm%89%92%DF%039%EF%01%9C%C2%CB%EA%7F%25%D2%17%A9%BFW%00O%B6%FB%C2%18%EF%7BZNg%CBY%E4%14%29o%0D%3B%3D%B5%AF%BC%F9v%AFBC%A6%83%12%27%B1%2Cn%E68%9AhZ%A5%22%D0%14X%5DP%98%08%91%9E%EA%E7%FAn%AD%F3t%81%16%DD%F5r%CC%16%C7%E4R%FA%BD%11y%E2b%5D%1C%E7%0B%13T%CD%B7%3Ca%2Ak%BF%CDbYh%D0%84%16%D6%97%D8%2C%F7%23zC%82%1F%7C%F3%ED%E2%E2%8B%FB%C7%EE%2A%81%F2%B8%13y%C9%8C%2C%C5G%02%8A%BC%E0%09%E3.%E1%EA%D0%A3j%14%3Bz%01%D2%D8%23%3F%90l%CFm%9D%EA%D3%EA%C5%B9%EB%8D%24%F48%1D%B7P%FB%297%D3%13%B4f%84O%11-%14TH%C6%9D%09o%28%27%E6%5C%CBF%00%C1%0F%BE%F1%3C%9EsI%E1J%7BU%9F%0E%15%28%86%AF%FD%20%FD%83%8Ev%896J%18%C7%2C%B9Gz%23%D9%BB%F0~%BA%26%93%1C%BDu%0F%C2%01%803%A5o0%20%81%8B%84%B3%B4%B5%BB%ED%B82%D2O%05%B7%7B%10S%22%3D%81V%8D%97S%D0%1C%5Ep%DB%8Cs%1C%E56%0F%3F%F0%E6%F3%EC%5Bc%B1%3FZ%23.%F8%18%EF0%22Z%8F%97%E6%A0Ac%90%01%20%A2%01%06%C5T%C8v%FC%3D%C7%8Ff%3A%8B%885%D9YS%7C%E6%C4_9%F2D%2A%10%A8%1A.I%17%1AE%E3S%08%FE%82%E0%1D.%22%5D%ACv%A3%C3%BA2%AF%94%9A%D7%C8V%9C%C7%1A%AD%ED%05%8F%96%E9%E1%07%DEx%9E%29x%BD%2F%18%ADP%B0%B2%AE%96%B1%10%89h%0E%9Ac%CCA%B79%26%D1%D0%1D%A8%A5%7B%F7%C1%25%3EW%BB%2AY%BAJl%96%B5%90%98%B5%B8%28%02%A2%DB%20%E0%7B%95vJ%AFE%C1AHs%22%1D%2A%27O%E7q%A7%A8lo%FD%F5%E3%7C%0E%91%0D%D7RV_%97%B0%94%B0NOcO%F3%F0%E57%DEJ%D4F%29%9D4%F8%0C%22%12i%97%94%10%89h%10%DD%06%DD%E6%BCM%9A4%B4%A9%5B%FA%09XS%9E%06%8F%8A%FAx%DC%03%F6n%C6%F2m%10Y%8B%AD%D1%C1%9C%9B%E1%AD%0C%F1%1F%91%5BR%DD%98%5Eei%09%E7%9F%92KC%CDcJ%02%14%9D4%DC%FC%B9b%EB%A0%FF%0AD8%C7Wgg%25%25%F8%13%7C%F9%F5%E7%82%F5%16%07%EA%ABb%3B%1D%E6%A0%EE%16%CD%FE%DC%E6%BC%8D1%89%C6%A0%81%898%F5%5D%10%2F%13%A5I%AE%A8%3B_P%10%E0%E8%2Bi%2F%9B%85%D7%1268b%00u%99%DDx%C5%26%D4%CAY%5E%08O%81%15%96%E3%20b%BC2%3CR2s%E9%80%9BR%A3%87%BE%3E%E7%F2%A6%94-%B9%A8YE%05%C2%9F%92W%F3%F0%FD%AF%BF%05%98%B8%25-%99%9B%DBm%10%C8h%E3%22%21%11%29%D0j%CCAj%82%BC%FB%81%89%A3%DC%EA%0F%B1%13%88%7B%A4aH%ACf%94%BC%83j%CDUfV%F0%283%2F%16Qt%10%1B%26%28kg%05%BC%1B%A0%2C%0Fa%CF%E9%95%94%60%E1%B4%AC%D0%CB%92%E9%8D%BB%A9%E9%C1nI%19wXUq%5C%A5x%FD%FE%D7%DF%92%0D%AB%84%1DkM%A5%F2%89%DE%94A%18D%03%ED%EC%13%85%83%C6%DA%1B%01%0C%F8%C2f%D4%021%A9%DF%93%8Do%01%8C%C6%93%18%0AQXa%1D%CCk%C9%E2%B5%CCF1%9B%01%83%82%9B%F6%FAq%1A%A9R%CCDy%AA%84%86%D5%BC%14%13%B4%B9U%80%ED%A2%14%87%7C2%3C%BD%D1%D0%D0%DA%11%11%E2K%AF%BF%95%27%A1v%83%11kmA%02%F2%E4%BB%40%84%04%BE%F4%8EE%08%08q%06O%94v4V%BC%C1%B6%CC%AC%F9%1F%2F%95x%F1%DD%FA%7Cz%03%D6%E2%83y-%3E%84%D5O%E8%B5%B0%3F%CC%81%CF%81%EE%B6%1B%90%FD%9C%AC%E1V%AE%E8%99Tn%90l%01N%3A%CE%0C%81NE%BA%9EaA%A4%3E%80%20%82%EF%7B%FD%AD%CC%0B%A9%94%F5%3D%80%93V%ECm%F5z%0D%8E2fJ0q%C2%2B%A2s%EF%40%07s%26DT%A1Zz%8B%88%A0%02R%A2J%A0%E7%7B%B1%B0%F0%B1d%F1%3At%27%98%173%2F%E3tDra%5B%27%A5%B1h%3E%8F%A5f%D1%3B%E62%BD%F1nvZ%A8%FF%B4%5BG%7C%B2%FB%2B%5B%C5%D4%D3%AE%F7%7D%FC-H%DB%88%A7z%19%02%BE%B0%B1i%26D%3A%3E%B1%C2%22%0C%3C%0D%28%E9%CA%FDn%D8%D9%07%24%22%85%2F%90%EE%04%A2%E1%5E%DD%F8%E9%F2%AA%5B%5E%AC%AB%2F%C7Z%E1%21%3C%60%8D%10%95%2B%8F%C0%3E%B2%AF%BB%BC%B0%E6%DA%CE%3E6%26%C7U%85%C3k%13%B0%21%B2%A1%97%18z%19%04%9F%7D%FC%AD%D6%0E%E8%C53%89%EE%C1VN%C2%8BZx%FA%AB%F4F%15k%09%15ud%A6%29%81%40%9A%CAa%00%E5%08-%B9%A3%00%EB%02%0A%80%9Ex%16Q%5Bd1kD%AA%EC%C65%7B%B5R%D3k%A8%06%E9%F2%1C7%8C%AF%14%C3%D2z%0F%7B%84%DB%03%DA%A7%AE%C1%D9%06%DA%06H%D6R6%8C%F7%9F%F6%0B%F0%F29%C9%15%F3%AA8%B4%9A%AF%15%9E%04%F9%AE%B8W%27J%22%8A%D9%08%F14m%89%A8%23%0E%90%BA%FF%5B%3B%8A%99.d%B2%20Y%C7%04yqQ%FC%14%D1%D4%D2%90t%EB%85%5B%95%5BN%99%60%16%81%7D%C5%04%9F%7D%FC-i%D5G%E8%01%AF%EC%40%E2%BCD%BD6%A9%C1Y%C6jR%CB%CE%16%2AGj%83%C5%D6F%A1%BB%E1%0C%CD0U0~%BC%12%B53%0C%20%E6%81%D3%F8gM%85%A5G%A3%D2%9Dp%D4V%2F%2A%A2%60%8D%B5%ED%EC%CB%DE%7C%8D4%0C%B7%CA%2Af%E6%81%DE~%C3%EB%1B%87%0F%1F%FFJ%C7E%97%A6eEH%EC%E6R%0DN%CD%B0%AB%ED%F3%D0%EC%DC%22o%1F%B9%C6%FCv%92%A5t%28%5DDs%BE%D8%0C%A2%CB%9D%26%A6%B2%1C%A4%D7%EF%B2%1A%7B%AEL%BE%B0G%D4%8E%14%D63%BE%5D%9A%FC%CA%BAar%AAQ%3BZ%E9%C1%7D%C0%15%8Ah%CBD%B6%CA%9F%AD%FB%96Q%9D%96X%AE%83%81%EB%16%D1n%F7zf%94W%CD%8Bnj%F4%23%C1%2Fv%C6%EC%A9l%90%1F%875%60%ED%06%C3e%AF%ADBWZ%7B%B5c%DA%A3%9B%B67%03%FA6%84%8B%C6%00%F7%21%11%E2%C3%EBo%95%5C%24%8B%07pB%28X%2C%A9%01%0Fb%E9P%E1%D3%1EG%3Aw%B7f%81%C5%88I%E4%FA%08%D8%E9Q%D9A%95%D2%B5%C68%E2%BDu%D39%AC%15%E1%80%951%B6E%27%FD%9A%EE%D1%7D%5C%E9%B2%D0%92%90%AF%1D%1AS%8F%AD%EC%90K%C3R%12%91%B2%22%10%F1%D9%C7%9Fw%F3%B4q6%A1%17%0F%B2%A5%1E%8DN%BC8%BF%D2%1A%5C%DB%CAD%B1%2C%9A%D7%B9%80%15%26U%7F%9E%40%C0%A8z1%D1%2F%E2%D6%5C%DB%CA%A4%F9%5B_hxNa%25%B8%99M%EF%25Y%1C%3D%A7%D5%0D%23%5B%3D%88%06%E0dd%ACAZ%CF%1FD%F8%BE7%DE%AEAlc%A6%B6%06%E4F%BB%D8%8B%3D%D8%8C%9D%BFV%A9vI%CA%0E%C8%5E%14%C9x%1D%A1%06%8C%914%9E0%3B%1B%A8%EA%9A%20%09%E7%F4%E7D%EF%97%D2J%04%EF%89H%2F%E8%CBE%06%B4%B5E%B1F%80h%ADj%2F%E4%93%11%E5%BCt6%06%2A%17%08_z%F3%ABI%A9%A8%A8%5C%AC9S%2C6e%82%9B%06-j%26%99%08%D4%16%7B%85%5BB%ED%40%96r%8Dy%D1%C8%96%9E%AA%21%C8%05%92s%27k%C7%BD%DB%FBq%3D%A8%AC6%BDAE%EA%86%5C%E0%DA%BC%18%87%9D%86%2F%85%04nKD%08%E4%15%B3%E9%E5K%A5%C5k%AE%03%00%F8%FEO%7C%AD%10ZJ%B9%8CZ-%C1%FC%86%21%ED%A1%D4H%A5%D4%D4Z%8B%14%A0%5B%DE%E0%D5%D9%02sT%93%3D%7C%8F%8FD%40%8F%90%60%E3%BD%FBR%20p%FE8%11l%D5%0C%C6I%95%00u%5E%B5%AC%E5%B2.%B4%E7%BC%5B%B7U%22%EC%29%E6%9B%8C%1D%3F%C6%98%03%8D%1B%EA%9D%ABak%EBx%F8%97%3F%F9k%99%EA%14%ED%09%2B%138%B3%9D%BC%2B%83H%04%80.%2CA%D91%A8%9C%96%27%CCA%C9%8E%84%93%DF%13%25~%C9%94%CA%B7%40%02%15%DB%29%B4%5Bw%12%AF%0C%7Fx%99F%1E%0D%A3%88%2F%2A%DA%14%3B%DA%1B%EBR0%7C%D1%88%91%22%D0%A0%FD%92%2C%D7%DF%86%B5O%7C5A%00Y%8C%B3%87%1F%F8%F47%82U%E5%05%1A%2B%C8%A0Uf%20%3A%EF%84D%04%91%A0RlTc%D8%9CB%23iQ%B8%D7%08%B2%1D%C6%12%22%10%C2%D6%93%B4DJ%BCW%AF%5D%FB%1EN%C2%D94%05%D2%A2%F8%DD%0A%03%0D%9F%1E%D1%17%3E%05%B1%A8%187%DC%A1%B5%0D%89%16%CCCe%18%CE1%CC%E0%D8%A9%F7%1A%8B%A0%20%28%85FY%B7%07%0B~%F0%B3%DF%B2%1E%8C%AD%2F%B9%E5B%1Ad%C4%5D%0F%9B%ACrIu%03%1A%0F%22ov%C1%85%F5F%9C%9F%7F%00%AB%E0%80%F1i%F5%3Dm%C28%F7%C1%F7%29%2C%107%FA%03tq%14%E9%A7%FF%A2%07%0B%19M%CA%8B%E2g%F1%F8%A7%E1%FF%A0%C84%84%60%8A%D3%05A%5B%23%D3%E0%0A8hD%A7D%9F%28%03%28O%F8%109%96kE%BC%FA%B9_%CF%D2%3CEx%84%83%BC%D55h%A8%EC%8A%DD%8Al%BB%206v%40%E9%1F%5C%F6%86j%E7%2A%8C%8FK%03Y%87%8B%2B%F9%9DY%04%BC%0D%09%D9%FA%8A%0A%9B%9C%7D0J%2By%8A%A3T%AAK%A8U6%B9%8A%E1%8B%0D%8AB%88%1BZ%09%A7%18%245%22%D5%02%A2a%0F%DCW%22%EA3%0D%01%9E%BB%F0%C1p%ACedy%10%7C%ED%F3%EF%22%029%CEg%1A%D8%84%E6%C0%81c%98%90%93%EA%DC%40c%FC%C2%05%86%A0%95%DB%A4%E0%A2%B1%80d%03%9F%E2%2B%E9%D2%03%5C%DF%95%DC%09v%14E%B2%B4%D2%8D%17%D6%5B%07B%A3%13A%3B%BA%F2%AA%D8%0C%DD%01c%91%8B%A0R%A9%22%DD%80r%EA%89L%05%C8u%81%08%C9%CB%3F%02j%E8%B5j%7Bg%B59%ACB0ar%F1%B5%CF%BFk%DF%EFwg%D2%D0%B0%C9m%8E%19%9C%20%99%E2S%B8%DF%0B%C5%A3Z%83%96B3%06%91%1D%27a%92%22%92%5D%C9%DA%286%A1%17%F6M%AA%C4%95%B4%F9R%1C%AF%27%1F%5E%B3H%E0%926%87P%8A%D8%11%A6%E2%C0%89%88i%5CL0Q%11%2C%224%84%A9%5B%13k%E2%3DT9T%DFb%F1%C1%FAW%96%CB%8CD%E1%10_%FB%FC%B7%89%F2%12M%07%5D%0D%F7%D9%84%9D%93%D4%E2%EB%9E%3Fw%8Bd%91l%C8%5C%60%12%E7Ziz%AF%0A%88%B7%2B%DC%C8%08%B0%A7%08%82%85%14%07%A9%01%93%92f%B1%ECa%E8%25%29%C4%03%F3%B4%1A%93%3B%C2mh%0A%10X%0F%3E%D4%0F%16%0Ew%60%8F%AD%EA%84%EC%A4%F8%83%F9%BE%F8P%B5%29%FD%A0sW%A5%A7%EDa%82%14g%A8%E9%99Y%A4%82~%EEi%F6%89z%065%1D%B3%EF%A0%94m%D0%AA%B2%C3Z%10%C4%EB%CC%D9%FB%DF%F5JzG%DBi%BA%20%98G%BEZ%24%A9h%1B%CF%B0%1Cpf%9A%26d%C7%0Bg%13Dh%F23%5D%13%C2%F8%E2%A5%17s%E2%F2%99Z%881%B3%0F%3F%EF%F7%C5%F1x%19%9Af%C7%F7%198%F1%D5%CF%FD%86%DD%CAP%8B%29x%94%0D%0E%2F%277UD%C0%A0b%29%3CJ%CB%107%D3%85%861m%F2_%1B%0DsC%DFG%F1%A2%EC%0AJZ%B0%8Cl%A4%F1%D1%CC%98%0C%C2%89t%D3%A4%14S%B0%A8%09%80%D93%28%05%AE%C2%DC%8BN%BF%1AC%AE%D4x%86c%F1%21%7C%AC%A5%B6%FEX%A2%115%AB%BB%02%04%E6%13n%03%F0%95_%FCV%60%21%2A%AB%B6%15%E4%F6%22%15v%19%C1S%25%1F%E3B%94%04%2F%9B%F8e%2F%B21%E9%06%B5r%94%B1%D0n%3A%DEV.%25%BE%12%89%19%05%19%D7%8D%40%1C%847%C2I%E36%405%A4%CC%CC%BA%E8%17%263%A6%15%3F%EC%98%97LE%9Bq%A98%98%26%DE%DEr%CA%DBE7%3A%DA%D3%EC%1Dk%01%11%FC%E0g%DE%89%0A%ACC%C0J%89M%CE%7D%D2%0E%1C%13p%B4p%1C%DBbUO%05%A5%8C%27%04%AA%87%89%D8.e%16%A1%B4%22%3BW%BE2%97%A5%A3%EFqk%5C%B81%21%04%D7%26%A2%1BA%08%E4%14%96%BDD%5D%A1%C8B%EC%E2P%86%9Cdf%01%D5uT%B0%CC%12X%8B%19d%A9%A5O%81%82%06%17Kp%A5%B7%ED%B4%14%21%98%A8%F7%A0%07%204%F2%0A%C05w%F7%CC%8A%24%C3%D5%09%B4k%25%96g%97%CC%CDW%98%BC-L%A1N%05%BD%FE%1A%3B%D2%DBeY%24H%D48%02n%C4%FFj%85%86%17%E2%89%60%B8%A4%04%F4h%40%D1%92%BA%8A%A6G%60%09%0A%18%12%C9%E3%C8%22%0B%E1Tz.%90%7B%28%881f%D9DV%0C%9A%F8%C6%DB%A1%14%84%C9%B5%BD%A0d%3D%89%84i%B8%BE%82%0Fr%FA%18%F6%B3%1C%85%3D%15%29%B2%0D%10%B7%14%F1%C1%CD%A6a%10%8C%8B%2A%17%9C%B5%5D%0A9%FB%A4%AD%1A%B5%1A%0Au%CF%F8%3E%0F%ED%A4%A4%8A%25G%F1R%15d%F9%A4%EA%17%B4%05%AF%0B%0D%B6%2B%00%7C%D2y%14a%0E%60%96%A6%90E%AC%A5%A6%27%7B%B0%E8%1C%A3%06%CB%3B%B3%80%B7D%A0%01%131%8F%27%B5%F0%09%8B%AD%8A%FF%A8%D5%BF%9BT%07t%AF_%82%82%06%3C%C7%26qZ%C2%9E%CA8%2F%1B%60y%1E%FA%B16%24%40z%85%22%D5%E8%B5%95fu%40z5%B1%20%BB%8B%0C%85%E0%C3%2F%FC%2A%26%99%2F%80%C5%92%2A%1Dp%26%1C%EE%F0%0A%E8%A2N%D8%B6%037%29N%2C%AC%1B%94%86%10%2A%0ANZ%8A%21%D5%06I%B7R%A1v%AE%E1i%1AD%29%1Cr%D5%EB%BF%CC%1D%C5%C2%A4%2A%15%10%C0%8B%2C%B6%0A%08x%21%90KS%BFVEBUE%7D%88%AF4p%BF%1BNp%00%27g%E1%ED_%7D%19Dp%27%93m%90U%D8A%FE%19%19%D7%DA%3An%E2%60m%2B6INB%90H%83NW%A4aT%2A%E0%BA%40%B5%E9%2C%96%02%A7%00%16%3B%2C%07%FA%D1%91N%20L%24%7BU%26%E8%1D%7F%CF%AC%B9%B3%1D%E2%3F%EE%F1j%06%9D%FEC%94%08%13%1C%E3%F9%B1%2F%A9%E7O%20%7F%95%CD%C1%5E%05%AF%D2%D8g%DEecFvh%3A%14%E6A%C6%AC%5D%B5%13%AB%13%C1%EE%C9%F1l%A0%FA%0Dkb%D0Y%3A%BE%40%90%9F%CE%D5%B9%CBy%91r%F5.%84%A0%F4l%DD%2B%85%9CxT%C5%A1J%C3%CB%14D%18%DB%8A%8C%8F%7D%D1%AC%A7H%0Bm%B4yZh%95rR%05x%11%E3G.%847%60%8F%2B%2B%DB%01%DD%11o%FF%F5X%A8%D9%B0%FECJ%FEQ%90%09r%96%88i%B1C%8A%01v%29%08%3D%B4n%14dcCe%B7.%A0G%05vpVz%17i%CCHI%FD%2B%DB%80%22%E8%10%BC%AE%0A0%2A%B0%A1%20%D4%9F%F0%26OQ%AER4%A4%C9%A5%96%24N%23%C1%88%7F%0A%95%C3%8D%15t%FA%93%B7%A2%C9%F3%16%2A%00%0E%91%A6%F6%D2%28%ED%B2%97%40%A5%B5%E6%E5%0C%A4h%F4%27LDA%C5%7BI%91xr%A7%01W%F2gXb%7CG%E8%7F%EC%8BM%D0%11%2B%FD%BB%CA%D8l%7Dp%AC%AC%D6%DE%13%3Fu%95%B0f%B3%92%8A5%B18D%A5%09%DE%F5%D3%AA%A2v%E0%E4j%C8%BF%E5_%9D%17%87%1BU-%03l%A9%7DJ%C1%8E%E2o%B2%1C%17%DB%D2%90%EE%15Y%E3%94%A8%C4%9B%7BS%13k%EF%B2%16g%E8_%7CI%1D%40g%9C%F7%C5%2C%ED%0B%B9%D6%F8%AA3%13%F0%24%B9R%8A%2B%D5%FE%24%B7%AD%E8%14%D5%827%5E%09%E0%ECQ%BF%40%23%E9%17%40%15v%DD%A0Z%28%AA%28%D8dKT%2B%BB%AB%8AJ%BF%F4%EEQ%F3%16%94%0D%E3%1E%8BK%15%A26%89%7BR%C1f%C2%F1%2F%BF%7Ca%7F%2A%F3%AC%A2%7CeS%86I%A0%A6%83A%A4%D3%8D%F0%C9%C4M%0A%E2%A0%EB%D55%29%5E%AC%AA%1F%E1%A6%D3%A6a%E1%AE%EC%7C%5C%3B%EF%BC%BB%B4%CA%ABl%7D%B1%04%DFI%23%E0Y4%25Mp%C17%00%ABlJ%D1%1A%91R%21%86%AC%7DY%E7%D1%01B8%7F%E1%2B%DB%F0%0Bw%09U~%B9%CD%04%29%27%20%0Dc%11i%C6%DE%2B%DC%93%3A%E7%9B%EF02%E8%D1Q%A9%E7%60%D8%C5%DE%FB%84M%CC%AF%FCf%81v3%A5%AB%CBH%27LC%053g%97%C2p%92%F84%C0%3F1c%10%D8%8C%16%E6%81%0F%831%25%E0a%DDF%257%8E9%07%3E%7B%E3%ED%8C%1F%8A%12%05%C2%86d%AAH%02%D9%90%97R%F2x%88D%A31S%7B%7F%18%1B%B2%15%3B%08%12%9C%F6%24%95%93u.%B6E%F1J%D2%00%3A%0BT%20%25%DF%18%AA~%BD5%DC%F0%85%81%1C%EC%AA9%05B%8A%1B%C3%A2%40%85%A0%CF5%81%A0%3B%20%D1%C0Ac%12%DD%E6%B8%8D9%E7%B8%0D%9Ac%E2%FB%3F%F5%CDL%CF%A5B%FBeWG%DAp%3E%1A%FD%DA%06p%23%FF%C1nOO%FAGmLM%11%98%86%E4%1A%17J%F7Im-~%00%83t%D0%05%B3-z%F6%2A%19X%B0%CD%F4%E1%9DE%D2r%9E%B38%1D%B6R%B7%EB%9F%B9%07%02%14%04%92%98%06%91U%16%E5%BD%21%8E%91%B4%EA%DBm%3E%8C9%07%E9m%C0W%3E%F7nc%FEA%27V%E4%0A%C6%F3%E0%26%15n%17%00%AD%D2%DD%AE%C594%92M%94%D4h%7B%28dt1%D5B%D0NKR%B7%A5%9C%F1v%20%AC%B6%CE%1E%04%B2%CF%D5%60%DD%03%D0-%11i%3Dh%F4%EB%89%5DS%07%04N%98%AB%0B%FE%5D%E7%C2E%050%B1%84%5E%5C%21%C41%C6%18t%1B%F36%C7%C3%9C%0Fs%DC%E6%98c%2A%DC%04%10%F1%C3%FF%F6%BB%9B%B0%C1Y%9DjG%60r%CB%3BZy%15%9E%C8A%1Ad%11c%1E%10%19d85%D4%E3er%19%B3%24ge%21%E7%E0%99%FF%F1z%B0%82%8D%40k%BF%CC%20%0C%CCa%91%9A%5Ew%0Dz%A1%EAo%CA%85%3C%3C%24n%B7%E9%2B%03t%A1%18%B7%F7d%A8%D0%DB%9C%B7%DB%7C%18%E3%E16%1Fn%B7%DB%A01%C6%20%D25%60%00%FC%C8%17%BF%0F%27L%CC%AEz%26%9B%C4%C7%C6M%2F%28B%DE%C8%40E%BBo%9B%FFaX%18%DB%06%C7%EDYC%240L.%84%5DZ%DFZ%1A%F3%C6%A0B%8A%1CE%A4%8F%97%EE%01%C8%B2Y3%1A%17%16%91%80%C2%1E%8F%C5%A4%5DU%D4%F3%B8R%F7%C6%C6W%2F%8DUo%F5%19%E3v%90%29%99%3C%CC%F9p%BB%3D%DC%C6%C3%18s%CEA%DA%F6%05V%88%9C%08%FE%95%E7%3F%0C%84A%87n%E3%26r%E0%F7%9E%C5%5B%E3E%CA%24%E5%1B%AA%18%02%8A%14lo%19%C5T%A05%D1%A0%8FK%22%A2%9D%26p%26pp%EF%10%B2%2C%AF%EA%1Eb%8B.Kl%CA%D5%CA%3D%10%06%16HsT%EBp%D1%22h%8D%9B%0B%C4%93A%90%7DPQC%A5EW%D5%91%B3%0Al%18c%D2%7C%B8%8D%87%DB%ED%D9%1C%0F%B7y%1Bs%0Ce%B6%83%00%19N%0B%60%B1%E0%DF%7C%E7wM%B4%07%FC%B8%9CT5z%CC%23%5DkI%3BGl%AD%0A%0F%93%5C%E9L%28%0D%CE%86%FB%D0%8D%C8x%3E%AA%8B%3AY%CC%9B%DD%D6%7B%B2%BE%2A%1B5%2F%96%3E%16%5DX%F7%60%C5%0D%10%B5%3F%ED%064%BF%DF%1F%B4%C9%1F%10%22%3D%D6%D2%21Lr%B3%23%834%A1%D2%0F%0D%1D%195%C6%1C%B71%1En%F3%D9m%3E%CC%F9p%9BS%11%E9%8A%C9%05Pt%D0%11%1B%F0%D1%F7%FE%40o%00%97%D9%1B%D9m%D8%A5d%7B%BF%A1%D0%D3%AB%2B%40%AF%5CP%40%FB%D2%07%14%F8f%9D4%E4%13%25%B2%DB%E7%A0%5D%BB%5E%EC%3DZaC%95%2AIui%8Bp%C9Z%FA%18D%B7%81%CD%07H%BE%94%14s%A4%3E%B0%80%BA%20%7B%0Df%82%29%5B%80%99N%A3-%14%FFA%83%C6m%D2m%DE%9E%CD%F10o%0F%B7y%9Bc%12%12%912%9C%97%C0%91%C3d%80%81%97%00%FE%A3%EF%FD%18%10%15%24%BB%00k%E0%21I%EF%C4TN6C%8F%DE%DDO%1BTJQ%3A%FCD%B0%86s%B5U%E7%3B%C9%F6%13l%E9%25%A7HZSC%CA%06%98%FDY%87%BE%CBk%B5%B3%2F%E5%06%88%003%B0%00%D8%06x%60%21%B5%A9%D06%00%2AF%C3mKj%E2%B9%1C%09%0Dt%5E9%86%C5A%9Cs%AA%80%D2%B3%DB%EDa%8E%87i%81%A6f%12%CCp%88%1C%8A%8BfY%10zU%80%FF%E4%BF%FEq%24%28y%06%25%E1%7F%1C%10%28%A8%E8%22%AC%E6%DF%B1%E6%1C%13%26t%27%B0%85J%890%E8l%00%08%B4%1EsA%0Dd%AF%D5M%CDfsV%AC%FE%F2%CF%BA%FBe%16%104%0C%A9%40%14%1D%B6%3ED%80%04%FCt%03%A5%95I%248%22%0E%07i%EEKOcjz5%1FnS%97%FEA%03%1DB%01%D4%09%1A%87%CF%0Ec%89%11%26%160%E3%3F%FB%AD%3F%29-s%F0%C3nj%F8v%15l.%93%02%8C%C0%F1.%BA%A8%0E%D30c%BD%B2%93%1DA%91%23%CE%8B%08VJ%C5%95v5%94u%E7%DC%08%89%B5%E6b%EBY%F8%28%0E%40%C0%21h%EEu%F5%E0p%8C%CE%C4%16%F6%E8%A9%A7%08%5E%1C%A1o%40d%0C~%04%0E_%7D%B5%F4%0A%98%D5%25V%FE%85%E5V%0F%B7q%1Bt%D3%B5G%14%80%C5p%C4%D0X%B6%29Pb~NA%15%80%FF%FC%BF%FF%DF2%B5%289%E1QV%E02%01Q%0AiB%18%16%2F%168x%1DK%D6%E2%25%CBe%7C%C0%C5%ADl%C19%E0%1B%A6%80%E5XO%28%A1%AB%94%06w%5C%8F8%F8jp%8A%A9%F1%28hE%0C%EA6%07%C4%BC%AE%BD%14%CBW%5D%B2%DD%25%F0%BC%F9l%5E%B4%C8%23%D86%90%02%F6U%A5%10%83%261%9D%F6%E5%E9%D5m%8E%871n%2A%60%88%08%00%2Ch%83%CF%D8%0F~%A5G%80%2C%9F%12%8B%FF%F4%B7%FE%24%00%E8T%E5e%2C%23F%298%00%8D%E6%D4%EC%3B.%8C%EF%8B%EF%EB8%96%1Ck%1D%B6%05%C2%B2%D2S%C6p%E0%A0%BEp%0A%094%9F%10%C6G%95%9A%96%B8aYap%20%AD%90%80%09%3A%09%E4%C4%E1%2CRb%CF%01%7D%B2%92%60%0C%95u%93bI%88%B2%E7%86o%40%90%E9%06%21j%DD%80h%D00%E2%D1%BC%CDq%9B%E36%B4%AA%A3%D3%CF%2C%85%3C%04%8E%C56%27%B9%2A%DB%F9R%B8%DA%0B%E3%3F%FE%C1%1F%0D%E7%AF%FA%F5%CB%A9%A9Pf%80Jq%1D%CC%BC%00%0C%88z%AC%FBZ%8F%8B%7D%03%84C%C6%07LPCy%2F%92Q%8D_%25lv%27%DC.%84w5%CB%95%E6%1E%F4%01%D8%FC%A2h%C3%82%230%A1%F6%B7%1Bp%18%A3%E6%E4%07%9FL%7FM%C9%11X6%00%07%12%A1%DA%13%22%22%1A%FA%87h%8E%5C%F7%DB%18s%E8%ED%B0%2A%0D%27%FBe-%D9%BC%A6%F8%A4%5Ev4%23%E3%CF%7F%EF%C7%03%A1%5C9%1F%E3U%28%DAA%E9%13%28C%83%8Cj%C3%F7%B5%EE%07%1F%BC%EE%C7Z%21%A2d%27%7F%09%03k5Ao%0Dp%CB%23%D2%02iD%BB%7C%2C%D4%AA%EB%0E%CB%7D%ACW%1D4%C0%CF%23%BFS%EC%0Ad%D8%12%8E%02%02%2B%22Q%AE%3F%3B%FC%D4%13%D1t%A4%B8k%D3%8Ea%14%DF1%E6%1C7%B2u%9F%23A%FC%E0r%836%B9m%C92x%9D%3FE%1DZ%ADS%AA%5D%F7%8B%85%F1%A3%EF%FD%81%B2%21%29%E7%A8Qb%98%0B%A9V%60%9F%17%B7%9Cz%B0%14%12%7C%2C%93%D6S%F3%B3%D4%E2p%97%D8%E3%12%B2%86%C6%95%9Fe%CB%B0%D4%E6%08%98%9Be%10%96e%23I%21m%0Et.j%03%A1%14%5E%83%97%B8S%E0%97%C2%97%AA%A9QCO%23n%C00%21B%F7%B4c%CCi%E7%9DnJ%22B%2B%A6%01%04%19F%8E%25%3E%17%7C%05%1D%B1h%DE%99%C6%D1%E2%B5%DC%26%E3%CF%BE%F3%BB%D8%22%AF%B8%A51%3E%B4%29rF%8C%A4%1Eu%B1%AC%B5%96%08%AFP5%5Car%B8lA%8D%EA%A1V%2F%3Ck%15%11Y%2B%F3%2CaX%2B%EE%84O%92%12%D0h%E2%2C%88%87m%E0%98W%CDJh%1F%92PD%91%3D%A1-%B4.%BD%11%BC%D0%17_%AD%8E%AA%D4%DE%88%E6%A4%A9%C4k%AF%1B%EA%894%AC%AE%B132%FCH%89%2F%17X%3BT%05%B2%E8o%E2_%7D%FEC%8A%27%07%5EW%AA%E3%E6%8A%EE%87%0D%16%F2%C2%83%A6Q%2C%EEi%23%E4q%DBo%9A%B8n%82%A0%09%2B14%A3oF%26%B2%DCbj%94%3D%C6%C0%00%C0%27%5Eu%E8%1CR%C7%F0%B6%E67d%1C%89%25%C2%19fg%86%BB%5Cu%B5%1Ac%8E1%5D%23XO%FDTg%E0%86Y%E3r%0D%89W%9585Z%00%F3I%5DM%C9%A0R%18%E9%F8%17%BE%F4%7D%04J%A6%B0%97%B2O%A2iX%04%A7%A4%D4%84%20%98%8D%F6%BF%C9zF%E5%A0%7B%D7%A8%2B%98%FD%C9%1A%B2%06%B6fdX%40%16%D8%98%AE%CC%EC%CE%D8%ECLk%A1%D1%E9%7CV%28%00%95%FA%01y%A8%11%A1%CE%98%BA%1FD%03%87%B9%05%F5%B6Sm%BD%1F%FC%89%F1%13%3D%8D%F7%97%BB%00V%06%7DEd%D3l%CEZ%11%0Dr%C3%8A%02%0B%FE%D4%17%BE%9B6%07w%04%E0%E5%EC%14%0F%A8%C0%11%AB%5CS3C%C8%DB%E7B%E1%D6%CBg%00%E1%06%B4%98%1C%FD%13Yf0%81%CB%03%E0l.n%B8%B6%AD%9Af%27%87B%11%13%92%E9ON%00%F2%C8%92%86yZs%03%14%8E%81LY%80n4%E6%187B%A5%8A%8E%3A%17%DE%D3%1A%3D%D4%26%F5%EB%EA%B2%26n%CA%B2l%00%BB%1F%FC%13%90%1A%40%F0C%FF%FA%DB%95%91%94%94%8Ad%28Sm%C8%A5fC%2B%CEq%24%BDQ%A3%86%B2%3D%09%0C%CE%B3%AF%F0c55f%9D%ACzlP%FAm%E9%CF%E3%CC%28F%E3%D9D%D6%B4%3C%94%B53%3B%F8V.%B6%FEl%DE%86%92%0D%D0%18%D1%3E%1C4%91n%D3%894%A5%1B%EF%E4%247%3E%BCX%C4%C8%1A%E6c%F3o%2A_%17%04u%C5%92%E2%2B%9F%FE%A6%AB%A6F%AF%8AR%F8%B6%81%11%2A4%B4%EB%11%C6%F0D%86%96%F4I%1D%82%16%A30%A3%8F%28~%DE%3D%A0%F4%EA1t%95_%28%24W%3B%09D%10%D0v%2F%24X%AAei%7D%AC%BE%DE%80a%25%1D%F2%9CV%8F%3FF%FAC%A6%E4%83xS%9BC8%A3%16%9A%94%E68%E9%12%9A%8D%3E%BC%96%17%F3%3AlK%92%13i%2F%19%8B%D6B%DE%03%7C%F9%93_%DB%E5%8A%3B%28%0D%2AQp%9Fi%D6%E7%02p%15%2C%E4%CA%F4%B12R%E8wZ%99%8C%83%0Ba%E8%D6f%E8%D3%DC%9B%1EO%22K%A9Z%9B%7CK-%D0%0C%A1%EB%B40Qi%88%24%40%0D%0F%D8%D6%8C%60R%22%0D%D7%C0%B0%16%A8%3A%D8%B5%96%C0R%D9%DEea%CFZR%8E%3C%87%04%830%87%F0lZ%EDX.%05%7D%BC%F4%E6W%1D%96%D0%C6E%96%B9%E5ga%40%F4%19%EE%D1%18%E7%7D3%04%B2g%EB%F3%FF%7C0%2C%07%A6%15%8A%C6pBH%3A%7C%1Cs%98A%8C%AE%25O%A9%00%80%CA%BAc%06%9A.%B9o%A54t%16n%84A%84%A5%E8%A3%84%3D%1A%04%A4%EA%03%89%D4%B1%E2U%BAVI%BD%D2p%B6%9Ez%0A%B3%08Fk%AAk%EC%CB%FE%0F%00%E0K%AF%3F%F7%29%DA%C9-%AD%237%B03f%A4%22%D4%BB%B0U%EA%C5s%C3%8B%C6n%14%DC%8Eo%80%E1%B7%F9%04%7B%C2%3AO%1C%2A%23%C0%98L%3E%A2y%90%87%0F%14%92%23%E5%98c%AEsh%C3R%BD%0E.7%90%8A%D6Q%7BQ%D9jq%FA%B5e%F8Z%01%E3e%FA%B1%1A%08%99%9E%82%5Dk%EC%5D%8F2q%D2%CE%7D%02I%F1%A57%9E%E36%F0%3A%60%C7%A9cv%82%8AZJ%80%B1%8E%20%0D%17T%24%DA%22e-%D0%D2%8A%AA%84%0B%FE%04%94f%ACI%05%28%00%9Ar%3CpF%3B%D1%AE%A5A%26%83%ACF~%84%08%89%19%1DOx%A2%F2HIfn%B2%FE%5E%C1u%BF%EAA%3Dk%D6%E9e%5En%BD%A8~%EC%25%996%D5.4%9A%01%08%BE%FF%CD%E7%29%B5%B4%01%CA%A1%DB%1C%EC%AD%E2M%20F%3A%84%14%2F%94b%1A%BFC%2AT%2Ai%D1%D0%E6%E3%B6%C8%00BI%9F%B0%A0%CE%28%9AYd%99%14X%D9%D2%F8%FE%94%9E%D8%A3%8D%A89%16%80%AE%D7%03s%84G%19%5D%90%F9%A6p-%2A%024%DAW%1B%26%ECpM%16%D9%C7%0F%951%95%2F%7F%E2m%AC%D3%B2%2FeK%8B%F6%C5.H%29%FB%98%AA%CB%B1%11%9D%3F%80%9B%90u%1DF%5B%25%0A7vj%E1%27ae%5B%82%0FW%09%D5%11%AB%E8%60%08%1CE%1F%BD%88r%B4%9C%26%AC%CD%8A%01%2AfpRXJ%13%29%EB%A1%16%22%24%261%A6t%5E%F3%D4%23%00K%D7%D6LR%3F~%E0%93_%C3%8Bq%88%1B9%0C%7Bpri%3B%F6%A5%C7%7Dj%D1ity%83%9CaO%BCs%2Cv%AB%EA%00%EET%8D%92%BD%60l%80%BD%85%22p%04MM%2705%AE%7F%CC%F5%EC%7B%11%BD%B5N%23%80%96%02E%E6%3E%B1%039%7B.%85%CAw%AD%F5%A8O%E9%95O%7D%3D%A6%E0%5D%CCzl%2A%A7%5D%13t%D3%0D8K%BD6%903%ED%93%CEa%3B%8B%FE%B3%10zq-%93A%DCT3%DB%10cD%90%E6fSl%06%9B%D2%B0%E1%BAP%AADT%0C%E3%B0%BA%1F%B3%D4%AAm%E4%F0%E9%F1%CA%A1%F77%D8%059e%9B%C9z5I%12%10_%FD%CC76%9E%D5%A6%06%BB%29%A8%9E%28%ABJn%BD%E0PT%8C%0D%9C%86%08C%0E%95%DE%86%E8b%0C%1A%29d%0Ej%83C%90%F6yk%98J%C7%06%D7QLF%19%E2%5B%852%9A%3A%60%98%98%8A%F3%CB%B4%B5%E73%E04%D3%A0%9A%96n%D7%1E%0F%EE%E2%81%7D%1E%A2%1E%A2%D7~%F1%9Dmb%FC%C5l%0F%91%D3p%B3%1C%E3%DE%CE%25%E4H%87%8D%24%2C%1B%E6%DB%C7%0B%5E%0DS8%0DcED%BC%12%E9%B5g%B7%0Do%AEt%F1p%5DbG_v%C4E%02%08%C4%F1%1Ah%80%DF6%99%86%5B%28%DD-~%93d.1%D0%26%26%20%E5%3C%B9%E1%FC%D0%E7~%BD%8EF%DD%08u%D8%F5%FE%B1J%0D%20%E0n%0F%BAj%25%F6A%10%00%22%18%F9Ye8%C8%C5%CC%5E%09FUI%03%BBjN%8D%C8v%C2ly%FDz%96%2B%C5%BD%11%D9%13%C4%01%9AC%89%9B%9A%0D%87%06%DB%3C%8E%086q%1B%7F%D9%94%B1%AB%98E.k%A1%7B~%F8%DF%7C%3B%D7%B7%3A%B4Lo%A0N%12%A3TiL9%A0V%AA%28C%EE%1DP%849%B6%CD%1A%CBh%0D%E1F%BA%BCR%8D%CC0%0Ce%07%E85%9D%A0%2A%5C_%B8%A2%D8%87%2Au%ECE%95%C3%DC%A7%F5u%9B%B3%9D%FA%CA%10j%A7%FE%24%E7%9D%A6%A1%16%9B%7D%04-%21%FE%E4%2F%BF%87%D1%FD%F2%92%B7%A52.G%97%92%89%FE%91m%CE%8E%9E%D3%A8%EB8%F0%C8%900%0A%5E%D6w%99%D5%0C%40%81%DA%E1~l%BB%DEp%CA%1B%17%15Wh%FC%84%FC%7C%D39%D6%E0%8F%C3%7C%14BC%AC%3E%08%5CL%AC%AC%09k%5D%FD%B2%DFU%ABt%E7%F4%A5%D6yUX%00j%C3%09%ED3%1F%F9%95%FFD%40%E82e%A6%E6B%E5m%9F%EB%E2w%22%BDo-%FCp%B2%2A%90m%C5%5D%E8%A5%13.%A4%CA%997%BAkr%A0k%E9%24%B52%AC%12%95%9C%98%7D%DD%2Bo%20%10%DD%5CP9%5Cc%973%E4%FEt%E6%FB%40%88B%21%EE%E2%FCu%26%DC%C68OL%06Ac%12%00%FE%C5%2F%FE%17%F2%3A%95%C9%85%BA%D2tl%03%ED%12%C5X%E0%2A%8E%17%12a%C0U%94p%17%04%1E%2B%C4A%21%25%5E%F6I%9CEX%DA%8E2%D7%07%C9%FE%B2jvVv%B7%92T%F9A%BC%E9%83%15%E9%D7%BE%F4A%D4%13%96T%FB%CBY%C6%7D%22%DC%89%F7%96%B3%1E%FA%84%AF%CE%22%88%06%91a%06%14v%FD3%BF%FA%03%CD%18MP%CA%05%2B%A7%CA%E6F%06%9FZ%81%E9n%C2%A6%7B%F7%17R%C3%C84%BE8%91%A6%0EB%09%ED%BD%CBjaQ%A2%CCd%A9%DA%80bh%A4%ECD%93%C5%80Z%19%BFR%AE%AAc%0E_%A8%9D_M%5C%87%E9%E3%05%04%A6%2A%8DxK%CEg%11F%A7%08%E3%23%00%80%F8%D7%9F%FFP%F1t%21%1D%EAr%C5H%10h%89%C6%02%0D%04%1B%23JT%A6%DA%DF%02%BF%3D%CFn%CE%B9%B6%A5A%D4%1Ce%3D%C1%7C2%F7.TY%AB%5C%2C%82U%A5%84S%27%A3%5B%FB4q9G%DE%EF%22%96%28%8B-p%94%5D%CB%E0%2C%BE%DE5Fb%D6%7B%E0%1Cr%CCf9%FF%11_%FF%EC%D7%7F%DB%84x%29%FDp%3A%D8%02%0C%12%C4%5CJ%84%8Amn%8F%11z%A4%0D.%FD%09%CD%A5%E5%14%1E9%C9%24%85m%E7%C2%C6%2C%A7%3E.%E0Vj%C7%40jq%F7%9D%B5%14%89e3%5Bj%28%BD%00SF%FC%06%26%01%AB%D6qI8%8B%88%1158%3B%E5%98%C0%D8%05%AA3Q%F0%EF%7C%EBw%B0%25%3Ca%0D%13%86u%25V%2Be%8E%29t%BBQ%0CE%FC%8FX%87%CF%960%BA%CA%BD%14b%1F%F7%99%27R5%11%CA5i%5B%B29%EE%FA%220%BBQq%8D%F6i%5D%99%FD%F9%ED%E9DU%96%9E%C7%02%94I%A5%85%3C%93%8Df%87%7F%F5Y%A7U%BCK%00%3F%FA%EE%FF%DA%60%A0%A1%AD%E8%10%17X%C5%AFJ%A2ME%CEAy.%DAf%24J%7D%AA%8F%CD%80%8B%28%3B%A3%17%97F%12%A8%F2%F558%F2%89%C1%BD%22%C91%BD%BB%C4J%D5%DE%E0%3E%40%9E%9AI%91%F3%80%1C%E9%0C%D5%9C%EF%D3f%8D%1B%86%97JW%22%86%01%94%E9%B1%91%A3%E1%CF%7D%E7%F7%ABH%5B%19%04%08%06%C2%15X6%C1%D1%87%D7%01%AC2r%A1Ymi%82%3A%B0%85%EA5%92%EE%21%F6%85%FCK%F9%CC%AEY%C5%D2%BB%1A%FD%8EH%D7G%EDI%93t%D1S%C8%F3X%B1u%D0%A4n.G%CE%E7%5E%F8r%A3q%AF%C7P4%A9%B1%09H%DBD%7D%E6%7BtW%F0%1F%BC%F7%23%DA%06%02%BB%C5%B0%19%A6%0A%7C%E4%D4%60W%EA%E8%0A%5E%06%14%A1%FF%9E%E7%97%1A%E1U%D2TH%C5%27%CB%AE%5B%C1.%E9%1DB%C1R%27%C7o6J6s%04%15%8D%E0F_%BF%B5%92%A2%3Ddi%7D%FF%AE%40z%1E4%86I%D2%032%DDs%9Ac%DC%C6%B0%B9%0Dc%0C%E7wP%F4%91%C4tV%D3%28%FC%DC%7B%3Fr%09SE%A8%07u%21Q%A11%60%C1%99%D3%7C%24%12F%8E%DA%BB%C8%FDp%F6%A4l%BDh%86%3D%98%E4%AA5Uze%BCU%BBJK%19%13%ED%D2%20%1A%15p%90%D5%88%D2%98M%25%9B2%C0%9A%9E%22M%3E5%83%3E%00%9C%DAUV%10%E3m%0E%23%2A%0D%9D%9D1%9C%2C%93%3A%DC%C5%BC%5B%E0%8E%1F%7D%F7%F7%C6%28%8A%A6%94P%24%2AJ%86aj%9C%C0%EE%9B%B1%E4%E0u%14%05_%EBY%BB%C8%AC%DE%11v%A0%F6i%1B%A4%049%CE%04%F6%D3%2F%AE%B3V%82%FD%A2%ED%B3%B7W%5B%BF%5B%BA%84X%A9%CC%17%81%1C%93%19%A7T%7BG%7Cr%C6%E26F6%D0%8Eh3z%1E%E6x6%E7%B39%1E%1E%E6M%D5%20%94_%83%235%A9-%3D%02%23B%2F%C1%BF%F5%CE%EFx%D2k%CA%BE%A6%2FN4%10Fe%CE%B4%ECW%99%A4%3A%5CV%0E%E1%B5%E4%10%A5%1E%C8%B1%F4%8A%AC%C3%6039%9B%24iI%85%97%04%9D%3F%B9k%B1Ii%F0%EF%E2%60X%EBe%A7%D0%13%D2%8B%D4%89%2A%E1N%5D%F9%1F%DCHl%C2%E1%80p%9A%B7TD%0A%0A%9Ck%CE%F10%E6%B3%DBx%9F%B2%24%C7T~p%04A%D1nb6%86%B0%8A%7D%E3_%FB%EAo%EB%D7E%E1a%22M%821h%A2%CE%D1%B0%ED%A1%E8e%17%21Ev8%28%3B%AF%FA%10%3E%F4Z%2Cv%1Dq%BF%19%09%29%E0%CCp%E3jp%9Cw.%92T%7D%0F%D2%E8%94%93%CF%7D%83%A2M%8B%05%0B%95w%A5%E0.%CB%FC%AEB%1E%EE%F3%1B%F1%3C%F49%07%C8%B80%01%2Ai%E9%D9%9C%0Fs%3C%BB%8D%9B%D2Ti%8C%00%C8%A0I%2A%2BO%85Yt%92%0C%FE%E5%AF%FCP%D9M%0E%96%C4%A8%C1MB%C5d%0F%C4%E9%03%7D%82%98%40%118%89T%DE%40%F8%89%B5%E4%90%A5s%0C%0E%E6%FBZ%3EKB%92E%D3%07%89%01HtB%22%1B%D8%F4Q%7BB%E62%9C%26%98%8A%00r%2Aa%9E%14%28%DB%C0%BA%AC%DD%00%96%D1%EC%27H%F2yja%0C%3FR%25%26%15%A4y%18%E36%E7%9C%A4%3E%60%28%FF%800%10%D0j%CFY%60%81%AC%C5%F8%D3_%FEA%8E%06%83%E0%2A%F9N%20N%13%3F%40%AB%D0a%D4%E90E%98%23%7C%DAY4%B6%DCw%E6%E3%E0%BB2%FA%98%8Fc%DD%1Ba%A1%D0%8D%C1s%BF%AB%CD%88L%D7%3B%BBu%B2%EDibY%C9%3E%F6Q%93%5D%DF%1AR%C8X%10%B1%B7%86%9A%E4%A1%C8.%F7%E1%E0%18%CB%01%DC%FD%0E%0FI%87%A1%B1%0D%B2%14%B3%80%94%81%2A%F8%91%2F~%BF%2A%07%EB6%94%D1%E26%96l%60%14%E9%7CR%93%EF%87%0D%FA%C1%D2%27%28%E3K%B9%A8%3E%1Ck%DDY%EE%BC%EE%07%3F.%D1%3Bq%E7%A5%18%BF%10%80%10%07%ED%F6%CC%3A%86%F7%14i%DAH%AF%B8%A1%21%010%CAq%BB6%EB%A6d%D7%60H%3E%BC%8D%F0%09%DC%C7i%FEgQ%15%F7%0C%D8%A9M%FEg%28%DF%06%E3%E3%B1V%08%08%F8S%BF%F2%3DH%8Cw%CC%C9%22W%60%F1%9E%0C%B9%81RsD%86%1F%F6%074T%94%3FcY%A8%E2%3F%A1A%60%E3l%0E~d%BE%2F~%5C%EB~%AC%FB%D2%99%1F%BA%13%92%88%04%E66%99%BC%F5%14%A5%FB%EA.%27%D2%40%C4%10%C2Z%D2%26%AE%F7%FE%F8E%C4%8F%02U%AAp%1B%14%8B%A7%B8%88l%0Ax%20%C1%C6%40%04%DF%0EPJ%C2%20%2Cu~%C2%9F%F8%C2w%DD%A3%B8%94%82l%BD%C9%1C%BA%E0%3B%A1km%0C%9FI8i%F8%F0%3Eu%E3%86%F3%0E3%15%1Ad%0C%CE%26d%3E%96%3C%AE%F5%B8%D6%7D%F1%E3%C1%8Fk%DD%9Di%BC%82%CF%CDE%F5%3D%F8%1D5%FBm%FD%DAJ%C9%8D%28%16%B7%11%C3O%0E%D1n7%23z%FD%7D%24%20%16%23%B4%EB%3Db%C3%27%19%3A%D8G%10%06%28%BE%CCh%1B%84%F8%A1_%FA%CE6%AB%04%9B%82Y%15%0F%D1%AA5%E9%ECB%07%A0%F9%F42%1D%5C%89%E60nc%CC%40%7B%FBl%B3v%27%D8%14%81%EE%8B%EF%BC%1E%EF%FC%18%17%82%F9~%AC%25%BC%0E%03e%16%F5%08%93%ABI%E3%C4%5D%C3Y6lfI%BC%B3%C4V%26jWu%AA2%00%B0-~%18%D4%7Dv%7C%F3%C7Y%95N%9D%C4%1C%9Dm%3D%02%22D%1C%04%844%C7%18%88%F8%EA%E7%DF%DDu%08%DB%1C%F5%82%80%806%85%27%F9%26%E6%B1%8D%C0%EF%D3%E0%2C%82%BA%0D%B5Q6W4FH%99l%B3%AAXX%98%C4%8Fk%3D.%BE%1Fv-%EEk%29%BF%903d%2A%DE%1Av%99%9C%AD%BC%E1g%9DS%07%1De%1FD%B9%09CV%7D%C8%13%0A-%C62%F5A%D5%5B%81%08%01%93%BD%B3%05%BB%A1%80%83%9E%F6%E2%07%3F%FB%AD%AE%AF%BC%CF%1F%C4%C6%19%C0.%1AEd%B0%F0%11%AD%7C7p45%93%98%E4%DC%DAq%23%9CvQH%1B%3Ej%F7%B4%5B%A9%0C%E6%FB%E2%FB%125G%8F%E6%1E%D6%B1%82%FE%E0%A85pm%95%DAp%97%26a%0E%0D%9F%2C%A7m%88%3A%5D9%E7%15%D4%DD%27%A6I%25K%D5o%05%DC%B4f%CB%E8%84B%1D%94%B6I%29%3B%F4%F2%A7%BE%91%3A%84g%24z%0A%7CBL%88%29%ED%9A%A2%EBR%0A%E1d6g%0C%CB%24%9Cj%3B%F0FcN%B2%9D%88%90%D7%3B%FBZg%5D%2C%16%B0%AE%A54%FC%FBZ%F7%20%85%B3%27%11%95%F0%E6%02%2C%7B%AD%BBW%24z-%B6%28B6U%C6%CE%81%C8%C1%88P%01j%279%D4-G%C0%C2%1Ao%B0W%2C%C5V%04%C2%97%3E%F1%F5N%C6~r%B8%28v%C4%20%E6o%21%07%08%11%96%5E%10%11x%0C%86%23%0D%11%DD%7C3%26%8D%DB%08g%1E0N%0D%7F%D4Q%EBN%AC%FB%92%BB%B9h%BE%AF%A2%86%20%1D%A2o%3E%82%1B%3E%D3%E5%5B%A5%12%CE7%C5%EB.%2F%2Fg%0E~%DB%806%D3~%9F%B8%B3c0%3D%A2%A5%D2%FF%29%DB%86%CF%DE%7C%1Bvh%14C%1DHZd%A4%FBVJ%CC%DFi%93%DA%10%B4%FC%14%94%94Pd%18%96%1C%DA%C8Ps%0F%D3%03Y%25H%A7d%8E%E6%D5%A0%BA%2F%F7%83%8F%B5%EE%C2%F7c%1D%A6w%21N%9D%E0M7%B0%B4%83%11%98%AB.%1A%EC%E5%D3%3A%F3%BB%03%5B%B0%0E%E5%DB%C6m%C8%09%93%5C%C5i%3B%DC%CFV%AF%8F.%00%9F%17%F7%F0%FA%DBpVg%BF%D0%5C%0D%D4%A2%F8%E8%15%EAc%2B%2Av%9F%EA%86P%B5N4%2C%5Dp%15%E51%D0l%94aa%C60%90%92%CB%DC%BA%87XK%D4%0A%DD%17%AF%C5V%85%5D%21m%C9R%09%E2%DAET%BD0%80%5E%DD%2B-%E1%DC%ADXb%EE%B8%DAb%1A64P%CCH%F7%D5%97m%26J%21%BD%C8%CE%7D%23%FD%B6%FF%0FiQ%C9%60m%FD%20%2B%00%00%00%00IEND%AEB%60%82" >
+    </div>
+</body>
+
+<script>
+    var hideWhenFocusLost = true;
+    // when sidebar is pinned, don't show canvas under sidebar
+    const pinHandler = ({ pinned }) => {
+        hideWhenFocusLost = !pinned;
+        document.getElementById('canvasContainer').style.width = pinned ? 'calc(100vw - 220px)' : '';
+    };
+    // clicking on canvasContainer should trigger hide of sidebar if not pinned
+    document.getElementById('canvasContainer').addEventListener('click', () => {
+        if (hideWhenFocusLost && document.getElementById('sidebar').style.display !== 'none') {
+            document.getElementById('closeSettings').click();
+        }
+    });
+
+    function fullscreen(el){
+        // TODO: illegal invocation? wtf?
+        //const requestFullScreen = document.documentElement.webkitRequestFullScreen || document.body.mozRequestFullScreen || document.body.msRequestFullscreen;
+        //const exitFullscreen = document.webkitExitFullscreen || document.exitFullscreen;
+
+        if(document.fullscreen || document.webkitIsFullScreen){
+            document.webkitExitFullscreen();
+        } else {
+            document.documentElement.webkitRequestFullScreen();
+        }
+    }
+    const toggleFilter = ({ test, set }) => {
+        const allFilteredNodes = document.querySelectorAll('.layers .image, #canvasContainer canvas');
+        const someFilterNull = Array.from(allFilteredNodes).some(node => !node.style.filter);
+
+        Array.from(allFilteredNodes)
+            .forEach(node => node.style.filter = someFilterNull ? 'unset' : null);
+    };
+
+    const matchCanvasFilter = () => {
+        const canvasFilterUnset = document.querySelectorAll('#canvasContainer canvas');
+        const allFilteredNodes = document.querySelectorAll('.layers .image, #canvasContainer canvas');
+        const someFilterNull = Array.from(canvasFilterUnset).some(node => !node.style.filter);
+        Array.from(allFilteredNodes)
+            .forEach(node => node.style.filter = someFilterNull ? 'null' : 'unset');
+    };
+
+    const sidebarDef = ({
+        toggleLayerVisible,
+        getLayerThumb,
+        changeLayerAlpha,
+        changeLayerBlendMode,
+        changeLayerOrder,
+        addLayer,
+        removeLayers
+    }) => ({
+        title: 'Sidebar Demo',
+        pinHandler,
+        hidden: false,
+        pinned: true,
+        sections: [{
+            name: 'live',
+            items: [{
+                type: 'button',
+                name: 'reload',
+                onClick: () => {
+                    //TODO: would be nice if this only reloaded DOM/scripts/CSS, not reload page
+                    document.location = document.location;
+                }
+            }, {
+                type: 'button',
+                name: 'filter',
+                onClick: toggleFilter
+            },{
+                type: 'button',
+                name: 'fullscreen',
+                onClick: (e) => fullscreen()
+            }, {
+                type: 'layers',
+                name: 'layers',
+                addLayer,
+                removeLayers,
+                layersHidden: [0, 1, 2],
+                layers: [{
+                    name: 'Uber Layer',
+                    onToggle: toggleLayerVisible,
+                    getThumb: getLayerThumb,
+                    changeLayerAlpha,
+                    changeLayerBlendMode,
+                    changeLayerOrder
+                }, {
+                    name: 'Top Layer',
+                    onToggle: toggleLayerVisible,
+                    getThumb: getLayerThumb,
+                    changeLayerAlpha,
+                    changeLayerBlendMode,
+                    changeLayerOrder
+                }, {
+                    name: 'Middle Layer',
+                    onToggle: toggleLayerVisible,
+                    getThumb: getLayerThumb,
+                    changeLayerAlpha,
+                    changeLayerBlendMode,
+                    changeLayerOrder
+                }, {
+                    name: 'Bottom Layer',
+                    onToggle: toggleLayerVisible,
+                    getThumb: getLayerThumb,
+                    changeLayerAlpha,
+                    changeLayerBlendMode,
+                    changeLayerOrder
+                }]
+            }]
+        }, {
+            name: 'dummy',
+            collapsed: true,
+            items: [{
+                type: 'text',
+                name: 'text',
+                default: 'default',
+                onChange: e => { console.log(e.target.value); }
+            }, {
+                type: 'slider',
+                name: 'slider',
+                default: 30,
+                min: 0,
+                max: 100,
+                step: 5,
+                onChange: value => { console.log(value); }
+            }, {
+                type: 'boolean',
+                name: 'boolean',
+                default: 'FALSE',
+                onChange: e => { console.log(e.target.value); }
+            }, {
+                type: 'select',
+                name: 'select',
+                default: 'blue',
+                options: ['red', 'green', 'blue', 'yellow', 'orange'],
+                onChange: (value) => { console.log(value); }
+            }, {
+                type: 'button',
+                name: 'button',
+                onClick: () => { console.log('button clicked'); }
+            }]
+        }]
+    });
+
+    var thumbs = [];
+
+    const renderContext = (thumbNumber, fn) => ({ layer, alpha, width, height }) => {
+        const ctx = layer.scene.context;
+        ctx.clearRect(0, 0, width, height);
+        ctx.globalAlpha = alpha == 0
+            ? 0
+            : alpha || 1.0;
+        fn({ ctx, width, height});
+        thumbs[thumbNumber] = layer.scene.canvas.toDataURL('image/png');
+    };
+
+    const render3dContext = (thumbNumber, fn) => ({ layer, alpha, width, height }) => {
+
+        const gl = layer.scene.context;
+        //ctx.clearRect(0, 0, width, height);
+        // ctx.globalAlpha = alpha == 0
+        //      ? 0
+        //      : alpha || 1.0;
+        if(!gl){
+            console.error('WebGL not currently supported!');
+            return;
+        }
+
+        fn({ 
+            gl,
+            alpha,
+            width: width*(layer.scene.pixelRatio || 1),
+            height: height*(layer.scene.pixelRatio || 1)
+        });
+        thumbs[thumbNumber] = layer.scene.canvas.toDataURL('image/png');
+    };
+
+    const renderShape = renderContext(0, ({ ctx, width, height }) => {
+        //ctx.globalAlpha /= 3;
+        //ctx.fillStyle = '#880';
+        ctx.fillStyle = '#888';
+
+        var numberOfSides = 10;
+            size = 400;
+            Xcenter = width / 2;
+            Ycenter = height * 0.5;
+
+        ctx.beginPath();
+        ctx.moveTo (Xcenter +  size * Math.cos(0), Ycenter +  size *  Math.sin(0));          
+
+        for (var i = 1; i <= numberOfSides; i += 1) 
+        {
+            ctx.lineTo (Xcenter + size * Math.cos(i * 2 * Math.PI / numberOfSides), Ycenter + size * Math.sin(i * 2 * Math.PI / numberOfSides));
+        }
+        ctx.fill();
+    });
+
+    var hatchPat;
+    const renderTriangle = renderContext(1, ({ ctx, width, height }) => {
+        const originX = width/2;
+        const twidth = 695; //-300;
+        const theight = 0.866 * twidth;
+        const originY = (height/2) - (theight/1.5);
+
+        if (!hatchPat){
+            var texture = document.getElementById('pattern-hatch');
+            hatchPat=ctx.createPattern(texture, "repeat");
+        }
+
+        ctx.fillStyle=hatchPat;
+
+        //ctx.fillStyle = '#0700d6';
+        //ctx.filter = "hue-rotate(180deg) grayscale(100%)";
+        ctx.filter = "grayscale(100%)"
+
+        ctx.beginPath();
+        ctx.moveTo(originX    , originY);
+        ctx.lineTo(originX+twidth/2, originY + theight);
+        ctx.lineTo(originX-twidth/2, originY + theight);
+        ctx.fill();
+
+                ctx.fillStyle = '#555';
+        ctx.font = 'bold 120px sans-serif';
+
+        const kanji = ' 丳 临 丵 丧 乶 不 擄 ㍼ 书'; 
+        const braille = "⠁⠂⠃⠄⠅⠆⠇⠈⠉⠊⠋⠌⠍⠎⠏⠐⠑⠒⠓⠔⠕⠖⠗⠘⠙⠚⠛⠜⠝⠞⠟⠠⠡⠢⠣⠤⠥⠦⠧⠨⠩⠪⠫⠬⠭⠮⠯⠰⠱⠲⠳⠴⠵⠶⠷⠸⠹⠺⠻⠼⠽⠾⠿⡀⡁⡂⡃⡄⡅⡆⡇⡈⡉⡊⡋⡌⡍⡎⡏⡐⡑⡒⡓⡔⡕⡖⡗⡘⡙⡚⡛⡜⡝⡞⡟⡠⡡⡢⡣⡤⡥⡦⡧⡨⡩⡪⡫⡬⡭";
+        const omg = ' ꙭꙮ꙯꙰꙱꙲꙳ꙴꙵꙶꙷꙸꙹꙺꙻ꙼꙽꙾ꙿ';
+        const indic = 'ﶝﶞﶟﶢﶣﶤﶥﶩﶯ';
+        const blocks ='▒▓▒▒▓▒▒▒▓▒▒▒▓▒▓▒▒▒▓▒▒▒▓▒▒▒▒▒';
+        const cool = ' ☫〄〠☬ 〯☫㉲☬༖☫☬☫☬';
+        const tibetan = 'ༀ ༁ ༂ ༃ ༄ ༅ ༆ ༇ ༈ ༉ ༊ ་ ༌ ། ༎ ༏ ༐ ༑ ༒ ༓ ༔ ༕ ༖ ༗ ༘ ༙ ༚ ༛ ༜ ༝ ༞ ༟ ༠ ༡ ༢ ༣ ༤ ༥ ༦ ༧ ༨ ༩ ༪ ༫ ༬ ༭ ༮ ༯ ༰ ༱ ༲ ༳ ༴ ༵ ༶ ༷ ༸ ༹ ༺ ༻ ༼ ༽ ༾ ༿ ཀ ཁ ག གྷ ང ཅ ཆ ཇ ཉ ཊ ཋ ཌ ཌྷ ཎ ཏ ཐ ད དྷ ན པ ཕ བ བྷ མ ཙ ཚ ཛ ཛྷ ཝ ཞ ཟ འ ཡ ར ལ ཤ ཥ ས ཧ ཨ ཀྵ ཱ ི ཱི ུ ཱུ ྲྀ ཷ ླྀ ཹ ེ ཻ ོ ཽ ཾ ཿ ྀ ཱྀ ྂ ྃ ྄ ྅ ྆ ྇ ';
+        const tamil = 'ஂ ஃ அ ஆ இ ஈ உ ஊ எ ஏ ஐ ஒ ஓ ஔ க ங ச ஜ ஞ ட ண த ந ன ப ம ய ர ற ல ள ழ வ ஷ ஸ ஹ ா ி ீ ு ூ ெ ே ை ொ ோ ௌ ் ௗ ௧ ௨ ௩ ௪ ௫ ௬ ௭ ௮ ௯ ௰ ௱ ௲';
+        const choice = braille;
+        ctx.fillText(choice.slice(choice.length-60,-1).replace(' ', ''), 0, height-110, width);
+    });
+
+    var needlesPat;
+    const renderCircle = renderContext(2, ({ ctx, width, height }) => {
+        if (!needlesPat){
+            var texture = document.getElementById('pattern-needles');
+            needlesPat = ctx.createPattern(texture, "repeat");
+            ctx.fillStyle = needlesPat;
+        }
+
+        //ctx.globalAlpha /= 3;
+        //ctx.fillStyle = '#934200';
+        ctx.filter = "grayscale(10) blur(100px)"
+        //ctx.filter = "blur(100px)";
+        ctx.arc(width/2, height/2, 400, 0, 2*Math.PI, false);
+        ctx.fill();
+        //ctx.drawImage(texture, 0, 0);
+    });
+
+    const renderSquare = renderContext(3, ({ ctx, width, height }) => {
+        var grd=ctx.createLinearGradient(0,0,0,height);
+        grd.addColorStop(0,"rgba(170, 0, 170, 1)"); //top
+        grd.addColorStop(0.6, 'rgba(170, 0, 0, 0.8)'); //middle
+        grd.addColorStop(1, 'rgba(0, 0, 170, 1)'); //bottom
+        //ctx.fillStyle=grd;
+        ctx.fillStyle = 'rgb(0,0,0)';
+        ctx.fillRect(0, 0, width, height);
+    });
+
+    const width = 1000;
+    const height = 850;
+    function setupCanvas({ sideBarDef }){
+        var container = document.getElementById('canvasContainer');
+        var viewport = new Concrete.Viewport({
+            width,
+            height,
+            container
+        });
+        var square = new Concrete.Layer();
+        viewport.add(square);
+        renderSquare({ layer: square, alpha: 1.0, width, height });
+
+        var circle = new Concrete.Layer();
+        viewport.add(circle);
+        renderCircle({ layer: circle, alpha: 1.0, width, height });
+        //layer1.scene.context.globalCompositeOperation = 'multiply';
+
+        var triangle = new Concrete.Layer();
+        viewport.add(triangle);
+        renderTriangle({ layer: triangle, alpha: 1.0, width, height });
+
+        var shape = new Concrete.Layer();
+        viewport.add(shape);
+        renderShape({ layer: shape, alpha: 1.0, width, height });
+
+        const layers = [
+            shape,
+            triangle,
+            circle,
+            square
+        ];
+
+        // LAME (but so is starting with layers predefined:
+        // hide any layers that should not be visible
+        const hiddenLayers = sideBarDef.sections[0].items
+            .find(x => x.type === 'layers').layersHidden;
+        hiddenLayers.forEach(x => layers[x].visible=false);
+
+        viewport.render();
+        return { viewport, layers };
+    }
+
+    function sidebarReady(err, { start } = {}) {
+        if (err || !start) {
+            console.error(`Error in sidebarReady: ${err}`)
+            return;
+        }
+
+        const canvas = setupCanvas({ sideBarDef: sidebarDef({})});
+        const toggleLayerVisible = ({ number, visible }) => {
+            canvas.layers[number].visible = visible;
+            canvas.viewport.render();
+        };
+        const getLayerThumb = ({ number }) => {
+            return thumbs[number]
+        };
+
+        canvas.renderFunctions = [
+            renderShape,
+            renderTriangle,
+            renderCircle,
+            renderSquare
+        ];
+        const changeLayerAlpha = ({ number, alpha }) => {
+            //console.log(number);
+            const renderFunction = canvas.renderFunctions[number];
+
+            renderFunction({
+                layer: canvas.layers[number],
+                alpha, width, height
+            });
+
+            canvas.viewport.render();
+        }
+
+        const changeLayerBlendMode = ({ number, mode }) => {
+            canvas.layers[number].blendMode = mode;
+            canvas.viewport.render();
+        };
+
+        const addLayer = ({ name, def, type, callback }) => {
+            //console.log({ name, def, type, callback });
+            const layerType = type.toLowerCase().includes('3d')
+                ? 'webgl'
+                : '2d';
+            const newLayer = new Concrete.Layer({ type: layerType });
+            canvas.viewport.add(newLayer);
+
+            const newLayerRender = type.toLowerCase().includes('3d')
+                ? render3dContext(canvas.layers.length, def)
+                : renderContext(canvas.layers.length, def)
+            canvas.layers.push(newLayer);
+            canvas.renderFunctions.push(newLayerRender);
+            newLayerRender({ layer: newLayer, width, height });
+            canvas.viewport.render();
+
+            const newSidebarLayer = {
+                name,
+                number: canvas.layers.length-1,
+                onToggle: toggleLayerVisible,
+                getThumb: getLayerThumb,
+                changeLayerAlpha,
+                changeLayerBlendMode,
+                changeLayerOrder
+            };
+            setTimeout(matchCanvasFilter, 150);
+            callback(newSidebarLayer);
+        };
+        const removeLayers = ({ numbers, callback }) => {
+            //console.log({ numbers, callback });
+            canvas.layers.forEach((layer, i) => {
+                if(numbers.includes(i)){
+                    layer.destroy();
+                }
+            });
+            //canvas.layers = canvas.layers.filter((layer, i) => !numbers.includes(i));
+            //thumbs = thumbs.filter((thumb, i)=>!numbers.includes(i))
+            //thumbs.map((thumb, i) => numbers.includes(i) ? ()=>{} : thumb);
+            canvas.viewport.render();
+            callback();
+        };
+
+        const changeLayerOrder = ({
+            number, operation, repeat=1
+        }) => {
+            //console.log({number, operation, repeat});
+            (new Array(repeat)).fill().forEach(x => {
+                canvas.layers[number][operation]();
+            });
+            canvas.viewport.render();
+        };
+
+        const definition = sidebarDef({
+            toggleLayerVisible,
+            getLayerThumb,
+            changeLayerAlpha,
+            changeLayerBlendMode,
+            changeLayerOrder,
+            addLayer,
+            removeLayers
+        });
+
+        // number each layer
+        definition.sections.forEach(section => {
+            section.items
+                .filter(item => item.type === 'layers')
+                .forEach(item => {
+                    item.layers.forEach((layer, i) => {
+                        layer.number = i;
+                    })
+                })
+        })
+
+        start({ sidebarDef: definition }, () => {
+            const loaderStyle = document.getElementById('loading-spinner').style
+            loaderStyle.visibility = 'hidden';
+            loaderStyle.opacity = 0;
+        });
+    }
+    footils.sidebar.init(sidebarReady);
+    // document.addEventListener("DOMContentLoaded", function(event) {
+    //     footils.sidebar.init(sidebarReady);
+    // });
+</script>
+
+</html>

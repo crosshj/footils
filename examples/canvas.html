@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>canvas foo</title>
+    <meta name="description" content="Canvas from footils">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="mobile-web-app-capable" content="yes">
+</head>
+<style>
+    body {
+        background: #635b58 !important;
+    }
+
+    #root {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0;
+        bottom: 0;
+    }
+
+    #foo-canvas-2 {
+        display: none;
+        background: transparent !important;
+    }
+</style>
+
+<style>
+    #sidebar {
+        position: absolute;
+        right: 0px;
+        top: 0px;
+        bottom: 0px;
+        background: #333;
+        width: 220px;
+        color: #aaa;
+    }    
+    #sidebar div.scrollContainer {
+        padding-left: 10px;
+        padding-right: 7px;
+        overflow-y: auto;
+        overflow-x: hidden;
+        height: calc(100% - 20px);;
+        box-sizing: border-box;
+        margin-top: 20px;
+        padding-bottom: 20px;
+    }
+    #sidebar div.scrollContainer > div {
+        padding-right: 5px;
+        display: flex;
+        justify-content: space-between;
+        margin-top: 5px;
+    }
+    #sidebar span.label {
+        display: inline-block;
+        min-width: 90px;
+        max-width: 90px;
+    }
+    #sidebar, #sidebar span.label, input {
+        text-transform: uppercase;
+        font-family: monospace;
+        font-size: 10px;
+        line-height: 16px;
+    }
+    #sidebar input {
+        width: 100%;
+        margin: 0px;
+    }
+    #sidebar input:focus {
+        border-radius: 0px;
+        border: 0px;
+        background: #6a6a6a;
+    }
+    input[type=text] {
+        border: none;
+        height: 16px;
+        color: #bbb;
+        padding-right: 5px;
+        padding-left: 5px;
+        direction: rtl;
+        padding-top: 0px;
+        padding-bottom: 0px;
+    }
+    input[type=range] {
+        -webkit-appearance: none;
+        background: transparent;
+    }
+    input[type=range]:focus {
+        /* outline: none; */
+    }
+    input[type=range]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        border: 0px;
+        height: 17px;
+        width: 10px;
+        border-radius: 0px;
+        background: #888;
+        cursor: pointer;
+    }
+    input[type=range]::-webkit-slider-runnable-track,
+    input[type=text],
+    .slider,
+    select {
+        background: #444;
+    }
+    input[type=range]::-webkit-slider-runnable-track {
+        width: 100%;
+        height: 17px;
+        cursor: pointer;
+        border-radius: 0px;
+        border: 0px;
+    }
+    input[type=range]:focus::-webkit-slider-runnable-track {
+        background: #666;
+    }
+    div#header {
+        margin: 0px;
+        position: absolute;
+        left: 0px;
+        top: 0px;
+        height: 20px;
+        right: 0px;
+        background: #454545;
+        padding-left: 6px;
+        line-height: 20px;
+        color: #acacac;
+        font-size: 10px;
+        text-transform: capitalize;
+        padding-right: 5px;
+        display: flex;
+        justify-content: space-between;
+    }
+    #closeSettings, #openSettings {
+        cursor: pointer;
+        min-width: 11px;
+        text-align: center;
+        height: 12px;
+        margin-top: auto;
+        margin-bottom: auto;
+        line-height: 11px;
+        font-size: 14px;
+        user-select: none;
+    }
+    #openSettings {
+        background: #444;
+        color: #ddd;
+        position: absolute;
+        top: 4px;
+        right: 5px;
+        font-family: monospace;
+    }
+    #closeSettings:hover, #openSettings:hover {
+        background: #eee;
+        color: #222;
+    }
+    .sliderValue {
+        padding-right: 5px;
+        margin-left: -39px;
+        direction: rtl;
+        width: 64px;
+        user-select: none;
+    }
+
+    /* The switch - the box around the slider */
+    .switch {
+        position: relative;
+        display: inline-block;
+        width: 30px;
+        height: 18px;
+    }
+    /* Hide default HTML checkbox */
+    .switch input {display:none;}
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        -webkit-transition: .4s;
+        transition: .4s;
+    }
+    .slider:before {
+        position: absolute;
+        content: "";
+        height: 10px;
+        width: 10px;
+        left: 4px;
+        bottom: 4px;
+        background-color: #999;
+        -webkit-transition: .4s;
+        transition: .4s;
+    }
+    input:checked + .slider {
+        /* background-color: #777; */
+    }
+    input:checked + .slider:before {
+        /* background-color: #ccc; */
+    }
+    input:focus + .slider {
+        background-color: #777;
+    }
+    input:checked + .slider:before {
+        -webkit-transform: translateX(12px);
+        -ms-transform: translateX(12px);
+        transform: translateX(12px);
+    }
+    .booleanValue {
+        padding-right: 5px;
+        margin-left: 2px;
+        direction: rtl;
+        width: 64px;
+        line-height: 19px;
+        user-select: none;
+    }
+
+    select {
+        color: #aaa;
+        text-transform: uppercase;
+        font-family: monospace;
+        width: 100%;
+        border-radius: 0px;
+        border: 0px;
+        direction: rtl;
+        text-overflow: ellipsis;
+        white-space: normal;
+        max-height: 16px;
+        font-size: 11px;
+    }
+    select:focus {
+        border: 0px;
+        border-radius: 0px;
+    }
+
+    #sidebar .buttonContainer {
+        display: flex;
+        flex-direction: column;
+    }
+    #sidebar .buttonContainer > button {
+        border: 0px;
+        border-radius: 0px;
+        font-size: 10px;
+        color: #aaa;
+        width: -webkit-fill-available;
+        text-transform: uppercase;
+        height: 23px;
+        padding: 0px;
+        min-height: unset;
+        margin: 3px 0px;
+        transition: unset;
+        background: #454545;
+    }
+    #sidebar .buttonContainer > button:hover {
+        background-color: #666;
+    }
+    #sidebar div.divider:nth-child(n+3) {
+        margin-top: 19px !important;
+    }
+    #sidebar div.divider {
+        margin-left: -3px;
+        border-bottom: 1px solid #444;
+        font-style: italic;
+    }
+
+    .layers {
+        flex-direction: column;
+    }
+    .layers ul {
+        list-style-type: none;
+        padding-left: 0px;
+        flex-direction: column;
+        display: flex;
+        margin-bottom: 0px;
+    }
+    .layers li {
+        height: 60px;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        margin-bottom: 3px;
+        padding: 4px;
+        padding-left: 2px;
+        border: 1px solid transparent;
+    }
+    .layers li:focus, .layers li.selected {
+        background-color: #4e5a70;
+        border-radius: 0px;
+        border: 1px solid #282828;
+    }
+    .layers input[type='checkbox'] {
+        width: 20px !important;
+    }
+    .layers .image {
+        height: 100%;
+        width: 80px;
+        background: #666;
+    }
+    .layers > span.label {
+        margin-bottom: 4px;
+        padding-left: 0px;
+    }
+    .layers span {
+        padding-left: 5px;
+    }
+    .layerTools {
+        display: flex;
+        flex-direction: row;
+    }
+    .layerTools:focus {
+        border: 0px;
+        border-radius: 0px;
+        display: flex;
+    }
+    .layerTools input {
+        width: 50% !important;
+        margin-left: 5px !important;
+    }
+    .layerTools select {
+        min-height: 17px;
+    }
+    #pinButton {
+        margin-right: 12px;
+        margin-left: auto;
+        font-size: smaller;
+        /* border: 0.5px solid #999; */
+        padding: 2px 3px 2px 3px;
+        margin-top: 6px;
+        margin-bottom: 5px;
+        line-height: 4px;
+        cursor: pointer;
+        color: #ccc;
+    }
+    #pinButton:hover {
+        background: #eee;
+        color: black;
+        /* border: 1px solid #eee; */
+    }
+    #pinIcon {
+        margin-right: 6px;
+        height: 16px;
+        padding-top: 4px;
+        margin-left: auto;
+    }
+    #pinIcon path {
+        fill: #aaa;
+    }
+    #pinIcon path:hover {
+        fill: turquoise;
+    }
+</style>
+
+<body>
+    <div id="root"
+        onclick="document.getElementById('sidebar').style.display='none'; document.getElementById('openSettings').style.display='block';"
+    ></div>
+    <div id="openSettings"
+        onclick="document.getElementById('openSettings').style.display='none'; document.getElementById('sidebar').style.display='block';"
+    >←</div>
+    <div id="sidebar"
+        style="display:block;"
+    >
+        <div id="header">
+            <span>header text</span>
+            <!-- used https://www.rapidtables.com/web/tools/svg-viewer-editor.html -->
+            <!-- svg id="pinIcon" xmlns="http://www.w3.org/2000/svg" width="10" height="25" version="1.1" viewBox="0 0 10 25"
+                onclick="alert('TODO: pin the sidebar')"
+            >
+                <path
+                 d="M 0 0 L 10 0
+                    L 9 2 L 8 8 
+                    L 10 12 L 6 12
+                    L 5 25
+                    L 4 12 L 0 12
+                    L 2 8 L 1 2
+                    z"
+                 fill="black" stroke="black" stroke-width="0"
+                />
+             </svg -->
+             <span id="pinButton"
+                onclick="this.innerHTML = this.innerHTML ==='PIN' ? 'UN-PIN' : 'PIN'; alert('TODO: pin the sidebar')"
+             >PIN</span>
+            <span id="closeSettings"
+                onclick="document.getElementById('sidebar').style.display='none'; document.getElementById('openSettings').style.display='block';"
+            >→</span>
+        </div>
+        <div class="scrollContainer">
+            <div class="divider">Dummy</div>
+            <div>
+                <span class="label">Text</span>
+                <input id="textExample" type="text" value="35"
+                    onclick="this.focus();this.select()"
+                />
+            </div>
+            <div>
+                <span class="label">Slider</span>
+                <div class="sliderValue">35</div>
+                <input id="sliderExample" type="range" min="0" max="100" step="5" value="35"
+                    onchange="(function(e){ document.querySelector('.sliderValue').innerHTML=e.target.value; })(event)"
+                    oninput="(function(e){ document.querySelector('.sliderValue').innerHTML=e.target.value; })(event)"
+                />
+            </div>
+            <div>
+                <span class="label">Boolean</span>
+                <div class="booleanValue">FALSE</div>
+                <label class="switch">
+                    <input type="checkbox"
+                        onchange="(function(e){ document.querySelector('.booleanValue').innerHTML=e.target.checked?'TRUE':'FALSE'; })(event)"
+                    />
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div>
+                <span class="label">Select</span>
+                <select>
+                    <option>red</option>
+                    <option>green</option>
+                    <option>blue</option>
+                    <option>orange</option>
+                    <option>purple</option>
+                    <option>redorange fooballsomg</option>
+                </select>
+            </div>
+            <div class="buttonContainer">
+                <button>Button</button>
+            </div>
+            <div class="layers">
+                <span class="label">Layers</span>
+                <div class="layerTools" tabindex="0">
+                    <select>
+                        <option>Normal</option>
+                        <option>Darken</option>
+                        <option>Lighten</option>
+                        <option>Burn</option>
+                    </select>
+                    <input id="sliderExample" type="range" min="0" max="100" step="5" value="35"
+                        onchange="(function(e){ document.querySelector('.sliderValue').innerHTML=e.target.value; })(event)"
+                        oninput="(function(e){ document.querySelector('.sliderValue').innerHTML=e.target.value; })(event)"
+                    />
+                </div>
+                <ul>
+                    <li tabindex="0">
+                        <input type="checkbox" checked />
+                        <div class="image"></div>
+                        <span class="label">Layer 1</span>
+                    </li>
+                    <li tabindex="0">
+                        <input type="checkbox" checked />
+                        <div class="image"></div>
+                        <span class="label">Layer 2</span>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="divider">Live</div>
+            <div class="buttonContainer">
+                <button onclick="reload()">reload</button>
+                <button onclick="toggle()">toggle</button>
+                <button onclick="fullscreen(this)">fullscreen</button>
+            </div>
+        </div>
+    </div>
+</body>
+
+<script src="https://crosshj.com/footils/web-foo.js"></script>
+<script src="https://inspirit.github.io/jsfeat/js/jsfeat-min.js"></script>
+<!-- <script src="/web-foo.js"></script> -->
+
+<script>
+
+    /*
+    JSFEAT: https://inspirit.github.io/jsfeat/#imgproc
+    
+    TODO: 
+        - pass list of functions to bind to setter here
+        - or expose setter functions
+        - make it easy to change image after the fact
+        - game loop (or do I have that already)? yes, technically - requestAnimationFrame
+        - worker? it looks like it's not in place
+        - https://www.quora.com/How-do-I-set-the-upper-and-lower-threshold-in-canny-edge-detection
+    */
+
+
+    const clone = o => {
+        const result = undefined;
+        try { result = JSON.parse(JSON.stringify(o)); }
+        catch (e) { }
+        return result;
+    }
+
+    // http://stackoverflow.com/a/23095731/1627873
+    function randomRGB() {
+        var num = Math.round(0xffffff * Math.random());
+        var r = num >> 16;
+        var g = num >> 8 & 255;
+        var b = num & 255;
+        return { r, g, b };
+    }
+
+    function rgbXY(x,y, xmax, ymax){
+        var magicNumber = 0.08;
+        return {
+            r: 255 * x/xmax,
+            g: 255 * y/ymax,
+            b: 255  - Math.floor((255 * x*y)/(xmax*ymax))
+                -magicNumber*x - magicNumber*y
+        }
+    }
+
+    function luminosity({r, g, b}){
+        return 0.267*r + 0.642*g + 0.091*b;
+    }
+
+    function randomPixel(setter, xmax, ymax) {
+        range(0, xmax).forEach((unused_x, x) => {
+            range(0, ymax).forEach((unused_y, y) => {
+                var _color = randomRGB();
+
+                if(luminosity(_color) < 160){
+                    const oColor = rgbXY(x, y, xmax, ymax);
+                    _color.r = 0 * oColor.r + 1.0 * _color.r;
+                    _color.g = 0 * oColor.g + 1.0 * _color.g;
+                    _color.b = 0 * oColor.b + 1.0 * _color.b;
+                }
+                setter(_color, { x, y, xmax });
+            });
+        });
+    }
+
+    function range(from, to){
+        return new Array(to).fill();
+    }
+    
+    function rgbToImageData({alpha=255, r=0, g=0, b=0} = {}){
+        const newAlpha = alpha > 0 ? alpha : 255;
+        return (alpha << 24) | (b << 16) | (g << 8) | r;
+    }
+
+    function imageDataToRGB(data){
+        const newAlpha = data >> 24 > 0 ? data >> 24 : 255;
+        return {
+            alpha: newAlpha,
+            r: data & 255,
+            g: data >> 8 & 255,
+            b: data >> 16 & 255
+        };
+    }
+
+    window.randomImageData = undefined;
+    const getReadyHandler = (canvasid) => {
+        return function canvasReady(err, { components, dispatcher, start, React } = {}) {
+            if (err) {
+                console.error(`Error in canvasReady:`);
+                console.error(err);
+            }
+
+            function toggle(){
+                console.log('hide and show second layer');
+                const layer = document.getElementById('foo-canvas-2');
+                layer.style.display = layer.style.display === 'none' || !layer.style.display
+                    ? 'block'
+                    : 'none';
+            }
+
+            function fullscreen(el){
+                const requestFullScreen = document.body.webkitRequestFullScreen || document.body.mozRequestFullScreen || document.body.msRequestFullscreen;
+                //TODO: cancel full screen?
+                if(requestFullScreen){
+                    requestFullScreen.call(document.body);
+                }
+            }
+
+            function reload(){
+                document.location.reload();
+            }
+
+            function init(setter) {
+                if (!setter) return;
+                var ctx = this.canvas.getContext('2d');
+                ctx.globalAlpha = 0.0;
+
+                window.randomImageData = window.randomImageData
+                    ? window.randomImageData
+                    : ctx.createImageData(this.dimensions.x, this.dimensions.y);
+
+                if(canvasid === 'foo-canvas-2'){
+               
+                    // JSFEAT ----------------------------------------------------------
+                    var demo_opt = function(){
+                        this.blur_radius = 2;
+                        this.low_threshold = 75;
+                        this.high_threshold = 80;
+                    }
+
+                    const options = new demo_opt();
+                    const img_u8 = new jsfeat.matrix_t(this.dimensions.x, this.dimensions.y, jsfeat.U8C1_t);
+                    var r = options.blur_radius|0;
+                    var kernel_size = (r+1) << 1;
+
+                    jsfeat.imgproc.grayscale(randomImageData.data, this.dimensions.x, this.dimensions.y, img_u8);
+                    jsfeat.imgproc.gaussian_blur(img_u8, img_u8, kernel_size, 0);
+                    //jsfeat.imgproc.gaussian_blur(img_u8, img_u8, kernel_size, 0);
+                    //jsfeat.imgproc.gaussian_blur(img_u8, img_u8, kernel_size, 0);
+                    jsfeat.imgproc.canny(img_u8, img_u8, options.low_threshold|0, options.high_threshold|0);
+                    jsfeat.imgproc.gaussian_blur(img_u8, img_u8, kernel_size, 0);
+                    jsfeat.imgproc.gaussian_blur(img_u8, img_u8, kernel_size, 0);
+                    jsfeat.imgproc.gaussian_blur(img_u8, img_u8, kernel_size, 0);
+                    jsfeat.imgproc.canny(img_u8, img_u8, options.low_threshold|0, options.high_threshold|0);
+
+                    var data_u32 = new Uint32Array(randomImageData.data.buffer);
+                    var alpha = (0xff << 24);
+                    var i = img_u8.cols*img_u8.rows;
+                    var pix = 0;
+                    while(--i >= 0) {
+                        const oldData = imageDataToRGB(data_u32[i]);
+                        if (imageDataToRGB(img_u8.data[i]).r > 0){
+                            oldData.r = 0;
+                            oldData.g = 0;
+                            oldData.b = 0;
+                            oldData.alpha = 255;
+                            data_u32[i] = rgbToImageData(oldData);
+                        } else {
+                            oldData.r = 0;
+                            oldData.g = 0;
+                            oldData.b = 0;
+                            oldData.alpha = 1;
+                            data_u32[i] = rgbToImageData(oldData);
+                        }
+                    }
+                    ctx.putImageData(randomImageData, 0, 0);
+
+                    return;
+                }
+                randomPixel(
+                    (color, pos) => { setter(randomImageData, color, pos) },
+                    this.dimensions.x,
+                    this.dimensions.y
+                );
+
+                ctx.putImageData(randomImageData, 0, 0);
+            };
+
+            const buttons = [{
+                text: canvasid === 'foo-canvas-2' ? 'toggle' : 'reload',
+                onClick: canvasid === 'foo-canvas-2' ? toggle : reload
+            }];
+            window.toggle = toggle;
+            window.reload = reload;
+            window.fullscreen = fullscreen;
+
+            const cv = setTimeout(() => start({
+                dimensions: {
+                    x: 1024,
+                    y: 768,
+                    zoom: 0.2
+                },
+                id: canvasid,
+                parent: '#root',
+                init,
+                buttons: []
+            }), canvasid === 'foo-canvas-2' ? 100 : 0);
+            window.cvs = window.cvs || [];
+            window.cvs.push(cv || function(){ console.log('No canvas data.')});
+        }
+    }
+
+    footils.canvas.init(getReadyHandler('foo-canvas'))
+    footils.canvas.init(getReadyHandler('foo-canvas-2'))
+</script>
+
+</html>

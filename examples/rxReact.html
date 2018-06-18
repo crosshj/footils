@@ -6,54 +6,111 @@
     <meta name="description" content="Using rxjs with react in a fluxy (reduxy) and about-as-minimal-as-can-get kind of way">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="mobile-web-app-capable" content="yes">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://crosshj.com/footils/web-foo.js"></script>
   </head>
+  <style>
+    body, textarea {
+        font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol";
+    }
+    body {
+        margin-top: 20px;
+    }
+    textarea {
+        min-height: 100px;
+    }
+    center.loading {
+        position: absolute;
+        top: 15%;
+        left: 0;
+        right: 0;
+        font-size: x-large;
+    }
+  </style>
 
   <body>
-    <div id="root"></div>
+    <div id="root">
+        <center class='loading'>Loading...</center>
+    </div>
   </body>
 
-  <script src="https://crosshj.com/footils/web-foo.js"></script>
-
   <script>
-    function rxReactReady(err, { components, dispatcher, start, React } = {}){
-        if(err){
-            console.err(`Error in rxReactReady: ${err}`)
-        }
-        if ( !components || !dispatcher || !React ){
-            console.error('Something went wrong at rxReactReady!');
-            return;
-        }
-        const { div, textarea, h1, h4, fragment } = components;
+    const clone = o => {
+      const result = undefined;
+      try { result = JSON.parse(JSON.stringify(o)); }
+      catch(e) {}
+      return result;
+    }
 
+    const getRoot = (components, dispatcher) => {
+        const { div, textarea, h4, label, fragment, form } = components;
+        const action = (type) => (e) => dispatcher({type, payload: e.target.value});
+
+        const root = ({ name = '' }) =>
+        div({
+            className: 'container col-sm-10 col-sm-offset-1 col-md-8 col-md-offset-2 col-lg-6 col-lg-offset-3'
+        },
+            div({
+                className: 'panel panel-default panel-primary'
+            },[
+                div({ key: 'main-title', className: 'panel-heading'},
+                    h4({ className: 'panel-text' }, 'footils: react with rx as redux')
+                ),
+                form({ key: 'form', style: {padding: '20px'} }, [
+                    div({ key: 'form-input', className: 'form-group'}, [
+                        label({ key: 'input-title', htmlFor: 'text-input' }, 'Action fired to trigger RX here:'),
+                        textarea({
+                            key: 'text-input',
+                            id: 'text-input',
+                            onChange: action('NAME_CHANGED'),
+                            placeholder: 'Enter some text',
+                            className: 'form-control'
+                        }),
+                    ]),
+                    div({ key: 'form-ouput', className: 'form-group'}, [
+                        label({ key: 'output-title', htmlFor: 'output' }, 'Observable subscribe causes render here:'),
+                        textarea({
+                            key: 'output',
+                            id: 'output',
+                            readOnly: true,
+                            value: name,
+                            placeholder: 'Text shows up here',
+                            className: 'form-control'
+                        })
+                    ])
+                ])
+            ])
+        );
+
+        return root;
+    }
+
+    const getReducer = () => {
         const reducer = (state, action) => {
             var newState = clone(state);
             switch(action.type){
                 case 'NAME_CHANGED': {
-                newState = Object.assign({}, state, { name: action.payload });
+                    newState = Object.assign({}, state, { name: action.payload });
                 }
             }
             return newState;
         };
-
-        const changeName = e => dispatcher({  
-            type: 'NAME_CHANGED',
-            payload: e.target.value
-        });
-
-        const root = ({ name = '' }) => fragment([
-            h1({ key: 'main-title' }, 'footils: react with rx as redux'),
-            h4({ key: 'input-title' }, 'Action fired to trigger RX here:'),
-            textarea({ key: 'text-input', id: 'text-input', onChange: inputOnChange, placeholder: 'Enter some text'}),
-            h4({ key: 'output-title' }, 'Observable subscribe causes render here:'),
-            textarea({ key: 'output', id: 'output', readOnly: true, value: name, placeholder: 'Text shows up here' })
-        ]);
+        return reducer;
+    };
+    
+    function rxReactReady(err, { components, dispatcher, start, React } = {}){
+        if(err){
+            console.error(`Error in rxReactReady: ${err}`)
+            return;
+        }
 
         start({
-            reducer, root,
+            reducer: getReducer(),
+            root: getRoot(components, dispatcher),
             attach: document.getElementById('root')
         });
     }
-    footils.rxReact.init(rxReactReady)
 
+    footils.rxReact.init(rxReactReady)
   </script>
 </html>
