@@ -71,31 +71,48 @@
 <script id="vertex-shader" type="shader">
     attribute vec4 coordinates;
     varying lowp vec4 vColor;
+    attribute vec3 aVertexNormal;
     
     uniform mat4 u_matrix;
+    //uniform mat4 uNormalMatrix;
+
+    varying highp vec3 vLighting;
 
     void main(void) {
-       gl_Position = coordinates * u_matrix;
-       vColor =  vec4(
-            coordinates[0] >= 0.0 && coordinates[1] <= 0.0
-                ? 1.0 + (coordinates[2] / 15.0)
-                : 0.0,
-            coordinates[0] <= 0.0 && coordinates[1] <= 0.0
-                ? 1.0 + (coordinates[2] / 9.0)
-                : 0.0,
-            coordinates[0] <= 0.0 && coordinates[1] >= 0.0
-                ? 1.0 + (coordinates[2] / 3.0)
-                : 0.0,
-            ${alpha===undefined ? 1.0 : alpha}
-        );
+      gl_Position = coordinates * u_matrix;
+
+      vColor =  vec4(
+        coordinates[0] >= 0.0 && coordinates[1] <= 0.0
+            ? 1.0 + (coordinates[2] / 15.0)
+            : 0.0,
+        coordinates[0] <= 0.0 && coordinates[1] <= 0.0
+            ? 1.0 + (coordinates[2] / 3.0)
+            : 0.0,
+        coordinates[0] <= 0.0 && coordinates[1] >= 0.0
+            ? 1.0 + (coordinates[2] / 15.0)
+            : 0.0,
+        ${alpha===undefined ? 1.0 : alpha}
+      );
+
+      // lighitng
+      highp vec3 ambientLight = vec3(0.3, 0.3, 0.3);
+      highp vec3 directionalLightColor = vec3(1, 1, 1);
+      highp vec3 directionalVector = normalize(vec3(0.85, 0.8, 0.75));
+
+      //highp vec4 transformedNormal = uNormalMatrix * vec4(aVertexNormal, 1.0);
+
+      //highp float directional = max(dot(transformedNormal.xyz, directionalVector), 0.0);
+      vLighting = ambientLight + (directionalLightColor); // * directional);
     }
 </script>
 
 <script id="fragment-shader" type="shader">
     varying lowp vec4 vColor;
+    varying highp vec3 vLighting;
 
     void main(void) {
-        gl_FragColor = vColor;
+        gl_FragColor = vColor
+        gl_FragColor.rgb *= vLighting;
     }
 </script>
 
@@ -259,11 +276,65 @@
         -0.995, 0.995, -1.0
     ];
 
-    // Create buffer, bind buffer, add data to buffer, unbind buffer
+    // vertex: Create buffer, bind buffer, add data to buffer, unbind buffer
     var vertex_buffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, vertex_buffer);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
     gl.bindBuffer(gl.ARRAY_BUFFER, null);
+
+    // lighting: compute normals, create buffer, bind buffer, add data to buffer, unbind buffer
+    const getNormals = function(vertices){
+      var subtract = (a, b) => [
+        a[0] - b[0],
+        a[1] - b[1],
+        a[2] - b[2]
+      ];
+      var crossProduct = (a, b) => [
+        a[1] * b[2] - a[2] * b[1],
+        a[2] * b[0] - a[0] * b[2],
+        a[0] * b[1] - a[1] * b[0]
+      ];
+      var normalize = function (a) {
+        var vec3 = new Array(3);
+        var len = a[0] * a[0] + a[1] * a[1] + a[2] * a[2];
+        if (len > 0) {
+          len = 1 / Math.sqrt(len);
+          vec3[0] = len * a[0];
+          vec3[1] = len * a[1];
+          vec3[2] = len * a[2];
+        }
+        return vec3;
+      }
+      const _normals = [];
+      var buffer = [];
+      const normals = vertices.reduce((all, one) => {
+        if(buffer.length !== 9){
+          buffer.push(one);
+          return all;
+        }
+        const v1 = [ buffer[0], buffer[1], buffer[2] ];
+        const v2 = [ buffer[3], buffer[4], buffer[5] ];
+        const v3 = [ buffer[6], buffer[7], buffer[8] ];
+        var p12 = subtract(v2, v1);
+        var p23 = subtract(v3, v2);
+        var cp = crossProduct(p12, p23);
+        var normal = normalize(cp);
+        all.push(normal[0]);
+        all.push(normal[1]);
+        all.push(normal[2]);
+        buffer = [];
+        return all;
+      }, []);
+
+      return _normals;
+    }
+
+    const vertexNormals = getNormals(vertices);
+    const normalBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, normalBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertexNormals), gl.STATIC_DRAW);
+    gl.bindBuffer(gl.ARRAY_BUFFER, null);
+
 
     /* Step2: Create and compile Shader programs */
 
@@ -318,6 +389,29 @@
 
     // Enable the attribute
     gl.enableVertexAttribArray(coord);
+
+    // do the same for normals (lighting)
+    const vertNormalLoc = gl.getAttribLocation(shaderProgram, 'aVertexNormal');
+    gl.enableVertexAttribArray(vertNormalLoc);
+    gl.bindBuffer(gl.ARRAY_BUFFER, normalBuffer);
+
+    gl.vertexAttribPointer(vertNormalLoc, size, gl.FLOAT, false, 0, 0);
+
+    var uNormAttrib = gl.getAttribLocation(shaderProgram, 'uNormalMatrix');
+    // var normalMatrix = [
+    //  1, 0, 0,
+    //  0, 1, 0,
+    //  0, 0, 1
+    //];
+    // mat4.invert(normalMatrix, modelViewMatrix); //TODO!!
+    // mat4.transpose(normalMatrix, normalMatrix); //TODO!!
+
+    // var matrixLocation = gl.getUniformLocation(shaderProgram, "uNormalMatrix");
+    //gl.uniformMatrix4fv(
+    //  matrixLocation,
+    //  false,
+    //  normalMatrix
+    //);
 
     /* Step4: Drawing the required object (triangle) */
     gl.drawArrays(gl.TRIANGLES, 0, vertices.length/3);
