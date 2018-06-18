@@ -78,10 +78,10 @@
        gl_Position = coordinates * u_matrix;
        vColor =  vec4(
             coordinates[0] >= 0.0 && coordinates[1] <= 0.0
-                ? 1.0 + (coordinates[2] / 3.0)
+                ? 1.0 + (coordinates[2] / 15.0)
                 : 0.0,
             coordinates[0] <= 0.0 && coordinates[1] <= 0.0
-                ? 1.0 + (coordinates[2] / 3.0)
+                ? 1.0 + (coordinates[2] / 9.0)
                 : 0.0,
             coordinates[0] <= 0.0 && coordinates[1] >= 0.0
                 ? 1.0 + (coordinates[2] / 3.0)
