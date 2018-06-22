@@ -78,10 +78,12 @@
     uniform mat4 u_matrix;
     uniform vec3 u_reverseLightDirection;
 
+    float ambient = 0.8;
+
     void main(void) {
        gl_Position = coordinates * u_matrix;
        vColor =  vec4(
-            coordinates[0] >= 0.0 && coordinates[1] <= 0.0
+            coordinates[0] >= 0.0 && coordinates[1] >= 0.0
                 ? 1.0
                 : 0.0,
             coordinates[0] <= 0.0 && coordinates[1] <= 0.0
@@ -92,7 +94,7 @@
                 : 0.0,
             ${alpha === undefined ? 1.0 : alpha}
         );
-        vLight = dot(a_normal, u_reverseLightDirection);
+        vLight = ambient + dot(a_normal, u_reverseLightDirection);
     }
 </script>
 
@@ -124,19 +126,21 @@ foo : {
 
 /* Step1: Define the geometry and store it in buffer objects */
 
-    const lightLocation = [-1.0, 1.0, 0.0];
+    const lightLocation = [0.25, 1.0, 0.0];
 
     // vertices: create buffer, bind buffer, add data to buffer, unbind buffer
     var vertices = new Float32Array([
-        0.000, -0.0, -3.00,
-        -0.99, -0.99, -1.00,
-        0.99, -0.99, -1.00,
-        0.995, -0.990, -1.0,
-        0.995, 0.995, -1.5,
-        0.00, 0.995, -1.0,
-        -0.995, -0.990, -1.0,
-        0.00, 0.995, -1.5,
-        -0.995, 0.995, -1.5
+         0,  0, -1,
+         1,  1, -2,
+        -1,  1, -2,
+
+         0,  0, -1,
+        -1,  1, -2,
+         0, -1, -2,
+
+         0,  0, -1,
+         0, -1, -2,
+         1,  1, -2
     ]);
 
     var vertex_buffer = gl.createBuffer();
