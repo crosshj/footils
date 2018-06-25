@@ -710,12 +710,15 @@ foo : {
             viewport.add(_layer);
 
             var renderFunc = renderContext(i, () => {});
+            _layer.def = '';
             //var renderFunc = renderContext(i, _renderFuncs.square);
 
             var pushThumb = true;
             if(typeof current.render === "function"){
                 pushThumb = false;
                 renderFunc = renderContext(i, current.render);
+                renderFunc.def = current.render.toString()
+                
             }
             if(typeof current.render === "string"
                 && _renderFuncs[current.render]
@@ -723,6 +726,7 @@ foo : {
                 pushThumb = false;
                 renderFunc = _renderFuncs[current.render];
                 renderFunc = renderContext(i, renderFunc);
+                renderFunc.def = _renderFuncs[current.render].toString();
             }
             renderFunctions.push(renderFunc);
             renderFunc({ layer: _layer, alpha: 1.0, width, height });
@@ -760,8 +764,16 @@ foo : {
 
         const getLayerSource = ({ number }) => {
             const renderFunction = canvas.renderFunctions[number];
-            const renderFunctionSource = renderFunction.toString();
-            return renderFunctionSource;
+            var renderFunctionSource = renderFunction.def || '';
+            // remove function header and trailing curly brace
+            //var match = renderFunctionSource.match(/function[^{]+\{([\s\S]*)\}$/);
+            //return match ? match[1] : renderFunctionSource;
+            var renderFuncLines = renderFunctionSource.split('\n');
+            var unIndent = renderFuncLines.map(x => x.replace('        ', ''));
+            var minusFirstLast = unIndent.slice(1, -1);
+            var rejoin = minusFirstLast.join('\n');
+
+            return rejoin;
         };
 
         const changeLayerAlpha = ({ number, alpha }) => {
@@ -792,6 +804,7 @@ foo : {
             const newLayerRender = type.toLowerCase().includes('3d')
                 ? render3dContext(canvas.layers.length, def)
                 : renderContext(canvas.layers.length, def)
+            newLayerRender.def = def.toString();
             canvas.layers.push(newLayer);
             canvas.renderFunctions.push(newLayerRender);
             newLayerRender({ layer: newLayer, width, height });
@@ -802,6 +815,7 @@ foo : {
                 number: canvas.layers.length-1,
                 onToggle: toggleLayerVisible,
                 getThumb: getLayerThumb,
+                getLayerSource,
                 changeLayerAlpha,
                 changeLayerBlendMode,
                 changeLayerOrder

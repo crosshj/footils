@@ -934,7 +934,7 @@
                         return func;
                     }
 
-                    function constructLayer(goFn, cancelFn){
+                    function constructLayer(goFn, cancelFn, { name, def, type } = {}){
                         const container = createElementFromHTML(`
                             <div id="layer-create">
                                 <div id="topBar">
@@ -1081,11 +1081,10 @@
                             smiley,
                             text
                         }
-                        const defaultExample = 'webgl';
-                        const defaultType = 
-                        layerDef.value = examples[defaultExample];
-                        layerName.value = defaultExample;
-                        layerType.value = '3D Canvas';
+                        const defaultExample = type ? null : 'webgl';
+                        layerDef.value = def || examples[defaultExample];
+                        layerName.value = name || defaultExample;
+                        layerType.value = type || '3D Canvas';
 
                         Object.keys(examples).forEach(key => {
                             var tabItem = createElementFromHTML(
@@ -1260,12 +1259,32 @@
                                     key: `${section.name}-${item.name}-${index}-edit-icon`,
                                     svg, g, rect, polygon,
                                     editClick: () => {
-                                        console.log('---TODO: edit icon click!');
+                                        //console.log('---TODO: edit icon click!');
                                         const selectedLayer = item.layers[layersSelected[0]];
                                         const selectedLayerSource = selectedLayer.getLayerSource({
                                             number: selectedLayer.number
                                         });
-                                        console.log({ selectedLayerSource });
+                                        //console.log({ selectedLayerSource });
+                                        const name = 'TODO: get name';
+                                        const def = selectedLayerSource;
+                                        const type = '3D Canvas';
+                                        constructLayer(
+                                            ({ name, def, type }) => {
+                                                item.updateLayer({
+                                                    name,
+                                                    def,
+                                                    type,
+                                                    callback: (layer) => updateLayerItem({
+                                                        layers: item.layers,
+                                                        updatedLayer: Object.assign({}, layer, {type})
+                                                    })
+                                                });
+                                            },
+                                            () => {
+                                                console.log('TODO: cancel layer update');
+                                            },
+                                            { name, def, type }
+                                        )
                                     }
                                 }),
                                 buttonComponent({ div, button, section, item: {
