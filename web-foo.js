@@ -1259,7 +1259,14 @@
                                 editIcon({
                                     key: `${section.name}-${item.name}-${index}-edit-icon`,
                                     svg, g, rect, polygon,
-                                    editClick: () => { console.log('---TODO: edit icon click!') }
+                                    editClick: () => {
+                                        console.log('---TODO: edit icon click!');
+                                        const selectedLayer = item.layers[layersSelected[0]];
+                                        const selectedLayerSource = selectedLayer.getLayerSource({
+                                            number: selectedLayer.number
+                                        });
+                                        console.log({ selectedLayerSource });
+                                    }
                                 }),
                                 buttonComponent({ div, button, section, item: {
                                         name: '+',

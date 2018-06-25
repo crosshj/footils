@@ -450,6 +450,7 @@ foo : {
     const sidebarDef = ({
         toggleLayerVisible,
         getLayerThumb,
+        getLayerSource,
         changeLayerAlpha,
         changeLayerBlendMode,
         changeLayerOrder,
@@ -487,6 +488,7 @@ foo : {
                     name: 'webgl',
                     onToggle: toggleLayerVisible,
                     getThumb: getLayerThumb,
+                    getLayerSource,
                     changeLayerAlpha,
                     changeLayerBlendMode,
                     changeLayerOrder
@@ -495,6 +497,7 @@ foo : {
                     render: 'shape',
                     onToggle: toggleLayerVisible,
                     getThumb: getLayerThumb,
+                    getLayerSource,
                     changeLayerAlpha,
                     changeLayerBlendMode,
                     changeLayerOrder
@@ -502,6 +505,7 @@ foo : {
                     name: 'Top Layer',
                     render: 'triangle',
                     onToggle: toggleLayerVisible,
+                    getLayerSource,
                     getThumb: getLayerThumb,
                     changeLayerAlpha,
                     changeLayerBlendMode,
@@ -511,6 +515,7 @@ foo : {
                     render: 'circle',
                     onToggle: toggleLayerVisible,
                     getThumb: getLayerThumb,
+                    getLayerSource,
                     changeLayerAlpha,
                     changeLayerBlendMode,
                     changeLayerOrder
@@ -519,6 +524,7 @@ foo : {
                     render: 'square',
                     onToggle: toggleLayerVisible,
                     getThumb: getLayerThumb,
+                    getLayerSource,
                     changeLayerAlpha,
                     changeLayerBlendMode,
                     changeLayerOrder
@@ -705,6 +711,7 @@ foo : {
 
             var renderFunc = renderContext(i, () => {});
             //var renderFunc = renderContext(i, _renderFuncs.square);
+
             var pushThumb = true;
             if(typeof current.render === "function"){
                 pushThumb = false;
@@ -749,8 +756,12 @@ foo : {
             canvas.layers[number].visible = visible;
             canvas.viewport.render();
         };
-        const getLayerThumb = ({ number }) => {
-            return thumbs[number]
+        const getLayerThumb = ({ number }) => thumbs[number];
+
+        const getLayerSource = ({ number }) => {
+            const renderFunction = canvas.renderFunctions[number];
+            const renderFunctionSource = renderFunction.toString();
+            return renderFunctionSource;
         };
 
         const changeLayerAlpha = ({ number, alpha }) => {
@@ -825,6 +836,7 @@ foo : {
         const definition = sidebarDef({
             toggleLayerVisible,
             getLayerThumb,
+            getLayerSource,
             changeLayerAlpha,
             changeLayerBlendMode,
             changeLayerOrder,
