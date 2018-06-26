@@ -937,7 +937,7 @@
                     }
 
                     function constructLayer(goFn, cancelFn, { name, def, type } = {}) {
-                        const isEditing = Boolean(name && def && type);
+                        const isEditing = Boolean(name && type && typeof def === 'string');
                         const container = createElementFromHTML(`
                             <div id="layer-create">
                                 <div id="topBar">
@@ -1090,7 +1090,9 @@
                         };
 
                         const defaultExample = isEditing ? null : 'webgl';
-                        layerDef.value = def || examples[defaultExample];
+                        layerDef.value = isEditing
+                            ? def
+                            : examples[defaultExample];
                         layerName.value = name || defaultExample;
                         layerType.value = type || '3D Canvas';
 
