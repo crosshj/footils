@@ -513,6 +513,11 @@ div#layer-create #layerDef {
     padding: 15px;
 }
 
+div#layer-create #layerDef.full {
+  height: 95%;
+  max-height: 95%;
+}
+
 div#layer-create textarea {
     background: var(--bg-dark-color);
     color: var(--main-text-color);

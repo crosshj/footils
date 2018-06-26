@@ -1,4 +1,4 @@
-(function(){
+(function () {
     /*
         Things which will find their way here:
             - github pages script
@@ -30,24 +30,24 @@
 
     */
 
-   function addCssLink({ id, href }){
-        if (document.getElementById(id)){
+    function addCssLink({ id, href }) {
+        if (document.getElementById(id)) {
             return;
         }
-        var head  = document.getElementsByTagName('head')[0];
-        var link  = document.createElement('link');
-        link.id   = id;
-        link.rel  = 'stylesheet';
+        var head = document.getElementsByTagName('head')[0];
+        var link = document.createElement('link');
+        link.id = id;
+        link.rel = 'stylesheet';
         link.type = 'text/css';
         link.href = href;
         link.media = 'all';
         head.appendChild(link);
     }
 
-    function appendCss(cssToAppend){
+    function appendCss(cssToAppend) {
         const layersUrl = './css/sidebar.css';
         const appendIncludesSidebar = () => Array.isArray(cssToAppend) && cssToAppend.includes('sidebar')
-        if(cssToAppend === 'sidebar' || appendIncludesSidebar()){
+        if (cssToAppend === 'sidebar' || appendIncludesSidebar()) {
             addCssLink({
                 id: 'sidebarCSS',
                 href: '../css/sidebar.css'
@@ -62,13 +62,13 @@
     // cache script, https://github.com/webpgr/cached-webpgr.js
     // also see: https://addyosmani.com/basket.js/
     // maybe use service worker instead
-    function cacheOrLoadify(script, scriptUrl, res){
+    function cacheOrLoadify(script, scriptUrl, res) {
 
         var content = localStorage.getItem(scriptUrl);
 
-        if(!content){
+        if (!content) {
             script.src = scriptUrl;
-            script.onload = function (){
+            script.onload = function () {
                 /*
                     TODO: this is where to save cache
                     and will probably not work unless loading script source manually
@@ -90,26 +90,26 @@
     }
 
 
-    function loadScript(scriptUrl){
+    function loadScript(scriptUrl) {
         const loadPromise = new Promise(function (res, rej) {
             let script = document.createElement('script');
             script.type = 'text/javascript';
             script = cacheOrLoadify(script, scriptUrl, res);
             script.onError = rej;
             script.async = true;
-            script.addEventListener('error',rej);
-            script.addEventListener('load',res);
+            script.addEventListener('error', rej);
+            script.addEventListener('load', res);
             document.head.appendChild(script);
         });
         return loadPromise;
     }
 
     // https://remysharp.com/2015/12/18/promise-waterfall
-    function waterfall(fn, arr){
-        if(!fn || typeof fn !== 'function'
+    function waterfall(fn, arr) {
+        if (!fn || typeof fn !== 'function'
             || !arr || typeof arr !== "object" || !arr.length
-        ){
-            throw('Error with promise waterfall');
+        ) {
+            throw ('Error with promise waterfall');
             return;
         }
         var promises = arr.reduce((all, one) => {
@@ -121,30 +121,30 @@
                             return res;
                         });
                 });
-          }, Promise.resolve([]));
+        }, Promise.resolve([]));
         return promises;
     }
 
 
 
-    function consoleOrCallback(callback){
-        if(callback && typeof callback === 'function'){
+    function consoleOrCallback(callback) {
+        if (callback && typeof callback === 'function') {
             return callback;
         }
         return (error, data) => {
-            if (error){
+            if (error) {
                 console.error(error);
                 return;
             }
-            if (data){
+            if (data) {
                 console.log(data);
             }
         }
     }
 
-    const isInitedFactory = function(parent, callback){
+    const isInitedFactory = function (parent, callback) {
         const cb = consoleOrCallback(callback);
-        if(parent.isInited){
+        if (parent.isInited) {
             cb(`${parent.name}: script already inited!`);
         }
         var scripts = parent.scripts || [];
@@ -156,7 +156,7 @@
         Promise.all(tasks)
             .then(() => {
                 parent.isInited = true;
-                if(parent.scriptsAfter){
+                if (parent.scriptsAfter) {
                     parent.scriptsAfter(cb);
                     return;
                 }
@@ -165,7 +165,7 @@
             .catch(e => cb(e));
     }
 
-    const returnProps = function(o){
+    const returnProps = function (o) {
         return Object.keys(o).reduce((all, key) => {
             all[key] = o[key];
             return all;
@@ -173,7 +173,7 @@
     }
 
     // GITHUBPAGES -------------------------------------------------------------
-    function githubPages(){ return returnProps(githubPages); }
+    function githubPages() { return returnProps(githubPages); }
     githubPages.scripts = [
         'https://crosshj.com/experiments/ghPageHelper.js'
     ];
@@ -182,7 +182,7 @@
 
 
     // RXREACT -----------------------------------------------------------------
-    function rxReact(){ return returnProps(rxReact); }
+    function rxReact() { return returnProps(rxReact); }
     rxReact.scripts = [
         'https://cdnjs.cloudflare.com/ajax/libs/rxjs/6.2.0/rxjs.umd.min.js',
         //'https://unpkg.com/rxjs@beta/bundles/rxjs.umd.js',
@@ -213,8 +213,8 @@
         });
 
         const action$ = new Subject();
-        const dispatcher = function(action){
-          return action$.next(action);
+        const dispatcher = function (action) {
+            return action$.next(action);
         }
 
         function RXConnector(props) {
@@ -223,20 +223,20 @@
                 return components.fragment(props.render(this.state));
             };
             this.observable$ = props.observable$;
-            this.componentWillMount = function(){
+            this.componentWillMount = function () {
                 this.observable$.subscribe(o => {
-                this.setState(o)
+                    this.setState(o)
                 });
             }
         }
         RXConnector.prototype = Object.create(Component.prototype);
         const Connector = (props, children) => createElement(RXConnector, props, children);
 
-        const start = ({reducer, root, attach, initialState = {}}, reactStartCallback) => {
+        const start = ({ reducer, root, attach, initialState = {} }, reactStartCallback) => {
             const store$ = action$
-              .pipe(
-                scan(reducer, initialState)
-              );
+                .pipe(
+                    scan(reducer, initialState)
+                );
 
             render(
                 Connector({ observable$: store$, render: root }),
@@ -245,7 +245,7 @@
             reactStartCallback();
         };
 
-        if( !components || !dispatcher || !start || !React || !rxjs){
+        if (!components || !dispatcher || !start || !React || !rxjs) {
             callback(`rxReact missing one of: { components, dispatcher, start, React, rxjs }!`);
             return;
         }
@@ -256,7 +256,7 @@
 
 
     // CANVAS ------------------------------------------------------------------
-    function canvas(){ return returnProps(canvas); }
+    function canvas() { return returnProps(canvas); }
     canvas.scripts = [
         'https://crosshj.com/sandbox/canvas_plus.js'
     ];
@@ -272,27 +272,27 @@
 
 
     // SIDEBAR ------------------------------------------------------------------
-    function sidebar(){ return returnProps(sidebar); }
+    function sidebar() { return returnProps(sidebar); }
     sidebar.scripts = [];
     sidebar.scriptsAfter = (callback) => {
         // load react, use to create menu
         const clone = o => {
             var result = undefined;
             try { result = JSON.parse(JSON.stringify(o)); }
-            catch(e) {
+            catch (e) {
                 console.error('Some problem cloning!', e);
             }
             return result;
         };
 
-        function sidebarStart({ sidebarDef }, startCallback){
+        function sidebarStart({ sidebarDef }, startCallback) {
             const getRoot = (components, dispatcher) => {
                 const {
                     div, textarea, h4, label, fragment, form, span, button,
                     input, select, option, ul, li, svg, g, path, circle, rect, polygon,
                     img
                 } = components;
-                const action = (type) => (e) => dispatcher({type, payload: e.target.value});
+                const action = (type) => (e) => dispatcher({ type, payload: e.target.value });
 
                 const pinClick = (pinned) => dispatcher({
                     type: 'PIN_CHANGED',
@@ -304,7 +304,7 @@
                     document.getElementById('sidebar').style.display = hidden ? 'block' : 'none';
 
                     var opener = document.getElementById('openSettings');
-                    if(!opener){
+                    if (!opener) {
                         opener = document.createElement('div');
                         opener.id = 'openSettings';
                         opener.onclick = toggleClick;
@@ -333,7 +333,7 @@
                     });
                 };
 
-                const layersPropertiesChanged = ({ alpha, blend}) => {
+                const layersPropertiesChanged = ({ alpha, blend }) => {
                     return dispatcher({
                         type: 'LAYERS_PROPERTIES_CHANGE',
                         payload: { alpha, blend }
@@ -368,22 +368,22 @@
                     });
                 };
 
-                if(sidebarDef.hidden){
+                if (sidebarDef.hidden) {
                     // NOTE: is this safe since dispatcher called?
                     toggleClick();
                 }
 
-                if(sidebarDef.pinned && sidebarDef.pinHandler){
+                if (sidebarDef.pinned && sidebarDef.pinHandler) {
                     sidebarDef.pinHandler({ pinned: true });
                 }
 
-                function textComponent({div, span, section, item, index }){
+                function textComponent({ div, span, section, item, index }) {
                     return (
-                        div({ key: `${section.name}-${item.name}-${index}`}, [
+                        div({ key: `${section.name}-${item.name}-${index}` }, [
                             span({ key: `${section.name}-${item.name}-${index}-span`, className: 'label' }, item.name),
                             input({
                                 key: `${section.name}-${item.name}-${index}-input`,
-                                type:'text',
+                                type: 'text',
                                 defaultValue: item.default,
                                 onChange: e => console.log(`TODO: should update reducer state!`) & item.onChange(e),
                                 onFocus: e => e.target.select()
@@ -393,8 +393,8 @@
                 }
 
                 function sliderComponent({ span, div, input, section, item, index,
-                    showLabel=true, globalState=[]
-                }){
+                    showLabel = true, globalState = []
+                }) {
 
                     const keyBase = `${section.name}-${item.name}-${index}-slider`;
                     const currentValue = (globalState.find(x => x.key === keyBase) || {}).value;
@@ -410,45 +410,45 @@
                             key: `${keyBase}`,
                             className: 'slider-component'
                         }, [
-                            showLabel
-                                ? span({
-                                    key: `${keyBase}-span`,
-                                    className: 'label'
-                                }, item.name)
-                                : undefined,
-                            div({
-                                key: `${keyBase}-div`,
-                                className: 'sliderValue', style: {
-                                    left: value < 50 ? 'unset' : leftOffset,
-                                    right: value < 50 ? rightOffset : 'unset'
-                                }
-                            }, value),
-                            input({
-                                key: `${keyBase}-input`,
-                                type: 'range',
-                                min: item.min,
-                                max: item.max,
-                                step: item.step,
-                                value,
-                                //tabIndex: 0,
-                                onChange: (e) => setGlobalState({ key: keyBase, value: e.target.value }),
-                                onMouseUp: (e) => { setGlobalState({ key: keyBase, value: e.target.value }); touchend(e); },
-                                onTouchEnd: touchend
-                            })
-                        ])
+                                showLabel
+                                    ? span({
+                                        key: `${keyBase}-span`,
+                                        className: 'label'
+                                    }, item.name)
+                                    : undefined,
+                                div({
+                                    key: `${keyBase}-div`,
+                                    className: 'sliderValue', style: {
+                                        left: value < 50 ? 'unset' : leftOffset,
+                                        right: value < 50 ? rightOffset : 'unset'
+                                    }
+                                }, value),
+                                input({
+                                    key: `${keyBase}-input`,
+                                    type: 'range',
+                                    min: item.min,
+                                    max: item.max,
+                                    step: item.step,
+                                    value,
+                                    //tabIndex: 0,
+                                    onChange: (e) => setGlobalState({ key: keyBase, value: e.target.value }),
+                                    onMouseUp: (e) => { setGlobalState({ key: keyBase, value: e.target.value }); touchend(e); },
+                                    onTouchEnd: touchend
+                                })
+                            ])
                     );
                 }
 
-                function booleanComponent({ div, span, label, input, section, item, index }){
+                function booleanComponent({ div, span, label, input, section, item, index }) {
                     return (
-                        div({ key: `${section.name}-${item.name}-${index}`}, [
+                        div({ key: `${section.name}-${item.name}-${index}` }, [
                             span({ key: `${section.name}-${item.name}-${index}-span`, className: 'label' }, item.name),
                             div({ key: `${section.name}-${item.name}-${index}-div`, className: 'booleanValue' }, item.default),
-                            label({key: `${section.name}-${item.name}-${index}-label`, className: 'switch'}, [
+                            label({ key: `${section.name}-${item.name}-${index}-label`, className: 'switch' }, [
                                 input({
                                     key: `${section.name}-${item.name}-${index}-label-input`,
-                                    type:"checkbox",
-                                    onChange: e => console.log(`TODO: should update booleanValue div (label TRUE|FALSE)`) & item.onChange({ target: { value: e.target.checked }})
+                                    type: "checkbox",
+                                    onChange: e => console.log(`TODO: should update booleanValue div (label TRUE|FALSE)`) & item.onChange({ target: { value: e.target.checked } })
                                 }),
                                 span({
                                     key: `${section.name}-${item.name}-${index}-label-span`,
@@ -460,19 +460,21 @@
                     );
                 }
 
-                function buttonComponent({ div, button, section, item, index }){
+                function buttonComponent({ div, button, section, item, index }) {
                     return (
-                        div({ key: `${section.name}-${item.name}-${index}`,
+                        div({
+                            key: `${section.name}-${item.name}-${index}`,
                             className: 'buttonContainer'
                         }, [
-                            button({ key: `${section.name}-${item.name}-${index}-button`,
-                                onClick: item.onClick || (() => {})
-                            }, item.name)
-                        ])
+                                button({
+                                    key: `${section.name}-${item.name}-${index}-button`,
+                                    onClick: item.onClick || (() => { })
+                                }, item.name)
+                            ])
                     );
                 }
 
-                function selectComponent({ div, span, select, option, section, item, index, showLabel=true, globalState=[] }){
+                function selectComponent({ div, span, select, option, section, item, index, showLabel = true, globalState = [] }) {
                     const key = `${section.name}-${item.name}-${index}-select`;
                     const currentValue = (globalState.find(x => x.key === key) || {}).value;
                     const value = currentValue || item.default;
@@ -482,34 +484,34 @@
                             key,
                             className: 'select-component'
                         }, [
-                            showLabel
-                                ? span({ key: `${key}-span`, className: 'label' }, item.name)
-                                : undefined,
-                            select({
-                                key: `${key}-select`,
-                                disabled: item.disabled,
-                                value,
-                                onChange: e => {
-                                    setGlobalState({ key, value: e.target.value });
-                                    item.onChange({ key, value: e.target.value });
+                                showLabel
+                                    ? span({ key: `${key}-span`, className: 'label' }, item.name)
+                                    : undefined,
+                                select({
+                                    key: `${key}-select`,
+                                    disabled: item.disabled,
+                                    value,
+                                    onChange: e => {
+                                        setGlobalState({ key, value: e.target.value });
+                                        item.onChange({ key, value: e.target.value });
+                                    },
                                 },
-                            },
-                                item.options.map((opt, i) => 
-                                    option(
-                                        { key: `${key}-option${i}`},
-                                        opt
+                                    item.options.map((opt, i) =>
+                                        option(
+                                            { key: `${key}-option${i}` },
+                                            opt
+                                        )
                                     )
                                 )
-                            )
-                        ])
+                            ])
                     );
                 }
 
-                function eyeToggle({ key, svg, g, path, circle, hidden, layerClick }){
+                function eyeToggle({ key, svg, g, path, circle, hidden, layerClick }) {
                     return (
                         svg({
                             key,
-                            xmlns:"http://www.w3.org/2000/svg",
+                            xmlns: "http://www.w3.org/2000/svg",
                             xmlnsXlink: "http://www.w3.org/1999/xlink",
                             version: "1.1",
                             viewBox: "0 0 512 512",
@@ -525,7 +527,7 @@
                                 }),
                                 circle({
                                     key: `${key}-g-circle`,
-                                    cx:"256", cy: "256", r: "80"
+                                    cx: "256", cy: "256", r: "80"
                                 }),
                                 hidden
                                     ? path({
@@ -538,7 +540,7 @@
                     );
                 }
 
-                function editIcon({ key, svg, g, rect, polygon, editClick}){
+                function editIcon({ key, svg, g, rect, polygon, editClick }) {
                     // const pencilStyle = {
                     //     highlight: "#C4C8F5",
                     //     shadow: "#A7ADF0",
@@ -558,7 +560,7 @@
                         },
                             div(null,
                                 svg({
-                                    xmlns:"http://www.w3.org/2000/svg",
+                                    xmlns: "http://www.w3.org/2000/svg",
                                     xmlnsXlink: "http://www.w3.org/1999/xlink",
                                     version: "1.1",
                                     viewBox: "0 0 504.034 504.034",
@@ -605,8 +607,8 @@
 
                 function layersComponent({ div, span, section, item, img,
                     index, layersHidden, layersSelected, globalState, layerOrder
-                }){
-                    if (!layersHidden){
+                }) {
+                    if (!layersHidden) {
                         layersHidden = item.layersHidden;
                     }
                     const layerDropZone = (number) => li({
@@ -615,11 +617,11 @@
                         style: { display: 'none' }
                     });
 
-                    const handleReOrder = ({ item, layers, draggedItem, dropTarget}) => {
-                        var order = layers.map((x,i) => isNumeric(x.number) ? x.number : i);
+                    const handleReOrder = ({ item, layers, draggedItem, dropTarget }) => {
+                        var order = layers.map((x, i) => isNumeric(x.number) ? x.number : i);
                         const actualDragged = draggedItem;
                         const draggedPosition = layers.map(x => x.number).indexOf(actualDragged);
-                        const droppedPosition = Number(dropTarget.replace('AFTER','').replace('BEFORE',''));
+                        const droppedPosition = Number(dropTarget.replace('AFTER', '').replace('BEFORE', ''));
                         const actualDropped = layers[droppedPosition].number;
                         const layer = layers.find(x => x.number == draggedItem);
 
@@ -633,7 +635,7 @@
                         // });
 
                         // MOVE TO TOP
-                        if(dropTarget === 'BEFORE 0'){
+                        if (dropTarget === 'BEFORE 0') {
                             order = [actualDragged].concat(order.filter(x => x !== actualDragged));
                             //console.log(`Dragged item ${actualDragged} to position BEFORE 0 (moveToTop)`);
                             layer.changeLayerOrder({
@@ -645,7 +647,7 @@
                             return;
                         }
                         // MOVE TO BOTTOM
-                        if(dropTarget === `AFTER ${layers.length - 1}`){
+                        if (dropTarget === `AFTER ${layers.length - 1}`) {
                             order = order.filter(x => x !== actualDragged).concat([actualDragged])
                             //console.log(`Dragged item ${actualDragged} to position AFTER ${actualDropped} (moveToBottom)`);
                             layer.changeLayerOrder({
@@ -658,11 +660,11 @@
                         }
 
                         // MOVE UP
-                        if(dropTarget === `AFTER ${draggedPosition - 2}`){
+                        if (dropTarget === `AFTER ${draggedPosition - 2}`) {
                             order = order.filter(x => x !== actualDragged);
                             order = order.reduce((all, x) => {
                                 all.push(x);
-                                if(x === actualDropped){
+                                if (x === actualDropped) {
                                     all.push(actualDragged);
                                 }
                                 return all;
@@ -678,11 +680,11 @@
                         }
 
                         // MOVE DOWN
-                        if(dropTarget === `AFTER ${draggedPosition + 1}`){
+                        if (dropTarget === `AFTER ${draggedPosition + 1}`) {
                             order = order.filter(x => x !== actualDragged);
                             order = order.reduce((all, x) => {
                                 all.push(x);
-                                if(x === actualDropped){
+                                if (x === actualDropped) {
                                     all.push(actualDragged);
                                 }
                                 return all;
@@ -696,13 +698,13 @@
                             reorderLayers(order);
                             return;
                         }
-                        
+
                         // MOVE DOWN MULTIPLE TIMES
-                        if(draggedPosition < droppedPosition){
+                        if (draggedPosition < droppedPosition) {
                             order = order.filter(x => x !== actualDragged);
                             order = order.reduce((all, x, i) => {
                                 all.push(x);
-                                if(i === droppedPosition-1){
+                                if (i === droppedPosition - 1) {
                                     all.push(actualDragged);
                                 }
                                 return all;
@@ -719,11 +721,11 @@
                         }
 
                         // MOVE UP MULTIPLE TIMES
-                        if(draggedPosition > droppedPosition){
+                        if (draggedPosition > droppedPosition) {
                             order = order.filter(x => x !== actualDragged);
                             order = order.reduce((all, x, i) => {
                                 all.push(x);
-                                if(i === droppedPosition){
+                                if (i === droppedPosition) {
                                     all.push(actualDragged);
                                 }
                                 return all;
@@ -742,36 +744,36 @@
                         // multiple moveUp's and moveDown's?
                         console.warn(`UNHANDLED: Dragged item ${draggedItem} to position ${dropTarget}`);
 
-                       window.enterTarget = null;
-                       window.draggedIndex = null;
-                       window.dropTarget = null;
+                        window.enterTarget = null;
+                        window.draggedIndex = null;
+                        window.dropTarget = null;
                     };
 
-                    function dragStartHandler(layersIndex, e){
+                    function dragStartHandler(layersIndex, e) {
                         //console.log(`started dragging ${layersIndex}`)
 
                         document.querySelector('.layers ul').classList.add('contains-dragging');
                         e.target.classList.add('dragging');
                         window.draggedIndex = layersIndex;
                         const hideDragGhost = true;
-                        if(e.dataTransfer && hideDragGhost){
+                        if (e.dataTransfer && hideDragGhost) {
                             e.dataTransfer.dropEffect = 'none';
                             e.dataTransfer.effectAllowed = 'none';
-                            var img = new Image(); 
-                            img.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg"/>'; 
+                            var img = new Image();
+                            img.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg"/>';
                             e.dataTransfer.setDragImage(img, 10, 10);
                         }
                     }
 
-                    function dragEnterHandler(layersIndex, layers, e){
+                    function dragEnterHandler(layersIndex, layers, e) {
                         const realTarget = layers.map(x => x.number).indexOf(layersIndex);
                         const realDragged = layers.map(x => x.number).indexOf(window.draggedIndex);
-                        if(e.target.tagName.toLowerCase() !== 'li'){
+                        if (e.target.tagName.toLowerCase() !== 'li') {
                             return false;
                         }
-                        
-                        if(realTarget === realDragged || window.enterTarget
-                        ){
+
+                        if (realTarget === realDragged || window.enterTarget
+                        ) {
                             //window.enterTarget = null;
                             window.dropText = null;
                             return;
@@ -779,9 +781,9 @@
 
                         //console.log(`entered dragging ${e.target.id}`)
                         window.enterTarget = e.target;
-                        if(realDragged > realTarget){
+                        if (realDragged > realTarget) {
                             window.dropText = realTarget > 0
-                                ? `AFTER ${realTarget-1}`
+                                ? `AFTER ${realTarget - 1}`
                                 : `BEFORE 0`;
                             e.target.previousSibling.classList.add('active');
                         } else {
@@ -793,14 +795,14 @@
                         return false;
                     }
 
-                    function dragLeaveHandler(layersIndex, e){
-                        if(e.target.tagName.toLowerCase() !== 'li'
-                        ){
+                    function dragLeaveHandler(layersIndex, e) {
+                        if (e.target.tagName.toLowerCase() !== 'li'
+                        ) {
                             return false;
                         }
-                        if(e.pageX && e.pageY){
+                        if (e.pageX && e.pageY) {
                             var newElement = document.elementFromPoint(e.pageX, e.pageY);
-                            if((window.enterTarget && window.enterTarget.contains(newElement))){
+                            if ((window.enterTarget && window.enterTarget.contains(newElement))) {
                                 return false;
                             }
                         }
@@ -812,18 +814,18 @@
                         return false;
                     }
 
-                    function dragEndHandler(layersIndex, layers, e){
+                    function dragEndHandler(layersIndex, layers, e) {
                         document.querySelector('.contains-dragging')
                             .classList.remove('contains-dragging');
                         document.querySelectorAll('.dragging')
                             .forEach(node => node.classList.remove('dragging'))
 
-                        if(!window.dropText){
+                        if (!window.dropText) {
                             window.enterTarget = null;
                             window.draggedIndex = null;
                             return false;
                         }
-                        
+
                         document.querySelectorAll('.layer-drop').forEach(node => node.classList.remove('active'))
                         handleReOrder({
                             item, layers,
@@ -841,7 +843,7 @@
                     // patterned off https://github.com/Bernardo-Castilho/dragdroptouch/blob/master/DragDropTouch.js
                     var dragTouchSource;
                     var enteredElement;
-                    function touchStartHandler(layersIndex, e){
+                    function touchStartHandler(layersIndex, e) {
                         //console.log('touch start');
                         // TODO: only fire this event after big enough move in touchMove
                         dragStartHandler(layersIndex, e);
@@ -856,11 +858,11 @@
                         }
                         return { x: page ? e.pageX : e.clientX, y: page ? e.pageY : e.clientY };
                     }
-                    function touchMoveHandler(layersIndex, layers, e){
+                    function touchMoveHandler(layersIndex, layers, e) {
                         const pt = getPoint(e);
                         const hoveredElement = document.elementFromPoint(pt.x, pt.y);
-                        if(hoveredElement.classList.contains('dragging')){
-                            if(enteredElement){
+                        if (hoveredElement.classList.contains('dragging')) {
+                            if (enteredElement) {
                                 // trigger leave handler of previously entered element
                                 var leaveEvent = document.createEvent('Event');
                                 leaveEvent.initEvent('dragleave', true, true);
@@ -871,38 +873,38 @@
                             e.stopPropagation();
                             return;
                         }
-                        if(hoveredElement.tagName.toLowerCase() !== 'li'){
+                        if (hoveredElement.tagName.toLowerCase() !== 'li') {
                             //e.preventDefault();
                             e.stopPropagation();
                             return false;
                         }
-                        if(enteredElement && enteredElement.isEqualNode(hoveredElement)){
+                        if (enteredElement && enteredElement.isEqualNode(hoveredElement)) {
                             //e.preventDefault();
                             e.stopPropagation();
                             return;
                         }
                         //console.log('touch move', hoveredElement);
-                        if(enteredElement){
+                        if (enteredElement) {
                             // trigger leave handler of previously entered element
                             var leaveEvent = document.createEvent('Event');
                             leaveEvent.initEvent('dragleave', true, true);
                             enteredElement.dispatchEvent(leaveEvent);
                         }
                         enteredElement = hoveredElement;
-                        
+
                         //trigger enter handler or new element
                         var enterEvent = document.createEvent('Event');
                         enterEvent.initEvent('dragenter', true, true);
                         enteredElement.dispatchEvent(enterEvent);
-                        
+
                         //e.preventDefault();
                         e.stopPropagation();
-                   }
+                    }
 
-                    function touchEndHandler(layersIndex, layers, e){
+                    function touchEndHandler(layersIndex, layers, e) {
                         //console.log('touch end');
-                        if(enteredElement){
-                        var enterEvent = document.createEvent('Event');
+                        if (enteredElement) {
+                            var enterEvent = document.createEvent('Event');
                             enterEvent.initEvent('dragend', true, true);
                             dragTouchSource.dispatchEvent(enterEvent);
                         }
@@ -910,12 +912,12 @@
                         enteredElement = null;
                     }
 
-                    function touchCancelHandler(layersIndex, e){
+                    function touchCancelHandler(layersIndex, e) {
                         //console.log('touch cancel');
-                        if(enteredElement){
+                        if (enteredElement) {
                             var enterEvent = document.createEvent('Event');
-                                enterEvent.initEvent('dragend', true, true);
-                                dragTouchSource.dispatchEvent(enterEvent);
+                            enterEvent.initEvent('dragend', true, true);
+                            dragTouchSource.dispatchEvent(enterEvent);
                         }
                         dragTouchSource = null;
                         enteredElement = null;
@@ -924,17 +926,18 @@
                     function createElementFromHTML(htmlString) {
                         var div = document.createElement('div');
                         div.innerHTML = htmlString.trim();
-                        
+
                         // Change this to div.childNodes to support multiple top-level nodes
-                        return div.firstChild; 
+                        return div.firstChild;
                     }
 
-                    function parseFunction(string){
+                    function parseFunction(string) {
                         var func = new Function("return " + string)();
                         return func;
                     }
 
-                    function constructLayer(goFn, cancelFn, { name, def, type } = {}){
+                    function constructLayer(goFn, cancelFn, { name, def, type } = {}) {
+                        const isEditing = Boolean(name && def && type);
                         const container = createElementFromHTML(`
                             <div id="layer-create">
                                 <div id="topBar">
@@ -944,7 +947,7 @@
                                     </div>
                                     <div>
                                         <label>Type</label>
-                                        <select id="layerType">
+                                        <select id="layerType"${ isEditing ? 'disabled' : ''}>
                                             <option>2D Canvas</option>
                                             <option>3D Canvas</option>
                                             <option>Image</option>
@@ -953,7 +956,7 @@
                                     </div>
                                 </div>
 
-                                <div class="tabBar"></div>
+                                ${isEditing ? '' : `<div class="tabBar"></div>`}
 
                                 <textarea id="layerDef"
                                     autocomplete="off" autocorrect="off"
@@ -965,19 +968,23 @@
                                         <button id="layerAddCancel">Cancel</button>
                                     </div>
                                     <div class="buttonContainer">
-                                        <button id="layerAddSubmit">Add Layer</button>
+                                        <button id="layerAddSubmit">${ isEditing ? 'Update' : 'Add'} Layer</button>
                                     </div>
                                 </div>
                             </div>
                         `);
                         const getChildId = container.querySelector;
-                        
+
                         const layerName = container.querySelector('#layerName');
                         const layerType = container.querySelector('#layerType');
                         const layerDef = container.querySelector('#layerDef');
                         const layerAddCancel = container.querySelector('#layerAddCancel');
                         const layerAddSubmit = container.querySelector('#layerAddSubmit');
                         const tabBar = container.querySelector('.tabBar');
+
+                        if (isEditing) {
+                            layerDef.classList.add('full');
+                        }
 
                         const smiley = [
                             "var centerX = width / 2;",
@@ -1021,7 +1028,7 @@
                             "const size = 200;",
                             "Xcenter = width / 2;",
                             "Ycenter = height / 2",
-                            `ctx.fillStyle = '${colors[Math.floor(Math.random()*colors.length)]}';`,
+                            `ctx.fillStyle = '${colors[Math.floor(Math.random() * colors.length)]}';`,
 
                             "\nctx.beginPath();",
                             "const rotateOffset = (numberOfSides % 2 ? 0.5 : 1) * Math.PI / numberOfSides;",
@@ -1029,7 +1036,7 @@
                             "   Xcenter +  size * Math.cos(0 + rotateOffset),",
                             "   Ycenter +  size *  Math.sin(0 + rotateOffset)",
                             ");",
-                    
+
                             "\n(new Array(numberOfSides)).fill().forEach((x, i) => {",
                             "   j = i + 1;",
                             "   ctx.lineTo(",
@@ -1037,7 +1044,7 @@
                             "       Ycenter + size * Math.sin(j / numberOfSides * 2 * Math.PI + rotateOffset)",
                             "   );",
                             "});",
-                            
+
                             "\nctx.fill();"
                         ].join('\n');
 
@@ -1048,7 +1055,7 @@
                         const text = [
                             "const canvasText = 'hello sidebar';",
                             "ctx.font = 'bold 120px sans-serif';",
-                            `ctx.fillStyle = '${colors[Math.floor(Math.random()*colors.length)]}';`,
+                            `ctx.fillStyle = '${colors[Math.floor(Math.random() * colors.length)]}';`,
                             "ctx.fillText(canvasText, 20, height/2, width);"
                         ].join('\n');
 
@@ -1057,7 +1064,7 @@
                             "const Xcenter = width/2;",
                             "const Ycenter = height/2;",
                             "ctx.font = 'bold 120px sans-serif';",
-                            `ctx.fillStyle = '${colors[Math.floor(Math.random()*colors.length)]}';`,
+                            `ctx.fillStyle = '${colors[Math.floor(Math.random() * colors.length)]}';`,
                             "ctx.arc(Xcenter, Ycenter, radius, 0, 2*Math.PI, false);",
                             "ctx.fill();"
                         ].join('\t\n');
@@ -1080,15 +1087,16 @@
                             circle,
                             smiley,
                             text
-                        }
-                        const defaultExample = type ? null : 'webgl';
+                        };
+
+                        const defaultExample = isEditing ? null : 'webgl';
                         layerDef.value = def || examples[defaultExample];
                         layerName.value = name || defaultExample;
                         layerType.value = type || '3D Canvas';
 
-                        Object.keys(examples).forEach(key => {
+                        !isEditing && Object.keys(examples).forEach(key => {
                             var tabItem = createElementFromHTML(
-                                `<div class="tab${key===defaultExample ? ' active' : ''}">${key}</div>`
+                                `<div class="tab${key === defaultExample ? ' active' : ''}">${key}</div>`
                             );
                             tabItem.onclick = (e) => {
                                 container.querySelector('.tab.active').classList.remove('active');
@@ -1127,57 +1135,57 @@
                         onClick: () => layerSelectedChanged(layersIndex),
                         className: layersSelected.includes(layersIndex) ? 'selected' : '',
                         draggable: true,
-                        onDragStart: ({nativeEvent: e}) => dragStartHandler(layersIndex, e),
-                        onDragEnter: ({nativeEvent: e}) => dragEnterHandler(layersIndex, layers, e),
-                        onDragLeave: ({nativeEvent: e}) => dragLeaveHandler(layersIndex, e),
-                        onDragEnd: ({nativeEvent: e}) => dragEndHandler(layersIndex, layers, e),
-                        onTouchStart: ({nativeEvent: e}) => touchStartHandler(layersIndex, e),
-                        onTouchMove: ({nativeEvent: e}) => touchMoveHandler(layersIndex, layers, e),
-                        onTouchEnd: ({nativeEvent: e}) => touchEndHandler(layersIndex, layers, e),
-                        onTouchCancel: ({nativeEvent: e}) => touchCancelHandler(layersIndex, layers, e),
+                        onDragStart: ({ nativeEvent: e }) => dragStartHandler(layersIndex, e),
+                        onDragEnter: ({ nativeEvent: e }) => dragEnterHandler(layersIndex, layers, e),
+                        onDragLeave: ({ nativeEvent: e }) => dragLeaveHandler(layersIndex, e),
+                        onDragEnd: ({ nativeEvent: e }) => dragEndHandler(layersIndex, layers, e),
+                        onTouchStart: ({ nativeEvent: e }) => touchStartHandler(layersIndex, e),
+                        onTouchMove: ({ nativeEvent: e }) => touchMoveHandler(layersIndex, layers, e),
+                        onTouchEnd: ({ nativeEvent: e }) => touchEndHandler(layersIndex, layers, e),
+                        onTouchCancel: ({ nativeEvent: e }) => touchCancelHandler(layersIndex, layers, e),
                         onDrop: () => { return false; }
                     }, [
-                        eyeToggle({
-                            svg, g, path, circle, hidden: layersHidden.includes(layersIndex),
-                            key: `${section.name}-${item.name}-${index}-eyeToggle-${layersIndex}`,
-                            draggable: false,
-                            layerClick: () => {
-                                layer.onToggle({
-                                    number: layersIndex,
-                                    visible: layersHidden.includes(layersIndex)
-                                });
-                                layerVisibleClick(layersIndex);
-                            }
-                        }),
-                        img({
-                            className: "image",
-                            tabIndex: 0,
-                            draggable: false,
-                            src: layer.getThumb ? layer.getThumb({ number: layersIndex }) : '',
-                            key: `${section.name}-${item.name}-${index}-thumbnail-${layersIndex}`,
-                        }),
-                        span({
-                            className: "label",
-                            draggable: false,
-                            key: `${section.name}-${item.name}-${index}-name-${layersIndex}`
-                            /*, tabIndex: 0*/
-                        }, layer.name)
-                    ]);
+                            eyeToggle({
+                                svg, g, path, circle, hidden: layersHidden.includes(layersIndex),
+                                key: `${section.name}-${item.name}-${index}-eyeToggle-${layersIndex}`,
+                                draggable: false,
+                                layerClick: () => {
+                                    layer.onToggle({
+                                        number: layersIndex,
+                                        visible: layersHidden.includes(layersIndex)
+                                    });
+                                    layerVisibleClick(layersIndex);
+                                }
+                            }),
+                            img({
+                                className: "image",
+                                tabIndex: 0,
+                                draggable: false,
+                                src: layer.getThumb ? layer.getThumb({ number: layersIndex }) : '',
+                                key: `${section.name}-${item.name}-${index}-thumbnail-${layersIndex}`,
+                            }),
+                            span({
+                                className: "label",
+                                draggable: false,
+                                key: `${section.name}-${item.name}-${index}-name-${layersIndex}`
+                                /*, tabIndex: 0*/
+                            }, layer.name)
+                        ]);
 
                     const reorderedLayers = layerOrder.length && layerOrder.length === item.layers.length
                         ? layerOrder.map(number => item.layers.find(x => x.number === number))
-                        : item.layers.map((x,i) => Object.assign({}, x, { number: i }));
+                        : item.layers.map((x, i) => Object.assign({}, x, { number: i }));
 
                     const layersList = reorderedLayers.reduce((allLayerLi, oneLayerLi, layersIndex) => {
                         const layerIndex = isNumeric(oneLayerLi.number)
                             ? oneLayerLi.number
                             : layersIndex;
                         allLayerLi.push(getLayer(oneLayerLi, layerIndex, reorderedLayers));
-                        allLayerLi.push(layerDropZone(layerIndex + 1 ));
+                        allLayerLi.push(layerDropZone(layerIndex + 1));
                         return allLayerLi;
-                    }, [ layerDropZone(0) ]);
+                    }, [layerDropZone(0)]);
 
-                    const selectedLayers = reorderedLayers.filter((x, i) => (layersSelected||[]).includes(x.number) );
+                    const selectedLayers = reorderedLayers.filter((x, i) => (layersSelected || []).includes(x.number));
                     //console.log({selectedLayers});
 
                     return (
@@ -1185,142 +1193,145 @@
                             key: `${section.name}-${item.name}-${index}`,
                             className: 'layers'
                         }, [
-                            span({
-                                key: `${section.name}-${item.name}-${index}-span`,
-                                className: 'label'
-                            }, item.name),
-                            div({
-                                key: `${section.name}-${item.name}-${index}-props`,
-                                className: 'layerProps'
-                            }, [
-                                selectComponent({ div, span, select, option, section,
-                                    item: {
-                                        name: 'layer-blend',
-                                        disabled: false,
-                                        default: 'Normal',
-                                        options: [
-                                            'Normal', 'Multiply', 'Screen', 'Overlay',
-                                            'Darken', 'Lighten', 'Color-Dodge', 'Color-Burn',
-                                            'Hard-Light', 'Soft-Light', 'Difference', 'Exclusion',
-                                            'Hue', 'Saturation', 'Color', 'Luminosity'
-                                        ],
-                                        onChange: ({ key, value}) => {
-                                            // store in reducer
-                                            layersPropertiesChanged({ blend: { key, value } });
+                                span({
+                                    key: `${section.name}-${item.name}-${index}-span`,
+                                    className: 'label'
+                                }, item.name),
+                                div({
+                                    key: `${section.name}-${item.name}-${index}-props`,
+                                    className: 'layerProps'
+                                }, [
+                                        selectComponent({
+                                            div, span, select, option, section,
+                                            item: {
+                                                name: 'layer-blend',
+                                                disabled: false,
+                                                default: 'Normal',
+                                                options: [
+                                                    'Normal', 'Multiply', 'Screen', 'Overlay',
+                                                    'Darken', 'Lighten', 'Color-Dodge', 'Color-Burn',
+                                                    'Hard-Light', 'Soft-Light', 'Difference', 'Exclusion',
+                                                    'Hue', 'Saturation', 'Color', 'Luminosity'
+                                                ],
+                                                onChange: ({ key, value }) => {
+                                                    // store in reducer
+                                                    layersPropertiesChanged({ blend: { key, value } });
 
-                                            (layersSelected || [0] ).forEach(layerNumber => {
-                                                const sel = item.layers
-                                                    .find(x => x.number === layerNumber);
-                                                if(!sel || !sel.changeLayerBlendMode){
-                                                    return;
-                                                }
-                                                sel.changeLayerBlendMode({
-                                                    number: layerNumber,
-                                                    mode: value.toLowerCase()
-                                                });
-                                            });
-                                        }
-                                    },
-                                    index, showLabel:false, globalState
-                                }),
-                                sliderComponent({
-                                    span, div, input, section,
-                                    item: {
-                                        name: 'layer-alpha-slider',
-                                        min: 0, max: 100, step: 5, default: 100,
-                                        onChange: ({key, value}) => {
-                                            // store in reducer
-                                            layersPropertiesChanged({ alpha: { key, value } });
-                                            // call function for alpha change setup in sidebar def
-                                            const changeSelectedAlpha = () => {
-                                                (layersSelected || [0] ).forEach(layerNumber => {
-                                                    item.layers
-                                                        .find(x => x.number === layerNumber)
-                                                        .changeLayerAlpha({
+                                                    (layersSelected || [0]).forEach(layerNumber => {
+                                                        const sel = item.layers
+                                                            .find(x => x.number === layerNumber);
+                                                        if (!sel || !sel.changeLayerBlendMode) {
+                                                            return;
+                                                        }
+                                                        sel.changeLayerBlendMode({
                                                             number: layerNumber,
-                                                            alpha: Number(value)/100
-                                                        })
-                                                });
-                                            };
-                                            changeSelectedAlpha();
-                                        }
-                                    },
-                                    index, showLabel:false, globalState
-                                })
-                            ]),
-                            ul({
-                                key: `${section.name}-${item.name}-${index}-ul`
-                            }, layersList),
-                            div({
-                                key: `${section.name}-${item.name}-${index}-tools`,
-                                className: 'layerTools'
-                            },[
-                                editIcon({
-                                    key: `${section.name}-${item.name}-${index}-edit-icon`,
-                                    svg, g, rect, polygon,
-                                    editClick: () => {
-                                        //console.log('---TODO: edit icon click!');
-                                        const selectedLayer = item.layers[layersSelected[0]];
-                                        const selectedLayerSource = selectedLayer.getLayerSource({
-                                            number: selectedLayer.number
-                                        });
-                                        //console.log({ selectedLayerSource });
-                                        const name = 'TODO: get name';
-                                        const def = selectedLayerSource;
-                                        const type = '3D Canvas';
-                                        constructLayer(
-                                            ({ name, def, type }) => {
-                                                item.updateLayer({
-                                                    name,
-                                                    def,
-                                                    type,
-                                                    callback: (layer) => updateLayerItem({
-                                                        layers: item.layers,
-                                                        updatedLayer: Object.assign({}, layer, {type})
-                                                    })
-                                                });
+                                                            mode: value.toLowerCase()
+                                                        });
+                                                    });
+                                                }
                                             },
-                                            () => {
-                                                console.log('TODO: cancel layer update');
+                                            index, showLabel: false, globalState
+                                        }),
+                                        sliderComponent({
+                                            span, div, input, section,
+                                            item: {
+                                                name: 'layer-alpha-slider',
+                                                min: 0, max: 100, step: 5, default: 100,
+                                                onChange: ({ key, value }) => {
+                                                    // store in reducer
+                                                    layersPropertiesChanged({ alpha: { key, value } });
+                                                    // call function for alpha change setup in sidebar def
+                                                    const changeSelectedAlpha = () => {
+                                                        (layersSelected || [0]).forEach(layerNumber => {
+                                                            item.layers
+                                                                .find(x => x.number === layerNumber)
+                                                                .changeLayerAlpha({
+                                                                    number: layerNumber,
+                                                                    alpha: Number(value) / 100
+                                                                })
+                                                        });
+                                                    };
+                                                    changeSelectedAlpha();
+                                                }
                                             },
-                                            { name, def, type }
-                                        )
-                                    }
-                                }),
-                                buttonComponent({ div, button, section, item: {
-                                        name: '+',
-                                        onClick: () => constructLayer(
-                                            ({ name, def, type }) => {
-                                                item.addLayer({
-                                                    name,
-                                                    def,
-                                                    type,
-                                                    callback: (layer) => addLayerItem({
-                                                        layers: item.layers,
-                                                        newLayer: Object.assign({}, layer, {type}),
-                                                        layerOrder: layerOrder.length ? layerOrder : null
-                                                    })
+                                            index, showLabel: false, globalState
+                                        })
+                                    ]),
+                                ul({
+                                    key: `${section.name}-${item.name}-${index}-ul`
+                                }, layersList),
+                                div({
+                                    key: `${section.name}-${item.name}-${index}-tools`,
+                                    className: 'layerTools'
+                                }, [
+                                        editIcon({
+                                            key: `${section.name}-${item.name}-${index}-edit-icon`,
+                                            svg, g, rect, polygon,
+                                            editClick: () => {
+                                                //console.log('---TODO: edit icon click!');
+                                                const selectedLayer = item.layers[layersSelected[0]];
+                                                const selectedLayerSource = selectedLayer.getLayerSource({
+                                                    number: selectedLayer.number
                                                 });
-                                            },
-                                            () => {
-                                                console.log('TODO: cancel layer add');
+                                                //console.log({ selectedLayerSource });
+                                                const name = selectedLayer.name || '';
+                                                const def = selectedLayerSource || '';
+                                                const type = selectedLayer.type || '3D Canvas';
+                                                constructLayer(
+                                                    ({ name, def, type }) => {
+                                                        item.updateLayer({
+                                                            name,
+                                                            def,
+                                                            type,
+                                                            callback: (layer) => updateLayerItem({
+                                                                layers: item.layers,
+                                                                updatedLayer: Object.assign({}, layer, { type })
+                                                            })
+                                                        });
+                                                    },
+                                                    () => {
+                                                        console.log('TODO: cancel layer update');
+                                                    },
+                                                    { name, def, type }
+                                                )
                                             }
-                                        )
-                                    }
-                                }),
-                                buttonComponent({ div, button, section, item: {
-                                    name: '-',
-                                    onClick: () => removeLayers(item)
-                                }
-                            })
+                                        }),
+                                        buttonComponent({
+                                            div, button, section, item: {
+                                                name: '+',
+                                                onClick: () => constructLayer(
+                                                    ({ name, def, type }) => {
+                                                        item.addLayer({
+                                                            name,
+                                                            def,
+                                                            type,
+                                                            callback: (layer) => addLayerItem({
+                                                                layers: item.layers,
+                                                                newLayer: Object.assign({}, layer, { type }),
+                                                                layerOrder: layerOrder.length ? layerOrder : null
+                                                            })
+                                                        });
+                                                    },
+                                                    () => {
+                                                        console.log('TODO: cancel layer add');
+                                                    }
+                                                )
+                                            }
+                                        }),
+                                        buttonComponent({
+                                            div, button, section, item: {
+                                                name: '-',
+                                                onClick: () => removeLayers(item)
+                                            }
+                                        })
+                                    ])
                             ])
-                        ])
                     );
                 }
 
-                function dividerComponent({ div, section, index }){
+                function dividerComponent({ div, section, index }) {
                     return (
-                        div({ key: `${section.name}-divider-${index}`,className: 'divider'}, section.name)
+                        div({ key: `${section.name}-divider-${index}`, className: 'divider' }, section.name)
                     );
                 }
 
@@ -1331,7 +1342,7 @@
                     pinned = sidebarDef.pinned,
                     hidden = sidebarDef.hidden,
                     layersHidden,
-                    layersSelected = [ 0 ],
+                    layersSelected = [0],
                     layersProperties = [{
                         number: 0,
                         alpha: 100,
@@ -1339,33 +1350,34 @@
                     }],
                     layerOrder = []
                 }) =>
-                fragment([
-                    div({id: 'header', key: 'header'}, [
-                        span({ key: 'headerText'}, sidebarDef.title),
-                        span({ key: "pinButton", id: "pinButton", onClick: () => pinClick(pinned)}, pinned ? 'UN-PIN' : 'PIN'),
-                        span({ key: "closeSettings", id: "closeSettings", onClick: !pinned ? toggleClick : undefined, disabled: pinned }, '→')
-                    ]),
-                    div({className: 'scrollContainer', key: 'scrollContainer'},
-                        sidebarDef.sections.reduce((all, section, i) => {
-                            all.push(dividerComponent({ div, section, index: i }));
-                            const sectionItems = section.items
-                                .map((item, j) => {
-                                    return ({
-                                        text: () => textComponent({div, span, section, item, index: j}),
-                                        slider: () => sliderComponent({ div, span, input, section, item, index: j, globalState }),
-                                        boolean: () => booleanComponent({ div, span, label, input, section, item, index: j }),
-                                        button: () => buttonComponent({ div, button, section, item, index: j }),
-                                        select: () => selectComponent({ div, span, select, option, section, item, index: j, globalState}),
-                                        layers: () => layersComponent({ div, span, section, item, img, index: j,
-                                            layersHidden, layersSelected, globalState, layerOrder
-                                        })
-                                    })[item.type];
-                                })
-                                .forEach(component => all.push(component()));
-                            return all;
-                        }, [])
-                    )
-                ]);
+                    fragment([
+                        div({ id: 'header', key: 'header' }, [
+                            span({ key: 'headerText' }, sidebarDef.title),
+                            span({ key: "pinButton", id: "pinButton", onClick: () => pinClick(pinned) }, pinned ? 'UN-PIN' : 'PIN'),
+                            span({ key: "closeSettings", id: "closeSettings", onClick: !pinned ? toggleClick : undefined, disabled: pinned }, '→')
+                        ]),
+                        div({ className: 'scrollContainer', key: 'scrollContainer' },
+                            sidebarDef.sections.reduce((all, section, i) => {
+                                all.push(dividerComponent({ div, section, index: i }));
+                                const sectionItems = section.items
+                                    .map((item, j) => {
+                                        return ({
+                                            text: () => textComponent({ div, span, section, item, index: j }),
+                                            slider: () => sliderComponent({ div, span, input, section, item, index: j, globalState }),
+                                            boolean: () => booleanComponent({ div, span, label, input, section, item, index: j }),
+                                            button: () => buttonComponent({ div, button, section, item, index: j }),
+                                            select: () => selectComponent({ div, span, select, option, section, item, index: j, globalState }),
+                                            layers: () => layersComponent({
+                                                div, span, section, item, img, index: j,
+                                                layersHidden, layersSelected, globalState, layerOrder
+                                            })
+                                        })[item.type];
+                                    })
+                                    .forEach(component => all.push(component()));
+                                return all;
+                            }, [])
+                        )
+                    ]);
 
                 return root;
             }
@@ -1383,17 +1395,17 @@
 
             // reducer should be built with respect to sidebar definition
             const getReducer = () => {
-                const reducer = (state, action) => {    
+                const reducer = (state, action) => {
                     var newState = clone(state);
 
-                    function updateSelectedLayers(state, layersSelected){
+                    function updateSelectedLayers(state, layersSelected) {
                         const found = (state.layersProperties || []).find(x => layersSelected.includes(x.number));
                         var newGlobalState = clone(state.globalState || []) || [];
-                        
+
                         // NOTE: "predicate" - another word I wanted to use instead of "condition"
                         const upsert = ({ item, array, condition }) => {
                             const found = array.find(condition);
-                            if( found ){
+                            if (found) {
                                 Object.keys(item)
                                     .forEach(key => found[key] = item[key]);
                             } else {
@@ -1401,21 +1413,21 @@
                             }
                         }
 
-                        if( found && found.alpha && found.alpha.key){
+                        if (found && found.alpha && found.alpha.key) {
                             upsert({
                                 item: found.alpha,
                                 array: newGlobalState,
                                 condition: x => x.key === found.alpha.key
-                            }); 
+                            });
                         }
-                        if( found && found.blend && found.blend.key){
+                        if (found && found.blend && found.blend.key) {
                             upsert({
                                 item: found.blend,
                                 array: newGlobalState,
                                 condition: x => x.key === found.blend.key
-                            }); 
+                            });
                         }
-                        if(!found){
+                        if (!found) {
                             newGlobalState = newGlobalState
                                 .filter(x => !x.key.includes('layer-alpha')
                                     && !x.key.includes('layer-blend')
@@ -1425,7 +1437,7 @@
                         return newState;
                     }
 
-                    switch(action.type){
+                    switch (action.type) {
                         case 'REMOVE_LAYERS': {
                             const selectedLayers = newState.layersSelected || [action.payload.layers[0].number];
                             //console.log(`removing ${selectedLayers}`)
@@ -1434,7 +1446,7 @@
                                     .filter((x, i) => !selectedLayers.includes(x.number));
                                 action.payload.layers = newLayers;
                             };
-                            if(action.payload.removeLayers){
+                            if (action.payload.removeLayers) {
                                 action.payload.removeLayers({
                                     numbers: selectedLayers,
                                     callback
@@ -1460,7 +1472,7 @@
                             layerOrder = [action.payload.newLayer.number].concat(layerOrder);
                             newState = Object.assign({}, state, { layerOrder });
                             action.payload.layers.push(action.payload.newLayer);
-                            
+
                             newState = updateSelectedLayers(newState, [action.payload.newLayer.number]);
                             break;
                         }
@@ -1472,7 +1484,7 @@
                         case 'SET_GLOBAL_STATE': {
                             const gstate = state.globalState || [];
                             const found = gstate.find(x => x.key === action.payload.key);
-                            if(found){
+                            if (found) {
                                 found.value = action.payload.value;
                             } else {
                                 gstate.push(action.payload);
@@ -1481,7 +1493,7 @@
                             break;
                         }
                         case 'PIN_CHANGED': {
-                            if(sidebarDef.pinHandler){
+                            if (sidebarDef.pinHandler) {
                                 sidebarDef.pinHandler({ pinned: action.payload });
                             }
                             newState = Object.assign({}, state, { pinned: action.payload });
@@ -1493,12 +1505,12 @@
                         }
                         case 'LAYER_VISIBILE_TOGGLED': {
                             var layersHidden = state.layersHidden || [];
-                            if (!isNumeric(action.payload)){
+                            if (!isNumeric(action.payload)) {
                                 console.log('Error in reducer: LAYER_VISIBILE_TOGGLED');
                                 break;
                             }
                             const layerNumber = Number(action.payload);
-                            if(layersHidden.includes(layerNumber)){
+                            if (layersHidden.includes(layerNumber)) {
                                 layersHidden = layersHidden.filter(x => x !== layerNumber);
                             } else {
                                 layersHidden.push(layerNumber);
@@ -1509,7 +1521,7 @@
                         case 'LAYER_SELECTION_CHANGED': {
                             //TODO: case where all layers are deselected
                             //TODO: case where multiple layers are selected
-                            const layersSelected = [ action.payload ];
+                            const layersSelected = [action.payload];
                             newState = updateSelectedLayers(state, layersSelected);
                             break;
                         }
@@ -1517,12 +1529,12 @@
                             var newLayersProperties = state.layersProperties
                                 ? clone(state.layersProperties)
                                 : [];
-                            const currentSelectedLayers = state.layersSelected || [ 0 ];
+                            const currentSelectedLayers = state.layersSelected || [0];
                             console.log(`current selected layers ${currentSelectedLayers}`);
                             currentSelectedLayers.forEach(selected => {
                                 // ensure existence
                                 const exists = (newLayersProperties || []).map(prop => prop.number).includes(selected);
-                                if(!exists && newLayersProperties){
+                                if (!exists && newLayersProperties) {
                                     // default
                                     newLayersProperties.push({
                                         number: selected,
@@ -1534,11 +1546,11 @@
                                 (newLayersProperties || [])
                                     .filter(x => x.number === selected)
                                     .forEach(x => {
-                                        if(action.payload.blend){
+                                        if (action.payload.blend) {
                                             //console.log(`change ${selected} blend from ${x.blend.value} to ${action.payload.blend.value}`);
                                             x.blend = action.payload.blend;
                                         }
-                                        if(action.payload.alpha){
+                                        if (action.payload.alpha) {
                                             x.alpha = action.payload.alpha;
                                         }
                                     });
@@ -1551,9 +1563,9 @@
                 };
                 return reducer;
             };
-            
-            function rxReactReady(err, { components, dispatcher, start, React } = {}){
-                if(err){
+
+            function rxReactReady(err, { components, dispatcher, start, React } = {}) {
+                if (err) {
                     console.error(`Error in rxReactReady: ${err}`)
                     return;
                 }
@@ -1583,7 +1595,7 @@
 
 
     // NEURAL ------------------------------------------------------------------
-    function neural(){ return returnProps(neural); }
+    function neural() { return returnProps(neural); }
     neural.scripts = [
         'https://cdnjs.cloudflare.com/ajax/libs/synaptic/1.0.10/synaptic.js'
     ];
@@ -1592,7 +1604,7 @@
 
 
     // UTILS -------------------------------------------------------------------
-    function utils(){ return returnProps(utils); }
+    function utils() { return returnProps(utils); }
     // TODO: create utils script and host on github
     // TODO: include helpers that set everything up except the basic needs
     utils.init = callback => isInitedFactory(utils, callback);

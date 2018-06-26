@@ -491,6 +491,7 @@ foo : {
                 layersHidden: [1, 2, 3],
                 layers: [{
                     name: 'webgl',
+                    type: '3D Canvas',
                     onToggle: toggleLayerVisible,
                     getThumb: getLayerThumb,
                     getLayerSource,
@@ -499,6 +500,7 @@ foo : {
                     changeLayerOrder
                 },{
                     name: 'Uber Layer',
+                    type: '2D Canvas',
                     render: 'shape',
                     onToggle: toggleLayerVisible,
                     getThumb: getLayerThumb,
@@ -508,6 +510,7 @@ foo : {
                     changeLayerOrder
                 }, {
                     name: 'Top Layer',
+                    type: '2D Canvas',
                     render: 'triangle',
                     onToggle: toggleLayerVisible,
                     getLayerSource,
@@ -517,6 +520,7 @@ foo : {
                     changeLayerOrder
                 }, {
                     name: 'Middle Layer',
+                    type: '2D Canvas',
                     render: 'circle',
                     onToggle: toggleLayerVisible,
                     getThumb: getLayerThumb,
@@ -526,6 +530,7 @@ foo : {
                     changeLayerOrder
                 }, {
                     name: 'Bottom Layer',
+                    type: '2D Canvas',
                     render: 'square',
                     onToggle: toggleLayerVisible,
                     getThumb: getLayerThumb,
