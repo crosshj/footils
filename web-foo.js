@@ -1475,7 +1475,7 @@
                             const layers = action.payload.layers;
                             const updatedLayer = action.payload.updatedLayer;
                             console.log({ layers, updatedLayer });
-                            debugger;
+                            // TODO: set some state?
                             break;
                         }
                         case 'ADD_LAYER_ITEM': {

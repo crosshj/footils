@@ -457,6 +457,11 @@ foo : {
             .forEach(node => node.style.filter = someFilterNull ? 'null' : 'unset');
     };
 
+    function parseFunction(string) {
+        var func = new Function("return " + string)();
+        return func;
+    }
+
     const sidebarDef = ({
         toggleLayerVisible,
         getLayerThumb,
@@ -499,6 +504,13 @@ foo : {
                 layers: [{
                     name: 'webgl',
                     type: '3D Canvas',
+                    render: parseFunction(`function({ ctx, gl, alpha, width, height}){
+                        ${[
+                            `var vertCode = \`${document.getElementById('vertex-shader').text}\`;`,
+                            `var fragCode = \`${document.getElementById('fragment-shader').text}\`;`,
+                            "",
+                        ].join('\n').concat(document.getElementById('gl-function').text)}
+                    }`),
                     onToggle: toggleLayerVisible,
                     getThumb: getLayerThumb,
                     getLayerSource,
@@ -595,7 +607,6 @@ foo : {
     };
 
     const render3dContext = (thumbNumber, fn) => ({ layer, alpha, width, height }) => {
-
         const gl = layer.scene.context;
         //ctx.clearRect(0, 0, width, height);
         // ctx.globalAlpha = alpha == 0
@@ -722,8 +733,12 @@ foo : {
         var layers = sideBarDef.sections[0].items
             .find(x => x.type === 'layers');
 
+        const renderQueue = [];
         const initLayer = (all, current, i) => {
-            const _layer = new Concrete.Layer();
+            const layerType = current.type.toLowerCase().includes('3d')
+                ? 'webgl'
+                : '2d';
+            const _layer = new Concrete.Layer({ type: layerType });
             viewport.add(_layer);
 
             var renderFunc = renderContext(i, () => {});
@@ -733,7 +748,9 @@ foo : {
             var pushThumb = true;
             if(typeof current.render === "function"){
                 pushThumb = false;
-                renderFunc = renderContext(i, current.render);
+                renderFunc = layerType === 'webgl'
+                    ? render3dContext(current.number, current.render)
+                    : renderContext(current.number, current.render);
                 renderFunc.def = current.render.toString()
                 
             }
@@ -742,22 +759,29 @@ foo : {
             ){
                 pushThumb = false;
                 renderFunc = _renderFuncs[current.render];
-                renderFunc = renderContext(i, renderFunc);
+                renderFunc = renderContext(current.number, renderFunc);
                 renderFunc.def = _renderFuncs[current.render].toString();
             }
-            renderFunctions.push(renderFunc);
+            renderFunctions[current.number] = renderFunc;
             renderFunc({ layer: _layer, alpha: 1.0, width, height });
 
             // for case where render not defined
             if(pushThumb){
-                thumbs[i] = _layer.scene.canvas.toDataURL('image/png');
+                thumbs[current.number] = _layer.scene.canvas.toDataURL('image/png');
             }
             all.push(_layer);
 
             return all;
         };
+        layers = (layers.layers || [])
+            .map((x, i) => {
+                x.number = i;
+                return x;
+            })
+            .reverse()
+            .reduce(initLayer, [])
+            .reverse() || [];
 
-        layers = (layers.layers || []).reduce(initLayer, []) || [];
         const hiddenLayers = sideBarDef.sections[0].items
             .find(x => x.type === 'layers').layersHidden;
         hiddenLayers.forEach(x => layers[x].visible=false);
@@ -777,7 +801,10 @@ foo : {
             canvas.layers[number].visible = visible;
             canvas.viewport.render();
         };
-        const getLayerThumb = ({ number }) => thumbs[number];
+
+        const getLayerThumb = ({ number }) => {
+            return thumbs[number];
+        };
 
         const getLayerSource = ({ number }) => {
             const renderFunction = canvas.renderFunctions[number];
@@ -833,11 +860,15 @@ foo : {
                 canvas.layers.push(newLayer);
                 canvas.renderFunctions.push(newLayerRender);
             } else {
-                canvas.layers[number] = newLayer;
+                //canvas.layers[number] = newLayer;
+                thumbs[number] = canvas.layers[number].scene.canvas.toDataURL('image/png');
                 canvas.renderFunctions[number] = newLayerRender;
             }
 
             newLayerRender({ layer: newLayer, width, height });
+            if(isUpdating){
+                thumbs[number] = canvas.layers[number].scene.canvas.toDataURL('image/png');
+            }
             canvas.viewport.render();
 
             const newSidebarLayer = {
@@ -855,7 +886,6 @@ foo : {
         };
 
         const updateLayer = ({ name, def, type, number, callback }) => {
-            debugger;
             addLayer({ name, def, type, update: true, number, callback });
         };
 
