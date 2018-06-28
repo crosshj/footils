@@ -358,7 +358,14 @@
                     return dispatcher({
                         type: 'ADD_LAYER_ITEM',
                         payload
-                    })
+                    });
+                };
+
+                const updateLayerItem = (payload) => {
+                    return dispatcher({
+                        type: 'UPDATE_LAYER_ITEM',
+                        payload
+                    });
                 };
 
                 const removeLayers = (payload) => {
@@ -1283,6 +1290,7 @@
                                                     ({ name, def, type }) => {
                                                         item.updateLayer({
                                                             name,
+                                                            number: selectedLayer.number,
                                                             def,
                                                             type,
                                                             callback: (layer) => updateLayerItem({
@@ -1461,6 +1469,13 @@
                                 layerOrder,
                                 layersSelected: [layerOrder[0]]
                             });
+                            break;
+                        }
+                        case 'UPDATE_LAYER_ITEM' : {
+                            const layers = action.payload.layers;
+                            const updatedLayer = action.payload.updatedLayer;
+                            console.log({ layers, updatedLayer });
+                            debugger;
                             break;
                         }
                         case 'ADD_LAYER_ITEM': {

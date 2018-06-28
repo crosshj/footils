@@ -412,6 +412,11 @@ foo : {
 </body>
 
 <script>
+
+    function isNumeric(n) {
+        return !isNaN(parseFloat(n)) && isFinite(n);
+    }
+
     var hideWhenFocusLost = true;
     // when sidebar is pinned, don't show canvas under sidebar
     const pinHandler = ({ pinned }) => {
@@ -460,6 +465,7 @@ foo : {
         changeLayerBlendMode,
         changeLayerOrder,
         addLayer,
+        updateLayer,
         removeLayers
     }) => ({
         title: 'Sidebar Demo',
@@ -487,6 +493,7 @@ foo : {
                 type: 'layers',
                 name: 'layers',
                 addLayer,
+                updateLayer,
                 removeLayers,
                 layersHidden: [1, 2, 3],
                 layers: [{
@@ -803,26 +810,39 @@ foo : {
             canvas.viewport.render();
         };
 
-        const addLayer = ({ name, def, type, callback }) => {
+        const addLayer = ({ name, def, type, update, number, callback }) => {
+            const isUpdating = isNumeric(number) && update;
+            
             //console.log({ name, def, type, callback });
             const layerType = type.toLowerCase().includes('3d')
                 ? 'webgl'
                 : '2d';
-            const newLayer = new Concrete.Layer({ type: layerType });
-            canvas.viewport.add(newLayer);
+            const newLayer = isUpdating
+                ? canvas.layers[number]
+                : new Concrete.Layer({ type: layerType });
+            
+            if(!isUpdating){
+                canvas.viewport.add(newLayer);
+            }
 
             const newLayerRender = type.toLowerCase().includes('3d')
                 ? render3dContext(canvas.layers.length, def)
                 : renderContext(canvas.layers.length, def)
             newLayerRender.def = def.toString();
-            canvas.layers.push(newLayer);
-            canvas.renderFunctions.push(newLayerRender);
+            if(!isUpdating){
+                canvas.layers.push(newLayer);
+                canvas.renderFunctions.push(newLayerRender);
+            } else {
+                canvas.layers[number] = newLayer;
+                canvas.renderFunctions[number] = newLayerRender;
+            }
+
             newLayerRender({ layer: newLayer, width, height });
             canvas.viewport.render();
 
             const newSidebarLayer = {
                 name,
-                number: canvas.layers.length-1,
+                number: isUpdating ? number : canvas.layers.length-1,
                 onToggle: toggleLayerVisible,
                 getThumb: getLayerThumb,
                 getLayerSource,
@@ -833,6 +853,13 @@ foo : {
             setTimeout(matchCanvasFilter, 150);
             callback(newSidebarLayer);
         };
+
+        const updateLayer = ({ name, def, type, number, callback }) => {
+            debugger;
+            addLayer({ name, def, type, update: true, number, callback });
+        };
+
+
         const removeLayers = ({ numbers, callback }) => {
             //console.log({ numbers, callback });
             canvas.layers.forEach((layer, i) => {
@@ -865,6 +892,7 @@ foo : {
             changeLayerBlendMode,
             changeLayerOrder,
             addLayer,
+            updateLayer,
             removeLayers
         });
 
