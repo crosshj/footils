@@ -19,19 +19,7 @@ const fragCode = window.fragmentShaderSource;
 	const lightLocation = [0.25, 1.0, 0.0];
 
 	// vertices: create buffer, bind buffer, add data to buffer, unbind buffer
-	var vertices = new Float32Array([
-			 0,  0, -1,
-			 1,  1, -2,
-			-1,  1, -2,
-
-			 0,  0, -1,
-			-1,  1, -2,
-			 0, -1, -2,
-
-			 0,  0, -1,
-			 0, -1, -2,
-			 1,  1, -2
-	]);
+	var vertices = window.vertices;
 
 	var vertex_buffer = gl.createBuffer();
 	gl.bindBuffer(gl.ARRAY_BUFFER, vertex_buffer);
