@@ -1081,8 +1081,8 @@
                             "// example modded from - https://www.tutorialspoint.com/webgl/webgl_sample_application.htm",
                             "",
                             "// shaders source code",
-                            `var vertCode = \`${document.getElementById('vertex-shader').text}\`;`,
-                            `var fragCode = \`${document.getElementById('fragment-shader').text}\`;`,
+                            `var vertCode = \`${window.vertexShaderSource}\`;`,
+                            `var fragCode = \`${window.fragmentShaderSource}\`;`,
                             "",
                         ].join('\n').concat(document.getElementById('gl-function').text)
 
