@@ -251,8 +251,8 @@
     }) => ({
         title: 'Sidebar Demo',
         pinHandler,
-        hidden: false,
-        pinned: true,
+        hidden: true,
+        pinned: false,
         sections: [{
             name: 'live',
             items: [{
@@ -484,7 +484,7 @@
         ctx.fillRect(0, 0, width, height);
     };
 
-    const width = 1000;
+    const width = 1300;
     const height = 850;
     function setupCanvas({ sideBarDef }){
         var container = document.getElementById('canvasContainer');

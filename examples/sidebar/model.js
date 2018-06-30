@@ -1,56 +1,73 @@
 (function(){
 
-const nZ = -1.9;
+const nZ = -1.8;
 
 function upPyr(x, y){
 	const d = 2;
 	// pyramid
-return [
-		-.5+x/d,  0+y, nZ, //left
-		-1+x, 1+y, -2,
-		-2+x, -1+y, -2,
+	return [
+		0+x,  0+y, nZ, //left
+		0+x, 1+y, -2,
+		-1+x, -1+y, -2,
 
-		-.5+x/d,  0+y, nZ, //right
-		0+x, -1+y, -2,
-		-1+x, 1+y, -2,
+		0+x,  0+y, nZ, //right
+		1+x, -1+y, -2,
+		0+x, 1+y, -2,
 
-		-.5+x/d,  0+y, nZ, // bottom
-		-2+x, -1+y, -2,
-		0+x, -1+y, -2,
+		0+x,  0+y, nZ, // bottom
+		-1+x, -1+y, -2,
+		1+x, -1+y, -2,
 	];
 }
 
-var vertArray = [
-	// middle pyramid
-		0,  0, nZ, //top
-		1,  1, -2,
-	 -1,  1, -2,
+function downPyr(x, y){
+	const d = 2;
+	// pyramid
+	return [
+		0+x,  0+y, nZ, //top
+		1+x,  1+y, -2,
+	 -1+x,  1+y, -2,
 	
-		0,  0, nZ, //left
-	 -1,  1, -2,
-		0, -1, -2,
+		0+x,  0+y, nZ, //left
+	 -1+x,  1+y, -2,
+		0+x, -1+y, -2,
 	
-		0,  0, nZ, //right
-		0, -1, -2,
-		1,  1, -2,
+		0+x,  0+y, nZ, //right
+		0+x, -1+y, -2,
+		1+x,  1+y, -2,
 	];
-vertArray = vertArray.concat(upPyr(0, 0))
-vertArray = vertArray.concat(upPyr(2, 0))
+}
 
-// offset
-vertArray = vertArray.concat(upPyr(1, .5))
-vertArray = vertArray.concat(upPyr(-1, .5))
-vertArray = vertArray.concat(upPyr(3, .5))
+function row(array, x, y){
+	array = array.concat(upPyr(-2+x, y))
+	array = array.concat(downPyr(1+x, y))
+	array = array.concat(upPyr(0+x, y))
+	array = array.concat(downPyr(-1+x, y))
+	array = array.concat(upPyr(2+x, y))
+	array = array.concat(downPyr(3+x, y))
+	return array;
+}
 
-// upper row
-vertArray = vertArray.concat(upPyr(1, 2))
-vertArray = vertArray.concat(upPyr(3, 2))
-vertArray = vertArray.concat(upPyr(-1, 2))
+function block(array, x, y){
+	vertArray = row(vertArray, 1+x, 2+y);
+	vertArray = row(vertArray, 0+x, 0+y);
+	vertArray = row(vertArray, -1+x, -2+y);
+	return vertArray;	
+}
 
-//bottom row
-vertArray = vertArray.concat(upPyr(1, -2))
-vertArray = vertArray.concat(upPyr(3, -2))
-vertArray = vertArray.concat(upPyr(-1, -2))
+var vertArray = [];
+vertArray = block(vertArray, 0, 0);
+vertArray = block(vertArray, 6, 0);
+vertArray = block(vertArray, -6, 0);
+
+vertArray = block(vertArray, -1, -6);
+vertArray = block(vertArray, 5, -6);
+vertArray = block(vertArray, -7, -6);
+
+vertArray = block(vertArray, 1, 6);
+vertArray = block(vertArray, 7, 6);
+vertArray = block(vertArray, -5, 6);
+
 
 const vertices = new Float32Array(vertArray);
 

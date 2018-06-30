@@ -10,18 +10,20 @@ const vertexShaderSource = alpha => `
 	uniform mat4 u_matrix;
 	uniform vec3 u_reverseLightDirection;
 
-	float ambient = 0.8;
+	float ambient = 0.05;
 
 	void main(void) {
 		 gl_Position =  coordinates * u_matrix;
 		 vColor =  vec4(
-					coordinates[0] >= 0.0 && coordinates[1] >= 0.0
+					(coordinates[0] >= 0.0 && coordinates[1] >= 0.0)
+          || (coordinates[0] > 0.0 && coordinates[1] < 0.0)
 							? 1.0
 							: 0.0,
-					coordinates[0] <= 0.0 && coordinates[1] <= 0.0
+					(coordinates[0] <= 0.0 && coordinates[1] <= 0.0)
+          || (coordinates[0] > 0.0 && coordinates[1] < 0.0)
 							? 1.0
 							: 0.0,
-					coordinates[0] <= 0.0 && coordinates[1] >= 0.0
+					(coordinates[0] <= 0.0 && coordinates[1] >= 0.0)
 							? 1.0
 							: 0.0,
 					${alpha}

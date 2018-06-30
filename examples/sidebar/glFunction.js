@@ -3,6 +3,9 @@ const glFunction = (() => {
 
 const vertCode = window.vertexShaderSource(alpha === undefined ? 1.0 : alpha);
 const fragCode = window.fragmentShaderSource;
+//const lightLocation = [0.25, 1.0, 0.0];
+const lightLocation = [1, 6., 5.0];
+
 
 /* Step 0: reset everything */
 
@@ -16,7 +19,7 @@ const fragCode = window.fragmentShaderSource;
 
 /* Step1: Define the geometry and store it in buffer objects */
 
-	const lightLocation = [0.25, 1.0, 0.0];
+
 
 	// vertices: create buffer, bind buffer, add data to buffer, unbind buffer
 	var vertices = window.vertices;
@@ -138,13 +141,13 @@ const fragCode = window.fragmentShaderSource;
 
 	// perspective
 	// https://webglfundamentals.org/we bgl/frustum-diagram.html
-	var aspect = width / height;
+	var aspect = width / height * .9;
 	var zNear = 1;
-	var zFar = 50;
-	var fieldOfViewRadians = glMatrix.toRadian(52.25);
+	var zFar = 200;
+	var fieldOfViewRadians = glMatrix.toRadian(60);
 	var matrix =  mat4.create();
 	//mat4.rotate(matrix, matrix, glMatrix.toRadian(45), [0, -1, 0]);
-	mat4.perspective(matrix, fieldOfViewRadians, 1, zNear, zFar);
+	mat4.perspective(matrix, fieldOfViewRadians, aspect, zNear, zFar);
 
 	gl.uniformMatrix4fv(matrixLocation, false, matrix);
 
