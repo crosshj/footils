@@ -55,18 +55,24 @@ function block(array, x, y){
 	return vertArray;	
 }
 
+function rowsOfPyrs(array){
+	array = block(array, 0, 0);
+	array = block(array, 6, 0);
+	array = block(array, -6, 0);
+
+	array = block(array, -1, -6);
+	array = block(array, 5, -6);
+	array = block(array, -7, -6);
+
+	array = block(array, 1, 6);
+	array = block(array, 7, 6);
+	array = block(array, -5, 6);
+
+	return array;
+}
+
 var vertArray = [];
-vertArray = block(vertArray, 0, 0);
-vertArray = block(vertArray, 6, 0);
-vertArray = block(vertArray, -6, 0);
-
-vertArray = block(vertArray, -1, -6);
-vertArray = block(vertArray, 5, -6);
-vertArray = block(vertArray, -7, -6);
-
-vertArray = block(vertArray, 1, 6);
-vertArray = block(vertArray, 7, 6);
-vertArray = block(vertArray, -5, 6);
+vertArray = rowsOfPyrs(vertArray);
 
 
 const vertices = new Float32Array(vertArray);
