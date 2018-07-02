@@ -1,4 +1,7 @@
 (function(){
+
+// http://imagine.inrialpes.fr/people/Francois.Faure/htmlCourses/WebGL/IntroMeshes.html
+
 const glFunction = (() => {
 
 const vertCode = window.vertexShaderSource(alpha === undefined ? 1.0 : alpha);

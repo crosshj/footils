@@ -1,3 +1,4 @@
+
 (function(){
 
 const nZ = -1.8;
@@ -71,8 +72,45 @@ function rowsOfPyrs(array){
 	return array;
 }
 
+function stick(array){
+	const c = {
+		FLU: [0, 1, -1],
+		FRU: [1, 1, -1],
+		FLL: [0, 0, -1],
+		FRL: [1, 0, -1],
+		BLU: [0, 1, -2],
+		BRU: [1, 1, -2],
+		BLL: [0, 0, -2],
+		BRL: [1, 0, -2]
+	};
+
+	array = array.concat(c.FLU);
+	array = array.concat(c.FLL);
+	array = array.concat(c.FRU);
+
+	array = array.concat(c.FRU);
+	array = array.concat(c.FLL);
+	array = array.concat(c.FRL);
+
+	return array;
+}
+
+function rotate(array, axis, degree){
+	return array;
+}
+
+function scale(array, axis, percent){
+	return array;
+}
+
+function move(array, direction){
+	return array;
+}
+
 var vertArray = [];
 vertArray = rowsOfPyrs(vertArray);
+
+//vertArray = stick(vertArray);
 
 
 const vertices = new Float32Array(vertArray);
