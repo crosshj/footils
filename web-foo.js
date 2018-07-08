@@ -95,9 +95,13 @@
             let script = document.createElement('script');
             script.type = 'text/javascript';
             script = cacheOrLoadify(script, scriptUrl, res);
-            script.onError = rej;
+            const handleLoadError = e => {
+                debugger;
+                rej(e);
+            };
+            script.onError = handleLoadError;
             script.async = true;
-            script.addEventListener('error', rej);
+            script.addEventListener('error', handleLoadError);
             script.addEventListener('load', res);
             document.head.appendChild(script);
         });
@@ -109,6 +113,7 @@
         if (!fn || typeof fn !== 'function'
             || !arr || typeof arr !== "object" || !arr.length
         ) {
+            debugger;
             throw ('Error with promise waterfall');
             return;
         }
@@ -162,7 +167,10 @@
                 }
                 cb(null, `${parent.name}: script is inited!`);
             })
-            .catch(e => cb(e));
+            .catch(e => {
+                debugger;
+                cb(e);
+            });
     }
 
     const returnProps = function (o) {
@@ -184,11 +192,14 @@
     // RXREACT -----------------------------------------------------------------
     function rxReact() { return returnProps(rxReact); }
     rxReact.scripts = [
-        'https://cdnjs.cloudflare.com/ajax/libs/rxjs/6.2.0/rxjs.umd.min.js',
+        '../vendor/rxjs.umd.min.js',
+        //'https://cdnjs.cloudflare.com/ajax/libs/rxjs/6.2.0/rxjs.umd.min.js',
         //'https://unpkg.com/rxjs@beta/bundles/rxjs.umd.js',
         [    // react and react-dom should waterfall
-            'https://unpkg.com/react@16/umd/react.development.js',
-            'https://unpkg.com/react-dom@16/umd/react-dom.development.js'
+            // 'https://unpkg.com/react@16/umd/react.development.js',
+            // 'https://unpkg.com/react-dom@16/umd/react-dom.development.js'
+            '../vendor/react.development.js',
+            '../vendor/react-dom.development.js'
         ]
     ];
 
