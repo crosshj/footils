@@ -149,9 +149,9 @@ const lightLocation = [1, 6., 5.0];
 	var zFar = 200;
 	var fieldOfViewRadians = glMatrix.toRadian(60);
 	var matrix =  mat4.create();
-	//mat4.rotate(matrix, matrix, glMatrix.toRadian(45), [0, -1, 0]);
 	mat4.perspective(matrix, fieldOfViewRadians, aspect, zNear, zFar);
-
+	//mat4.rotate(matrix, matrix, glMatrix.toRadian(45), [0, -1, 0]);
+	
 	gl.uniformMatrix4fv(matrixLocation, false, matrix);
 
 	// reverse lighting direction
@@ -170,7 +170,7 @@ const lightLocation = [1, 6., 5.0];
 	gl.vertexAttribPointer(normalLocation, size, gl.FLOAT, false, 0, 0);
 
 	/* Step4: Drawing the required object (triangle) */
-	gl.drawArrays(gl.TRIANGLES, 0, vertices.length/3);
+	gl.drawArrays(gl[window.vertices.mode || 'TRIANGLES' ], 0, window.vertices.count || vertices.length/3);
 
 
 

@@ -74,23 +74,53 @@ function rowsOfPyrs(array){
 
 function stick(array){
 	const c = {
-		FLU: [0, 1, -1],
-		FRU: [1, 1, -1],
-		FLL: [0, 0, -1],
-		FRL: [1, 0, -1],
-		BLU: [0, 1, -2],
-		BRU: [1, 1, -2],
-		BLL: [0, 0, -2],
-		BRL: [1, 0, -2]
+		FLU: [-0.5, 0.5, -1],
+		FLL: [-0.5, -0.5, -1],
+		FRL: [0.5, -0.5, -1],
+		FRU: [0.5, 0.5, -1],
+		BLU: [-0.5, 0.5, -2],
+		BRU: [0.5, 0.5, -2],
+		BLL: [-0.5, -0.5, -2],
+		BRL: [0.5, -0.5, -2]
 	};
 
-	array = array.concat(c.FLU);
-	array = array.concat(c.FLL);
-	array = array.concat(c.FRU);
+	const verts = [
+		...c.FLU,
+		...c.FRU,
+		...c.FLL,
+		...c.FRL,
+		...c.BRL,
+		...c.FRU,
+		...c.BRU,
+		...c.FLU,
+		...c.BLU,
+		...c.FLL,
+		...c.BLL,
+		...c.BRL,
+		...c.BLU,
+		...c.BRU
+	];
+	array = array.concat(verts);
 
-	array = array.concat(c.FRU);
-	array = array.concat(c.FLL);
-	array = array.concat(c.FRL);
+	// const verts = [
+	// 	c.FLU,     // Front-top-left
+	// 	c.FRU,      // Front-top-right
+	// 	c.FLL,    // Front-bottom-left
+	// 	c.FRL,     // Front-bottom-right
+	// 	c.BRL,    // Back-bottom-right
+	// 	c.FRU,      // Front-top-right
+	// 	c.BRU,     // Back-top-right
+	// 	c.FLU,     // Front-top-left
+	// 	c.BLU,    // Back-top-left
+	// 	c.FLL,    // Front-bottom-left
+	// 	c.BLL,   // Back-bottom-left
+	// 	c.BRL,    // Back-bottom-right
+	// 	c.BLU,    // Back-top-left
+	// 	c.BRU      // Back-top-right
+	// ];
+	// const flatVerts = verts.reduce((all, one) => {
+	// 	array = array.concat(one);
+	// }, array);
 
 	return array;
 }
@@ -108,12 +138,18 @@ function move(array, direction){
 }
 
 var vertArray = [];
-vertArray = rowsOfPyrs(vertArray);
+//vertArray = rowsOfPyrs(vertArray);
 
-//vertArray = stick(vertArray);
+vertArray = stick(vertArray);
 
 
 const vertices = new Float32Array(vertArray);
-
 window.vertices = vertices;
+
+//window.vertices.mode = 'TRIANGLES';
+//window.vertices.count = vertices.length/3
+
+window.vertices.mode = 'TRIANGLE_STRIP';
+window.vertices.count = vertices.length/4;
+
 })();
