@@ -72,16 +72,16 @@ function rowsOfPyrs(array){
 	return array;
 }
 
-function stick(array){
+function stick(){
 	const c = {
-		FLU: [-0.5, 0.5, -1],
-		FLL: [-0.5, -0.5, -1],
-		FRL: [0.5, -0.5, -1],
-		FRU: [0.5, 0.5, -1],
-		BLU: [-0.5, 0.5, -2],
-		BRU: [0.5, 0.5, -2],
-		BLL: [-0.5, -0.5, -2],
-		BRL: [0.5, -0.5, -2]
+		FLU: [-0.5, 0.5, 0.5],
+		FLL: [-0.5, -0.5, 0.5],
+		FRL: [0.5, -0.5, 0.5],
+		FRU: [0.5, 0.5, 0.5],
+		BLU: [-0.5, 0.5, -0.5],
+		BRU: [0.5, 0.5, -0.5],
+		BLL: [-0.5, -0.5, -0.5],
+		BRL: [0.5, -0.5, -0.5]
 	};
 
 	const verts = [
@@ -100,29 +100,8 @@ function stick(array){
 		...c.BLU,
 		...c.BRU
 	];
-	array = array.concat(verts);
 
-	// const verts = [
-	// 	c.FLU,     // Front-top-left
-	// 	c.FRU,      // Front-top-right
-	// 	c.FLL,    // Front-bottom-left
-	// 	c.FRL,     // Front-bottom-right
-	// 	c.BRL,    // Back-bottom-right
-	// 	c.FRU,      // Front-top-right
-	// 	c.BRU,     // Back-top-right
-	// 	c.FLU,     // Front-top-left
-	// 	c.BLU,    // Back-top-left
-	// 	c.FLL,    // Front-bottom-left
-	// 	c.BLL,   // Back-bottom-left
-	// 	c.BRL,    // Back-bottom-right
-	// 	c.BLU,    // Back-top-left
-	// 	c.BRU      // Back-top-right
-	// ];
-	// const flatVerts = verts.reduce((all, one) => {
-	// 	array = array.concat(one);
-	// }, array);
-
-	return array;
+	return verts;
 }
 
 function rotate(array, axis, degree){
@@ -134,13 +113,26 @@ function scale(array, axis, percent){
 }
 
 function move(array, direction){
+	array = array.map((one, i) => {
+		if(direction[0] && i % 3 === 0){
+			return one + direction[0];
+		}
+		if(direction[1] && i % 3 === 1){
+			return one + direction[1];
+		}
+		if(direction[2] && i % 3 === 2){
+			return one + direction[2];
+		}
+		return one;
+	});
 	return array;
 }
 
 var vertArray = [];
 //vertArray = rowsOfPyrs(vertArray);
 
-vertArray = stick(vertArray);
+vertArray = stick();
+vertArray = move(vertArray, [0, 0, -0.95]);
 
 
 const vertices = new Float32Array(vertArray);
@@ -149,7 +141,8 @@ window.vertices = vertices;
 //window.vertices.mode = 'TRIANGLES';
 //window.vertices.count = vertices.length/3
 
+//TODO: should compute normals here and normals should be same for triangles on same face
 window.vertices.mode = 'TRIANGLE_STRIP';
-window.vertices.count = vertices.length/4 +1;
+window.vertices.count = vertices.length/4 + 1;
 
 })();

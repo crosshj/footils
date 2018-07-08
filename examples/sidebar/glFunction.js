@@ -144,13 +144,24 @@ const lightLocation = [1, 6., 5.0];
 
 	// perspective
 	// https://webglfundamentals.org/we bgl/frustum-diagram.html
-	var aspect = width / height * .9;
+	var aspect = width/height; //width / height * .9;
 	var zNear = 1;
-	var zFar = 200;
+	var zFar = 100;
 	var fieldOfViewRadians = glMatrix.toRadian(60);
 	var matrix =  mat4.create();
 	mat4.perspective(matrix, fieldOfViewRadians, aspect, zNear, zFar);
-	//mat4.rotate(matrix, matrix, glMatrix.toRadian(45), [0, -1, 0]);
+	//mat4.rotate(matrix, matrix, glMatrix.toRadian(45), [0, 1, 0]);
+
+	// TODO: get a handle on model, view, and perspective matrices
+	//https://gamedev.stackexchange.com/questions/150173/lookat-with-orthographic-camera-gl-matrix
+	var ortho_proj = mat4.create();
+	var view = mat4.create();
+	var distance = 1;
+	var scale = 1; //Math.tan(fov / 2) * distance; // since ortho is distance invariant, scale by (distance from camera to some reference point)
+	var t = 1;
+	var fov = fieldOfViewRadians;
+	mat4.ortho(ortho_proj, -scale, scale, -scale, scale, 0.1, 100);
+	mat4.lookAt(view, [distance * Math.sin(t),0, distance * Math.cos(t)],[0,0,0],[0,1,0]);
 	
 	gl.uniformMatrix4fv(matrixLocation, false, matrix);
 
