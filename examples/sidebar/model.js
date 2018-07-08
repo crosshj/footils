@@ -150,6 +150,6 @@ window.vertices = vertices;
 //window.vertices.count = vertices.length/3
 
 window.vertices.mode = 'TRIANGLE_STRIP';
-window.vertices.count = vertices.length/4;
+window.vertices.count = vertices.length/4 +1;
 
 })();
