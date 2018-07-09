@@ -104,7 +104,37 @@ function stick(){
 	return verts;
 }
 
-function rotate(array, axis, degree){
+
+var rotateX = function(vector, angleRads) {
+	var sinTheta = Math.sin(angleRads);
+	var cosTheta = Math.cos(angleRads);
+	return [
+		vector[0],
+		vector[1] * cosTheta - vector[2] * sinTheta,
+		vector[2] * cosTheta + vector[1] * sinTheta
+	];
+ };
+var rotateY = function(vector, angleRads) {
+	var sinTheta = Math.sin(angleRads);
+	var cosTheta = Math.cos(angleRads);
+	return [
+		vector[0] * cosTheta - vector[2] * sinTheta,
+		vector[1],
+		vector[2] * cosTheta + vector[0] * sinTheta
+	];
+ };
+
+function rotate(array, axis, degrees){
+	const angle = glMatrix.toRadian(degrees);
+	const xangle = glMatrix.toRadian(35);
+	for(var i=0; i < array.length; i+=3){
+		//TODO: lame, do it better
+		const rotated = rotateY([array[i], array[i+1], array[i+2]], angle);
+		const rotatedX = rotateX(rotated, xangle);
+		array[i] = rotatedX[0];
+		array[i+1] = rotatedX[1];
+		array[i+2] = rotatedX[2];
+	}
 	return array;
 }
 
@@ -132,7 +162,8 @@ var vertArray = [];
 //vertArray = rowsOfPyrs(vertArray);
 
 vertArray = stick();
-vertArray = move(vertArray, [0, 0, -0.95]);
+vertArray = rotate(vertArray, [], 45);
+vertArray = move(vertArray, [0, 0, -1.2]);
 
 
 const vertices = new Float32Array(vertArray);

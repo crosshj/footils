@@ -144,9 +144,9 @@ const lightLocation = [1, 6., 5.0];
 
 	// perspective
 	// https://webglfundamentals.org/we bgl/frustum-diagram.html
-	var aspect = width/height; //width / height * .9;
+	var aspect = width / height * 0.9;
 	var zNear = 1;
-	var zFar = 100;
+	var zFar = 200;
 	var fieldOfViewRadians = glMatrix.toRadian(60);
 	var matrix =  mat4.create();
 	mat4.perspective(matrix, fieldOfViewRadians, aspect, zNear, zFar);
