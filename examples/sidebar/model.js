@@ -74,32 +74,87 @@ function rowsOfPyrs(array){
 
 function stick(){
 	const c = {
-		FLU: [-0.5, 0.5, 0.5],
+		FUL: [-0.5, 0.5, 0.5],
 		FLL: [-0.5, -0.5, 0.5],
-		FRL: [0.5, -0.5, 0.5],
-		FRU: [0.5, 0.5, 0.5],
-		BLU: [-0.5, 0.5, -0.5],
-		BRU: [0.5, 0.5, -0.5],
+		FLR: [0.5, -0.5, 0.5],
+		FUR: [0.5, 0.5, 0.5],
+		
+		BUL: [-0.5, 0.5, -0.5],
 		BLL: [-0.5, -0.5, -0.5],
-		BRL: [0.5, -0.5, -0.5]
+		BLR: [0.5, -0.5, -0.5],
+		BUR: [0.5, 0.5, -0.5]
 	};
 
 	const verts = [
-		...c.FLU,
-		...c.FRU,
+		// FRONT
+		...c.FUR,
+		...c.FUL,
 		...c.FLL,
-		...c.FRL,
-		...c.BRL,
-		...c.FRU,
-		...c.BRU,
-		...c.FLU,
-		...c.BLU,
+		...c.FLR,
+		...c.FUR,
+		...c.FLL,
+
+		// RIGHT
+		...c.FUR,
+		...c.FLR,
+		...c.BUR,
+		...c.BUR,
+		...c.FLR,
+		...c.BLR,
+
+		// BACK
+		...c.BUR,
+		...c.BUL,
+		...c.BLL,
+		...c.BLR,
+		...c.BUR,
+		...c.BLL,
+
+		// LEFT
+		...c.FUL,
+		...c.FLL,
+		...c.BUL,
+		...c.BUL,
 		...c.FLL,
 		...c.BLL,
-		...c.BRL,
-		...c.BLU,
-		...c.BRU
+
+		// TOP
+		...c.FUR,
+		...c.BUR,
+		...c.BUL,
+		...c.BUL,
+		...c.FUL,
+		...c.FUR,
+
+		// BOTTOM
+		...c.FLR,
+		...c.BLR,
+		...c.BLL,
+		...c.BLL,
+		...c.FLL,
+		...c.FLR,
+
 	];
+
+	// static const GLfloat cube_strip[] = {
+	// 	-1.f, 1.f, 1.f,     // Front-upper-left
+	// 	1.f, 1.f, 1.f,      // Front-upper-right
+	// 	-1.f, -1.f, 1.f,    // Front-lower-left
+	// 	1.f, -1.f, 1.f,     // Front-lower-right
+
+	// 	1.f, -1.f, -1.f,    // Back-lower-right
+	// 	1.f, 1.f, 1.f,      // Front-upper-right
+	// 	1.f, 1.f, -1.f,     // Back-upper-right
+	// 	-1.f, 1.f, 1.f,     // Front-upper-left
+
+	// 	-1.f, 1.f, -1.f,    // Back-upper-left
+	// 	-1.f, -1.f, 1.f,    // Front-lower-left
+	// 	-1.f, -1.f, -1.f,   // Back-lower-left
+	// 	1.f, -1.f, -1.f,    // Back-lower-right
+
+	// 	-1.f, 1.f, -1.f,    // Back-upper-left
+	// 	1.f, 1.f, -1.f      // Back-upper-right
+	// };
 
 	return verts;
 }
@@ -125,15 +180,16 @@ var rotateY = function(vector, angleRads) {
  };
 
 function rotate(array, axis, degrees){
-	const angle = glMatrix.toRadian(degrees);
-	const xangle = glMatrix.toRadian(35);
+
+	const angle = glMatrix.toRadian(45);
+	const xangle = glMatrix.toRadian(15);
 	for(var i=0; i < array.length; i+=3){
 		//TODO: lame, do it better
-		const rotated = rotateY([array[i], array[i+1], array[i+2]], angle);
-		const rotatedX = rotateX(rotated, xangle);
-		array[i] = rotatedX[0];
-		array[i+1] = rotatedX[1];
-		array[i+2] = rotatedX[2];
+		var rotated = rotateY([array[i], array[i+1], array[i+2]], angle);
+		rotated = rotateX(rotated, xangle);
+		array[i] = rotated[0];
+		array[i+1] = rotated[1];
+		array[i+2] = rotated[2];
 	}
 	return array;
 }
@@ -164,6 +220,7 @@ var vertArray = [];
 vertArray = stick();
 vertArray = rotate(vertArray, [], 45);
 vertArray = move(vertArray, [0, 0, -1.2]);
+//vertArray = move(vertArray, [0, 0, -0.2]);
 
 
 const vertices = new Float32Array(vertArray);
@@ -173,7 +230,7 @@ window.vertices = vertices;
 //window.vertices.count = vertices.length/3
 
 //TODO: should compute normals here and normals should be same for triangles on same face
-window.vertices.mode = 'TRIANGLE_STRIP';
-window.vertices.count = vertices.length/4 + 1;
+window.vertices.mode = 'TRIANGLES';
+window.vertices.count = vertices.length/3;
 
 })();
