@@ -1,4 +1,6 @@
 (function(){
+    // https://resources.oreilly.com/examples/9781784392215/blob/dd019759a7b48fe409b13f232abb1b0ce988cf5e/learning-threejs-master/chapter-04/04-mesh-normal-material.html
+
     const glFunction = (() => {
         console.log({ ctx, gl, alpha, width, height});
         const canvas = gl.canvas;
