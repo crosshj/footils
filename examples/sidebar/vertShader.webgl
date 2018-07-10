@@ -10,7 +10,7 @@ const vertexShaderSource = alpha => `
 	uniform mat4 u_matrix;
 	uniform vec3 u_reverseLightDirection;
 
-	float ambient = 0.5;
+	float ambient = .3;
 
 	void main(void) {
 		 gl_Position =  coordinates * u_matrix;

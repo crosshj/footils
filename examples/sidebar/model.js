@@ -1,7 +1,7 @@
 
 (function(){
 
-const nZ = -1.8;
+const nZ = -1.7;
 
 function upPyr(x, y){
 	const d = 2;
@@ -27,10 +27,10 @@ function downPyr(x, y){
 	return [
 		0+x,  0+y, nZ, //top
 		1+x,  1+y, -2,
-	 -1+x,  1+y, -2,
+		-1+x,  1+y, -2,
 	
 		0+x,  0+y, nZ, //left
-	 -1+x,  1+y, -2,
+		-1+x,  1+y, -2,
 		0+x, -1+y, -2,
 	
 		0+x,  0+y, nZ, //right
@@ -72,7 +72,7 @@ function rowsOfPyrs(array){
 	return array;
 }
 
-function stick(){
+function stick(array){
 	const c = {
 		FUL: [-0.5, 0.5, 0.5],
 		FLL: [-0.5, -0.5, 0.5],
@@ -136,27 +136,7 @@ function stick(){
 
 	];
 
-	// static const GLfloat cube_strip[] = {
-	// 	-1.f, 1.f, 1.f,     // Front-upper-left
-	// 	1.f, 1.f, 1.f,      // Front-upper-right
-	// 	-1.f, -1.f, 1.f,    // Front-lower-left
-	// 	1.f, -1.f, 1.f,     // Front-lower-right
-
-	// 	1.f, -1.f, -1.f,    // Back-lower-right
-	// 	1.f, 1.f, 1.f,      // Front-upper-right
-	// 	1.f, 1.f, -1.f,     // Back-upper-right
-	// 	-1.f, 1.f, 1.f,     // Front-upper-left
-
-	// 	-1.f, 1.f, -1.f,    // Back-upper-left
-	// 	-1.f, -1.f, 1.f,    // Front-lower-left
-	// 	-1.f, -1.f, -1.f,   // Back-lower-left
-	// 	1.f, -1.f, -1.f,    // Back-lower-right
-
-	// 	-1.f, 1.f, -1.f,    // Back-upper-left
-	// 	1.f, 1.f, -1.f      // Back-upper-right
-	// };
-
-	return verts;
+	return [ ...array, ...rotate(verts, [0, 45, 0]) ];
 }
 
 
@@ -178,15 +158,26 @@ var rotateY = function(vector, angleRads) {
 		vector[2] * cosTheta + vector[0] * sinTheta
 	];
  };
+ var rotateZ = function(vector, angleRads) {
+	var sinTheta = Math.sin(angleRads);
+	var cosTheta = Math.cos(angleRads);
+	return [
+		vector[0] * cosTheta - vector[1] * sinTheta,
+		vector[1] * cosTheta + vector[0] * sinTheta,
+		vector[2]
+	];
+ };
 
-function rotate(array, axis, degrees){
 
-	const angle = glMatrix.toRadian(45);
-	const xangle = glMatrix.toRadian(15);
+function rotate(array, angle){
+	const xangle = glMatrix.toRadian(angle[0]);
+	const yangle = glMatrix.toRadian(angle[1]);
+	const zangle = glMatrix.toRadian(angle[2]);
 	for(var i=0; i < array.length; i+=3){
 		//TODO: lame, do it better
-		var rotated = rotateY([array[i], array[i+1], array[i+2]], angle);
+		var rotated = rotateY([array[i], array[i+1], array[i+2]], yangle);
 		rotated = rotateX(rotated, xangle);
+		rotated = rotateZ(rotated, zangle);
 		array[i] = rotated[0];
 		array[i+1] = rotated[1];
 		array[i+2] = rotated[2];
@@ -215,11 +206,11 @@ function move(array, direction){
 }
 
 var vertArray = [];
-//vertArray = rowsOfPyrs(vertArray);
+vertArray = rowsOfPyrs(vertArray);
 
-vertArray = stick();
-vertArray = rotate(vertArray, [], 45);
-vertArray = move(vertArray, [0, 0, -1.2]);
+ vertArray = stick(vertArray);
+ vertArray = rotate(vertArray, [0, 0, 0]);
+ vertArray = move(vertArray, [0, 0, -1.5]);
 //vertArray = move(vertArray, [0, 0, -0.2]);
 
 
