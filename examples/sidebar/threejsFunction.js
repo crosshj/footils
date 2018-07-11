@@ -8,7 +8,9 @@
         //renderer.setClearColor("#000000");
         renderer.setSize(width, height);
         renderer.shadowMap.enabled = true;
-        //renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        renderer.shadowMap
+        // default THREE.PCFShadowMap
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
         var scene = new THREE.Scene();
         var camera = new THREE.PerspectiveCamera( 75, width/height, 0.1, 1000 );
@@ -16,10 +18,13 @@
         var light = new THREE.PointLight( 0xffff99, 1, 100 );
         light.position.set( 0, 65, 25 );
         light.castShadow = true;
-        light.shadow.mapSize.width = 2048;
-        light.shadow.mapSize.height = 2048;
+        light.shadow.mapSize.width = 1024;
+        light.shadow.mapSize.height = 1024;
         light.shadow.camera.left = 500
         scene.add( light );
+
+        var helper = new THREE.CameraHelper( light.shadow.camera );
+        scene.add( helper );
 
         var sphereMaterial = new THREE.MeshPhongMaterial( { color: 0xffdddd, specular: 0x009900, shininess: 10 } );
         var groundMaterial = new THREE.MeshStandardMaterial( { color: 0xffffff } );
@@ -81,9 +86,15 @@
 
         // position and point the camera to the center of the scene
         camera.position.x = 0;
-        camera.position.y = 40;
-        camera.position.z = 80;
-        camera.lookAt(new THREE.Vector3(0, 10, 10));
+        camera.position.y = 50;
+        camera.position.z = 60;
+        camera.lookAt(new THREE.Vector3(0, 10, 5));
+
+        var camhelper = new THREE.CameraHelper( camera );
+        scene.add( camhelper );
+
+        var axesHelper = new THREE.AxesHelper( 5 );
+        scene.add( axesHelper );
 
         // add subtle ambient lighting
         var ambientLight = new THREE.AmbientLight(0x404040);
