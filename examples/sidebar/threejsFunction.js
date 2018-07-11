@@ -4,7 +4,7 @@
     const glFunction = (() => {
         console.log({ ctx, gl, alpha, width, height});
         const canvas = gl.canvas;
-        const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+        const renderer = new THREE.WebGLRenderer({ canvas });
         //renderer.setClearColor("#000000");
         renderer.setSize(width, height);
         renderer.shadowMap.enabled = true;
