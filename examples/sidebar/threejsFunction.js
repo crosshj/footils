@@ -20,15 +20,36 @@
         light.castShadow = true;
         light.shadow.mapSize.width = 1024;
         light.shadow.mapSize.height = 1024;
-        light.shadow.camera.left = 500
+        light.shadow.camera.left = 500;
         scene.add( light );
 
         var helper = new THREE.CameraHelper( light.shadow.camera );
         scene.add( helper );
 
-        var sphereMaterial = new THREE.MeshPhongMaterial( { color: 0xffdddd, specular: 0x009900, shininess: 10 } );
+
         var groundMaterial = new THREE.MeshStandardMaterial( { color: 0xffffff } );
-        var cubeMaterial = new THREE.MeshPhongMaterial( { color: 0x8899dd, specular: 0x009900, shininess: 10 } );
+        
+        //var mat_wireframe = new THREE.MeshBasicMaterial({color: 0x000000, wireframe: true});
+        //var mat_lambert = new THREE.MeshLambertMaterial({color: 0xffffff, shading: THREE.FlatShading});
+        //var cubeMaterial = [ mat_wireframe, mat_lambert ];
+        
+        var t = new THREE.Texture(document.getElementById('pattern-needles'));
+        t.needsUpdate = true;
+        // var cubeMaterial = new THREE.MeshBasicMaterial({
+        //     map: t
+        // });
+
+        var cubeMaterial = new THREE.MeshPhongMaterial( {
+            color: 0x8899dd, specular: 0x009900, shininess: 10,
+            map: t
+        } );
+
+        var u = new THREE.Texture(document.getElementById('pattern-stones'));
+        u.needsUpdate = true;
+        var sphereMaterial = new THREE.MeshPhongMaterial( {
+            color: 0xffdddd, specular: 0x009900, shininess: 10,
+            map: u
+        } );
 
         var groundGeom = new THREE.PlaneGeometry(1000, 100, 4, 4);
         var groundMesh = new THREE.Mesh(groundGeom, groundMaterial);
@@ -38,8 +59,13 @@
         groundMesh.castShadow = true;
         scene.add(groundMesh);
 
-        var sphereGeometry = new THREE.SphereGeometry(14, 20, 20);
-        var cubeGeometry = new THREE.BoxGeometry(8, 8, 8);
+        var sphereGeometry = new THREE.SphereGeometry(21, 20, 20);
+
+        var divisions = 2;
+        var modifier = new THREE.SubdivisionModifier(divisions);
+        var cubeDim = 16;
+        var cubeGeometry = new THREE.BoxGeometry(cubeDim, cubeDim, cubeDim);
+        modifier.modify(cubeGeometry);
 
         var sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
         var cube = new THREE.Mesh(cubeGeometry, cubeMaterial);

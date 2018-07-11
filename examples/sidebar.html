@@ -8,6 +8,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="mobile-web-app-capable" content="yes">
     <script src="../vendor/three.min.js"></script>
+    <script src="../vendor/three.subdmod.js"></script>
     <script src="../gl-matrix.js"></script>
     <script src="../concrete3d.js"></script>
     <script src="../web-foo.js"></script>
@@ -71,7 +72,6 @@
 <script type="application/javascript" src="sidebar/fragShader.webgl"></script>
 <script src="sidebar/model.js"></script>
 <script id="gl-function" src="sidebar/glFunction.js"></script>
-<script src="sidebar/threejsFunction.js"></script>
 
 <style>
     body {
@@ -184,9 +184,11 @@
     <div style="display: none">
         <img id="pattern-needles" src="">
         <img id="pattern-hatch" src="" >
+        <img id="pattern-stones" src="" >
     </div>
 </body>
 <script src="sidebar/injectImages.js"></script>
+<script src="sidebar/threejsFunction.js"></script>
 
 <script>
 
@@ -473,7 +475,7 @@
         var my_gradient=ctx.createLinearGradient(0,0,0,700);
         my_gradient.addColorStop(0,"#000000");
         my_gradient.addColorStop(1,"#dd0000");
-        //ctx.fillStyle=my_gradient;
+        ctx.fillStyle=my_gradient;
         //ctx.fillStyle = 'red';
         //ctx.filter = "grayscale(10) blur(100px)"
         ctx.filter = "blur(100px)";

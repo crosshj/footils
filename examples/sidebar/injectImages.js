@@ -14,6 +14,9 @@ const toInject = [{
 	src: hatchUri
 }, {
 	id: 'pattern-hatch',
+	src: hatchUri
+}, {
+	id: 'pattern-stones',
 	src: stonesUri
 }];
 
