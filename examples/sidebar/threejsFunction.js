@@ -21,7 +21,7 @@
         light.shadow.camera.left = 500
         scene.add( light );
 
-        var meshMaterial = new THREE.MeshPhongMaterial( { color: 0x00dddd, specular: 0x009900, shininess: 10 } );
+        var sphereMaterial = new THREE.MeshPhongMaterial( { color: 0xffdddd, specular: 0x009900, shininess: 10 } );
         var groundMaterial = new THREE.MeshStandardMaterial( { color: 0xffffff } );
         var cubeMaterial = new THREE.MeshPhongMaterial( { color: 0x8899dd, specular: 0x009900, shininess: 10 } );
 
@@ -36,7 +36,7 @@
         var sphereGeometry = new THREE.SphereGeometry(14, 20, 20);
         var cubeGeometry = new THREE.BoxGeometry(8, 8, 8);
 
-        var sphere = new THREE.Mesh(sphereGeometry, meshMaterial);
+        var sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
         var cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
 
         // position the sphere
