@@ -261,6 +261,7 @@
                 type: 'button',
                 name: 'reload',
                 onClick: () => {
+                    window.parent.caches.delete("call");
                     //TODO: would be nice if this only reloaded DOM/scripts/CSS, not reload page
                     document.location = document.location;
                 }
