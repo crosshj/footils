@@ -10,11 +10,11 @@
     <script src="../vendor/three.min.js"></script>
     <script src="../vendor/three.subdmod.js"></script>
     <script src="../vendor/gl-matrix.js"></script>
-    <script src="../vender/concrete3d.js"></script>
+    <script src="../vendor/concrete3d.js"></script>
     <script src="../web-foo.js"></script>
 </head>
 
-<!-- 
+<!--
     TODO:
     - canvas lib:
         - redraw canvas on fullscreen in/out and resize(?)
@@ -395,7 +395,7 @@
             return;
         }
 
-        fn({ 
+        fn({
             gl,
             alpha,
             width: width*(layer.scene.pixelRatio || 1),
@@ -415,9 +415,9 @@
             Ycenter = height * 0.5;
 
         ctx.beginPath();
-        ctx.moveTo (Xcenter +  size * Math.cos(0), Ycenter +  size *  Math.sin(0));          
+        ctx.moveTo (Xcenter +  size * Math.cos(0), Ycenter +  size *  Math.sin(0));
 
-        for (var i = 1; i <= numberOfSides; i += 1) 
+        for (var i = 1; i <= numberOfSides; i += 1)
         {
             ctx.lineTo (Xcenter + size * Math.cos(i * 2 * Math.PI / numberOfSides), Ycenter + size * Math.sin(i * 2 * Math.PI / numberOfSides));
         }
@@ -451,7 +451,7 @@
                 ctx.fillStyle = '#555';
         ctx.font = 'bold 120px sans-serif';
 
-        const kanji = ' 丳 临 丵 丧 乶 不 擄 ㍼ 书'; 
+        const kanji = ' 丳 临 丵 丧 乶 不 擄 ㍼ 书';
         const braille = "⠁⠂⠃⠄⠅⠆⠇⠈⠉⠊⠋⠌⠍⠎⠏⠐⠑⠒⠓⠔⠕⠖⠗⠘⠙⠚⠛⠜⠝⠞⠟⠠⠡⠢⠣⠤⠥⠦⠧⠨⠩⠪⠫⠬⠭⠮⠯⠰⠱⠲⠳⠴⠵⠶⠷⠸⠹⠺⠻⠼⠽⠾⠿⡀⡁⡂⡃⡄⡅⡆⡇⡈⡉⡊⡋⡌⡍⡎⡏⡐⡑⡒⡓⡔⡕⡖⡗⡘⡙⡚⡛⡜⡝⡞⡟⡠⡡⡢⡣⡤⡥⡦⡧⡨⡩⡪⡫⡬⡭";
         const omg = ' ꙭꙮ꙯꙰꙱꙲꙳ꙴꙵꙶꙷꙸꙹꙺꙻ꙼꙽꙾ꙿ';
         const indic = 'ﶝﶞﶟﶢﶣﶤﶥﶩﶯ';
@@ -534,7 +534,7 @@
                     ? render3dContext(current.number, current.render)
                     : renderContext(current.number, current.render);
                 renderFunc.def = current.render.toString()
-                
+
             }
             if(typeof current.render === "string"
                 && _renderFuncs[current.render]
@@ -621,7 +621,7 @@
 
         const addLayer = ({ name, def, type, update, number, callback }) => {
             const isUpdating = isNumeric(number) && update;
-            
+
             //console.log({ name, def, type, callback });
             const layerType = type.toLowerCase().includes('3d')
                 ? 'webgl'
@@ -629,7 +629,7 @@
             const newLayer = isUpdating
                 ? canvas.layers[number]
                 : new Concrete.Layer({ type: layerType });
-            
+
             if(!isUpdating){
                 canvas.viewport.add(newLayer);
             }
