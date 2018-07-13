@@ -15,16 +15,26 @@
         var scene = new THREE.Scene();
         var camera = new THREE.PerspectiveCamera( 75, width/height, 0.1, 1000 );
 
-        var light = new THREE.PointLight( 0xffff99, 1, 100 );
-        light.position.set( 0, 65, 25 );
+        var light = new THREE.PointLight( 0xaa11dd, 2, 100 );
+        light.position.set( -10, 70, 15 );
         light.castShadow = true;
         light.shadow.mapSize.width = 1024;
         light.shadow.mapSize.height = 1024;
         light.shadow.camera.left = 500;
         scene.add( light );
 
+        var light2 = new THREE.PointLight( 0xffaa22, 2, 100);
+        light2.position.set( -20, 20, 20 );
+        light2.castShadow = true;
+        light2.shadow.mapSize.width = 1024;
+        light2.shadow.mapSize.height = 1024;
+        light2.shadow.camera.left = 500;
+
+        scene.add( light2 );
+
+
         var helper = new THREE.CameraHelper( light.shadow.camera );
-        scene.add( helper );
+        //scene.add( helper );
 
 
         var groundMaterial = new THREE.MeshStandardMaterial( { color: 0xffffff } );
@@ -33,21 +43,22 @@
         //var mat_lambert = new THREE.MeshLambertMaterial({color: 0xffffff, shading: THREE.FlatShading});
         //var cubeMaterial = [ mat_wireframe, mat_lambert ];
         
-        var t = new THREE.Texture(document.getElementById('pattern-needles'));
+        var t = new THREE.Texture(document.getElementById('pattern-leaves'));
+        t.repeat.set(1, 1);
         t.needsUpdate = true;
         // var cubeMaterial = new THREE.MeshBasicMaterial({
         //     map: t
         // });
 
         var cubeMaterial = new THREE.MeshPhongMaterial( {
-            color: 0x8899dd, specular: 0x009900, shininess: 10,
+            color: 0x8899dd, specular: 0xffffff, shininess: 0,
             map: t
         } );
 
         var u = new THREE.Texture(document.getElementById('pattern-stones'));
         u.needsUpdate = true;
         var sphereMaterial = new THREE.MeshPhongMaterial( {
-            color: 0xffdddd, specular: 0x009900, shininess: 10,
+            color: 0xffdddd, specular: 0xffffff, shininess: 0,
             map: u
         } );
 
@@ -61,7 +72,7 @@
 
         var sphereGeometry = new THREE.SphereGeometry(21, 20, 20);
 
-        var divisions = 2;
+        var divisions = 1;
         var modifier = new THREE.SubdivisionModifier(divisions);
         var cubeDim = 16;
         var cubeGeometry = new THREE.BoxGeometry(cubeDim, cubeDim, cubeDim);
@@ -105,8 +116,8 @@
         cube.receiveShadow = true;
 
         // add the sphere to the scene
-        scene.add(sphere);
-        scene.add(cube);
+        //scene.add(sphere);
+        //scene.add(cube);
 
         //scene.add(plane);
 
@@ -114,13 +125,13 @@
         camera.position.x = 0;
         camera.position.y = 50;
         camera.position.z = 60;
-        camera.lookAt(new THREE.Vector3(0, 10, 5));
+        camera.lookAt(new THREE.Vector3(0, 35, 5));
 
         var camhelper = new THREE.CameraHelper( camera );
-        scene.add( camhelper );
+        //scene.add( camhelper );
 
         var axesHelper = new THREE.AxesHelper( 5 );
-        scene.add( axesHelper );
+        //scene.add( axesHelper );
 
         // add subtle ambient lighting
         var ambientLight = new THREE.AmbientLight(0x404040);
@@ -133,6 +144,79 @@
         // spotLight.shadow.mapSize.width = 1024;
         // spotLight.shadow.mapSize.height = 1024;
         // scene.add(spotLight);
+
+        var loader = new THREE.OBJLoader();
+        const tree = loader.parse(window.treeModel);
+
+        tree.traverse( function ( child ) {
+            if ( child instanceof THREE.Mesh ) {
+                child.material = child.material.map(material => {
+                    if(material.name === 'Bark'){
+                        return sphereMaterial;
+                    }
+                    if(material.name === 'Tree'){
+                        return cubeMaterial;
+                    }
+                    return material;
+                });
+                child.material.overdraw = 1
+
+                //var geometry = new THREE.Geometry().fromBufferGeometry( child.geometry );
+                //geometry.computeFaceNormals();
+                //geometry.mergeVertices();
+                //geometry.computeVertexNormals();
+                //modifier.modify(geometry);
+                //child.geometry = new THREE.BufferGeometry().fromGeometry( geometry );
+
+                child.castShadow = true;
+                child.receiveShadow = true;
+            }
+        } );
+        scene.add(tree);
+
+        const tree2 = tree.clone();
+        const bush = tree.clone();
+        const bush2 = bush.clone();
+        const tree3 = tree.clone();
+
+        var treeScaleDim = 3;
+        tree.scale.set(treeScaleDim, treeScaleDim, treeScaleDim);
+        tree.position.x = 45;
+        tree.position.z = -5;
+        tree.rotation.y = (-45 * Math.PI)/180;
+
+        const tree2ScaleDim = 3.7;
+        tree2.scale.set(tree2ScaleDim, tree2ScaleDim, tree2ScaleDim);
+        tree2.position.x = -50;
+        tree2.position.y = -20;
+        tree2.position.z = -20;
+        tree2.rotation.y = (150 * Math.PI)/180;
+        scene.add(tree2);
+
+        const bushScaleDim = 2.7;
+        bush.scale.set(bushScaleDim, bushScaleDim, bushScaleDim);
+        bush.position.x = -68;
+        bush.position.y = -65;
+        bush.position.z = 0;
+        bush.rotation.y = (-80 * Math.PI)/180;
+        scene.add(bush);
+
+        const bush2ScaleDim = 3;
+        bush2.scale.set(bush2ScaleDim, bush2ScaleDim, bush2ScaleDim);
+        bush2.position.x = 63;
+        bush2.position.y = -55;
+        bush2.position.z = 30;
+        bush2.rotation.y = (-70 * Math.PI)/180;
+        scene.add(bush2);
+
+        // FRONT TREE
+        const tree3ScaleDim = 3;
+        tree3.scale.set(tree3ScaleDim, tree3ScaleDim, tree3ScaleDim);
+        tree3.position.x = -36;
+        tree3.position.y = 15;
+        tree3.position.z = 45;
+        tree3.rotation.y = (200 * Math.PI)/180;
+        scene.add(tree3);
 
         renderer.render(scene, camera);
 

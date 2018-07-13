@@ -7,8 +7,13 @@
     <meta name="description" content="Add a sidebar!">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="mobile-web-app-capable" content="yes">
+
+    <script src="../models/Lowpoly_tree_sample.obj.js"></script>
+
     <script src="../vendor/three.min.js"></script>
     <script src="../vendor/three.subdmod.js"></script>
+    <script src="../vendor/three.OBJLoader.js"></script>
+
     <script src="../vendor/gl-matrix.js"></script>
     <script src="../vendor/concrete3d.js"></script>
     <script src="../web-foo.js"></script>
@@ -185,6 +190,7 @@
         <img id="pattern-needles" src="">
         <img id="pattern-hatch" src="" >
         <img id="pattern-stones" src="" >
+        <img id="pattern-leaves" src="" >
     </div>
 </body>
 <script src="sidebar/injectImages.js"></script>
@@ -432,7 +438,7 @@
         const originY = (height/2) - (theight/1.5);
 
         if (!hatchPat){
-            var texture = document.getElementById('pattern-hatch');
+            var texture = document.getElementById('pattern-leaves');
             hatchPat=ctx.createPattern(texture, "repeat");
         }
 
@@ -443,9 +449,13 @@
         //ctx.filter = "grayscale(100%)"
 
         ctx.beginPath();
-        ctx.moveTo(originX    , originY);
-        ctx.lineTo(originX+twidth/2, originY + theight);
-        ctx.lineTo(originX-twidth/2, originY + theight);
+        // ctx.moveTo(originX    , originY);
+        // ctx.lineTo(originX+twidth/2, originY + theight);
+        // ctx.lineTo(originX-twidth/2, originY + theight);
+        ctx.moveTo(0,0);
+        ctx.lineTo(width, 0);
+        ctx.lineTo(width, height);
+        ctx.lineTo(0, height);
         ctx.fill();
 
                 ctx.fillStyle = '#555';
@@ -473,13 +483,13 @@
 
         //ctx.globalAlpha /= 3;
         var my_gradient=ctx.createLinearGradient(0,0,0,700);
-        my_gradient.addColorStop(0,"#000000");
-        my_gradient.addColorStop(1,"#dd0000");
+        my_gradient.addColorStop(1,"#330000ee");
+        my_gradient.addColorStop(0,"#331177dd");
         ctx.fillStyle=my_gradient;
         //ctx.fillStyle = 'red';
         //ctx.filter = "grayscale(10) blur(100px)"
         ctx.filter = "blur(100px)";
-        ctx.arc(width/2, height/2, 300, 0, 2*Math.PI, false);
+        ctx.arc(width/2, height-400, 800, 0, 2*Math.PI, false);
         ctx.fill();
         //ctx.drawImage(texture, 0, 0);
     };
@@ -725,7 +735,33 @@
             loaderStyle.opacity = 0;
         });
     }
+
+    // // instantiate a loader
+    // var loader = new THREE.OBJLoader();
+
+    // // load a resource
+    // loader.load(
+    //     // resource URL
+    //     '../models/Lowpoly_tree_sample.obj',
+
+    //     // called when resource is loaded
+    //     function ( object ) {
+    //         window.treeModel = object;
+    //         //scene.add( object );
+    //         footils.sidebar.init(sidebarReady);
+    //     },
+    //     // called when loading is in progresses
+    //     function ( xhr ) {
+    //         //console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
+    //     },
+    //     // called when loading has errors
+    //     function ( error ) {
+    //         console.log( 'An error happened loading model in threejs' );
+    //     }
+    // );
+
     footils.sidebar.init(sidebarReady);
+
     // document.addEventListener("DOMContentLoaded", function(event) {
     //     footils.sidebar.init(sidebarReady);
     // });
