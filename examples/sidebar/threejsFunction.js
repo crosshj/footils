@@ -46,19 +46,23 @@
         var t = new THREE.Texture(document.getElementById('pattern-leaves'));
         t.repeat.set(1, 1);
         t.needsUpdate = true;
+        t.anisotropy = 32;
+        //t.rotation = (90 * Math.PI)/180;
         // var cubeMaterial = new THREE.MeshBasicMaterial({
         //     map: t
         // });
 
+        // tree
         var cubeMaterial = new THREE.MeshPhongMaterial( {
-            color: 0x8899dd, specular: 0xffffff, shininess: 0,
+            color: 0x8899dd, specular: 0x8bc34a, shininess: 1,
             map: t
         } );
 
+        // trunk
         var u = new THREE.Texture(document.getElementById('pattern-stones'));
         u.needsUpdate = true;
         var sphereMaterial = new THREE.MeshPhongMaterial( {
-            color: 0xffdddd, specular: 0xffffff, shininess: 0,
+            color: 0x654321, specular: 0xdcc19c, shininess: 5,
             map: u
         } );
 
