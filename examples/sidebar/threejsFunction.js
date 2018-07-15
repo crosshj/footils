@@ -29,13 +29,22 @@
         light2.shadow.mapSize.width = 1024;
         light2.shadow.mapSize.height = 1024;
         light2.shadow.camera.left = 500;
-
         scene.add( light2 );
 
+        // add subtle ambient lighting
+        var ambientLight = new THREE.AmbientLight(0x404040);
+        scene.add(ambientLight);
+
+        // add spotlight for the shadows
+        // var spotLight = new THREE.SpotLight(0xffffff);
+        // spotLight.position.set(0, 50, 10);
+        // spotLight.castShadow = true;
+        // spotLight.shadow.mapSize.width = 1024;
+        // spotLight.shadow.mapSize.height = 1024;
+        // scene.add(spotLight);
 
         var helper = new THREE.CameraHelper( light.shadow.camera );
         //scene.add( helper );
-
 
         var groundMaterial = new THREE.MeshStandardMaterial( { color: 0xffffff } );
         
@@ -66,31 +75,33 @@
             map: u
         } );
 
-        var groundGeom = new THREE.PlaneGeometry(1000, 100, 4, 4);
+        var groundGeom = new THREE.PlaneGeometry(1000, 1000, 4, 4);
         var groundMesh = new THREE.Mesh(groundGeom, groundMaterial);
         groundMesh.rotation.x = -Math.PI / 2;
         groundMesh.position.y = -20;
+        groundMesh.position.z = 400;
         groundMesh.receiveShadow = true;
         groundMesh.castShadow = true;
         scene.add(groundMesh);
 
-        var sphereGeometry = new THREE.SphereGeometry(21, 20, 20);
+        //var sphereGeometry = new THREE.SphereGeometry(21, 20, 20);
 
         var divisions = 1;
         var modifier = new THREE.SubdivisionModifier(divisions);
-        var cubeDim = 16;
-        var cubeGeometry = new THREE.BoxGeometry(cubeDim, cubeDim, cubeDim);
-        modifier.modify(cubeGeometry);
+        
+        // var cubeDim = 16;
+        // var cubeGeometry = new THREE.BoxGeometry(cubeDim, cubeDim, cubeDim);
+        // modifier.modify(cubeGeometry);
 
-        var sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
-        var cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
+        // var sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+        // var cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
 
         // position the sphere
-        sphere.position.x = 0;
-        sphere.position.y = 2.75;
-        sphere.position.z = 7;
-        sphere.castShadow = true;
-        sphere.receiveShadow = true;
+        // sphere.position.x = 0;
+        // sphere.position.y = 2.75;
+        // sphere.position.z = 7;
+        // sphere.castShadow = true;
+        // sphere.receiveShadow = true;
 
         // sphere normals
         // for (var f = 0, fl = sphere.geometry.faces.length; f < fl; f++) {
@@ -111,24 +122,23 @@
         //     sphere.add(arrow);
         // }
 
-        cube.position.x = 0;
-        cube.position.y = 35;
-        cube.position.z = 16.5;
-        cube.rotation.y = (45 * Math.PI)/180;
-        cube.rotation.x = (25 * Math.PI)/180;
-        cube.castShadow = true;
-        cube.receiveShadow = true;
+        // cube.position.x = 0;
+        // cube.position.y = 35;
+        // cube.position.z = 16.5;
+        // cube.rotation.y = (45 * Math.PI)/180;
+        // cube.rotation.x = (25 * Math.PI)/180;
+        // cube.castShadow = true;
+        // cube.receiveShadow = true;
 
         // add the sphere to the scene
         //scene.add(sphere);
         //scene.add(cube);
-
         //scene.add(plane);
 
         // position and point the camera to the center of the scene
         camera.position.x = 0;
         camera.position.y = 50;
-        camera.position.z = 60;
+        camera.position.z = 160;
         camera.lookAt(new THREE.Vector3(0, 35, 5));
 
         var camhelper = new THREE.CameraHelper( camera );
@@ -136,18 +146,6 @@
 
         var axesHelper = new THREE.AxesHelper( 5 );
         //scene.add( axesHelper );
-
-        // add subtle ambient lighting
-        var ambientLight = new THREE.AmbientLight(0x404040);
-        scene.add(ambientLight);
-
-        // add spotlight for the shadows
-        // var spotLight = new THREE.SpotLight(0xffffff);
-        // spotLight.position.set(0, 50, 10);
-        // spotLight.castShadow = true;
-        // spotLight.shadow.mapSize.width = 1024;
-        // spotLight.shadow.mapSize.height = 1024;
-        // scene.add(spotLight);
 
         var loader = new THREE.OBJLoader();
         const tree = loader.parse(window.treeModel);
@@ -199,9 +197,9 @@
 
         const bushScaleDim = 2.7;
         bush.scale.set(bushScaleDim, bushScaleDim, bushScaleDim);
-        bush.position.x = -68;
+        bush.position.x = -88;
         bush.position.y = -65;
-        bush.position.z = 0;
+        bush.position.z = 30;
         bush.rotation.y = (-80 * Math.PI)/180;
         scene.add(bush);
 
@@ -210,16 +208,16 @@
         bush2.position.x = 63;
         bush2.position.y = -55;
         bush2.position.z = 30;
-        bush2.rotation.y = (-70 * Math.PI)/180;
+        bush2.rotation.y = (-90 * Math.PI)/180;
         scene.add(bush2);
 
         // FRONT TREE
-        const tree3ScaleDim = 3;
+        const tree3ScaleDim = 4;
         tree3.scale.set(tree3ScaleDim, tree3ScaleDim, tree3ScaleDim);
-        tree3.position.x = -36;
-        tree3.position.y = 15;
-        tree3.position.z = 45;
-        tree3.rotation.y = (200 * Math.PI)/180;
+        tree3.position.x = -106;
+        tree3.position.y = -20;
+        tree3.position.z = 75;
+        tree3.rotation.y = (220 * Math.PI)/180;
         scene.add(tree3);
 
         renderer.render(scene, camera);

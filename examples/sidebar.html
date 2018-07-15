@@ -728,33 +728,9 @@
             loaderStyle.opacity = 0;
         });
     }
-
-    // // instantiate a loader
-    // var loader = new THREE.OBJLoader();
-
-    // // load a resource
-    // loader.load(
-    //     // resource URL
-    //     '../models/Lowpoly_tree_sample.obj',
-
-    //     // called when resource is loaded
-    //     function ( object ) {
-    //         window.treeModel = object;
-    //         //scene.add( object );
-    //         footils.sidebar.init(sidebarReady);
-    //     },
-    //     // called when loading is in progresses
-    //     function ( xhr ) {
-    //         //console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
-    //     },
-    //     // called when loading has errors
-    //     function ( error ) {
-    //         console.log( 'An error happened loading model in threejs' );
-    //     }
-    // );
-
     footils.sidebar.init(sidebarReady);
 
+    // maybe not doing this because of loading spinner (dunno)
     // document.addEventListener("DOMContentLoaded", function(event) {
     //     footils.sidebar.init(sidebarReady);
     // });
