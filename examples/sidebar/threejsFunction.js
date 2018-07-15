@@ -15,16 +15,16 @@
         var scene = new THREE.Scene();
         var camera = new THREE.PerspectiveCamera( 75, width/height, 0.1, 1000 );
 
-        var light = new THREE.PointLight( 0xaa11dd, 2, 100 );
-        light.position.set( -10, 70, 15 );
+        var light = new THREE.PointLight( 0xaa11dd, 2, 120);
+        light.position.set( -20, 70, 20 );
         light.castShadow = true;
         light.shadow.mapSize.width = 1024;
         light.shadow.mapSize.height = 1024;
         light.shadow.camera.left = 500;
         scene.add( light );
 
-        var light2 = new THREE.PointLight( 0xffaa22, 2, 100);
-        light2.position.set( -20, 20, 20 );
+        var light2 = new THREE.PointLight( 0xffaa22, 2, 120);
+        light2.position.set( 20, 70, 20 );
         light2.castShadow = true;
         light2.shadow.mapSize.width = 1024;
         light2.shadow.mapSize.height = 1024;
@@ -32,7 +32,7 @@
         scene.add( light2 );
 
         // add subtle ambient lighting
-        var ambientLight = new THREE.AmbientLight(0x404040);
+        var ambientLight = new THREE.AmbientLight(0x303030);
         scene.add(ambientLight);
 
         // add spotlight for the shadows
@@ -183,8 +183,9 @@
 
         var treeScaleDim = 3;
         tree.scale.set(treeScaleDim, treeScaleDim, treeScaleDim);
-        tree.position.x = 45;
-        tree.position.z = -5;
+        tree.position.x = 65;
+        tree.position.y = -20;
+        tree.position.z = -55;
         tree.rotation.y = (-45 * Math.PI)/180;
 
         const tree2ScaleDim = 3.7;
@@ -205,9 +206,9 @@
 
         const bush2ScaleDim = 3;
         bush2.scale.set(bush2ScaleDim, bush2ScaleDim, bush2ScaleDim);
-        bush2.position.x = 63;
+        bush2.position.x = 83;
         bush2.position.y = -55;
-        bush2.position.z = 30;
+        bush2.position.z = 50;
         bush2.rotation.y = (-90 * Math.PI)/180;
         scene.add(bush2);
 
