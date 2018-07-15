@@ -181,10 +181,7 @@
         <div class="spacer"></div>
     </div>
 
-    <div id="canvasContainer">
-        <!-- <img src="sidecar.jpg" alt="sidecar image"> -->
-        <!-- canvas id="canvas" width="1000" height="625"></canvas -->
-    </div>
+    <div id="canvasContainer"></div>
 
     <div style="display: none">
         <img id="pattern-needles" src="">
@@ -198,16 +195,16 @@
 
 <script>
 
-    function isNumeric(n) {
-        return !isNaN(parseFloat(n)) && isFinite(n);
-    }
+    const isNumeric = n => !isNaN(parseFloat(n)) && isFinite(n);
 
     var hideWhenFocusLost = true;
+
     // when sidebar is pinned, don't show canvas under sidebar
     const pinHandler = ({ pinned }) => {
         hideWhenFocusLost = !pinned;
         document.getElementById('canvasContainer').style.width = pinned ? 'calc(100vw - 220px)' : '';
     };
+
     // clicking on canvasContainer should trigger hide of sidebar if not pinned
     document.getElementById('canvasContainer').addEventListener('click', () => {
         if (hideWhenFocusLost && document.getElementById('sidebar').style.display !== 'none') {
@@ -242,11 +239,7 @@
             .forEach(node => node.style.filter = someFilterNull ? 'null' : 'unset');
     };
 
-    function parseFunction(string) {
-        var func = new Function("return " + string)();
-        //debugger;
-        return func;
-    }
+    const parseFunction = func => new Function("return " + func)();
 
     const sidebarDef = ({
         toggleLayerVisible,
