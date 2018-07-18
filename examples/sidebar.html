@@ -327,7 +327,6 @@
                     changeLayerBlendMode,
                     changeLayerOrder
                 }, {
-
                     name: 'Bottom Layer',
                     type: '2D Canvas',
                     render: 'square',
@@ -344,9 +343,13 @@
             collapsed: true,
             items: [{
                 type: 'text',
-                name: 'text',
-                default: 'default',
-                onChange: e => { console.log(e.target.value); }
+                name: 'Current Layer Alpha',
+                default: '100',
+                onChange: (currentLayer, value) => {
+                    debugger;
+                    // TODO: so much to do here, where do I begin?
+                    currentLayer.changeLayerArgs(currentLayer.number, Number(value));
+                }
             }, {
                 type: 'slider',
                 name: 'slider',

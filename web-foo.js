@@ -396,6 +396,7 @@
                 }
 
                 function textComponent({ div, span, section, item, index }) {
+                    const key = `${section.name}-${item.name}-${index}`;
                     return (
                         div({ key: `${section.name}-${item.name}-${index}` }, [
                             span({ key: `${section.name}-${item.name}-${index}-span`, className: 'label' }, item.name),
@@ -403,7 +404,15 @@
                                 key: `${section.name}-${item.name}-${index}-input`,
                                 type: 'text',
                                 defaultValue: item.default,
-                                onChange: e => console.log(`TODO: should update reducer state!`) & item.onChange(e),
+                                onChange: e => {
+                                    const value = e.target.value;
+                                    const args = { key, value };
+                                    layersPropertiesChanged({ args });
+                                    // TODO: instead of calling item's onChange,
+                                    // maybe item's onChange should be passed to reducer
+                                    // where it can be handled in global context
+                                    item.onChange(args);
+                                },
                                 onFocus: e => e.target.select()
                             })
                         ])
