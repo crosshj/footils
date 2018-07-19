@@ -31,6 +31,15 @@
         light2.shadow.camera.left = 500;
         scene.add( light2 );
 
+        // front light
+        var light3 = new THREE.PointLight( 0xffff00, 1, 120);
+        light3.position.set( 10, 30, 60 );
+        light3.castShadow = false;
+        light3.shadow.mapSize.width = 1024;
+        light3.shadow.mapSize.height = 1024;
+        light3.shadow.camera.left = 500;
+        scene.add( light3 );
+
         // add subtle ambient lighting
         var ambientLight = new THREE.AmbientLight(0x303030);
         scene.add(ambientLight);
@@ -174,7 +183,31 @@
                 child.receiveShadow = true;
             }
         } );
-        scene.add(tree);
+
+
+        const bunny = loader.parse(window.bunnyModel);
+        bunny.traverse( function ( child ) {
+            if ( child instanceof THREE.Mesh ) {
+                child.material = new THREE.MeshPhongMaterial( {
+                    color: 0xffffff, specular: 0xffffff, shininess: 1,
+                    emissive: 0x181818
+                });
+                child.material.side = THREE.BackSide;
+                child.material.overdraw = 1
+                child.castShadow = true;
+                child.receiveShadow = true;
+            }
+        } );
+
+        var bunnyScaleDim = 3;
+        bunny.scale.set(bunnyScaleDim, bunnyScaleDim, bunnyScaleDim);
+        bunny.position.x = 0;
+        bunny.position.y = -20;
+        bunny.position.z = 40;
+        // bunny.rotateX((-135 * Math.PI)/180);
+        bunny.rotateY((-50 * Math.PI)/180);
+        //bunny.rotation.z = (0 * Math.PI)/180;
+        scene.add(bunny);
 
         const tree2 = tree.clone();
         const bush = tree.clone();
@@ -187,6 +220,7 @@
         tree.position.y = -20;
         tree.position.z = -55;
         tree.rotation.y = (-45 * Math.PI)/180;
+        scene.add(tree);
 
         const tree2ScaleDim = 3.7;
         tree2.scale.set(tree2ScaleDim, tree2ScaleDim, tree2ScaleDim);
