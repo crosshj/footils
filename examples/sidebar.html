@@ -21,6 +21,12 @@
 
 <!--
     TODO:
+    - both canvas & layers:
+        - threejs layer alpha not correctly working
+        - default alpha and blend mode (per layer)
+        - some sidebar change causes change in 3d layer
+        - action boilerplate sucks
+
     - canvas lib:
         - redraw canvas on fullscreen in/out and resize(?)
         - set/specify canvas size
@@ -28,13 +34,11 @@
         - move items in layer
         - hit detection with layers
 
-
     - layers
         - same width components / smart labels : done for slider, do for boolean
         - callback architecture
-        - some sidebar change causes change in 3d layer
 
-        - init layer with source
+        X init layer with source
 
         - move layer order
             - minor UI issues across platforms
@@ -254,128 +258,117 @@
         addLayer,
         updateLayer,
         removeLayers
-    }) => ({
-        title: 'Sidebar Demo',
-        pinHandler,
-        hidden: true,
-        pinned: false,
-        sections: [{
-            name: 'live',
-            items: [{
-                type: 'button',
-                name: 'reload',
-                onClick: () => {
-                    window.parent.caches.delete("call");
-                    //TODO: would be nice if this only reloaded DOM/scripts/CSS, not reload page
-                    document.location = document.location;
-                }
-            }, {
-                type: 'button',
-                name: 'filter',
-                onClick: toggleFilter
-            },{
-                type: 'button',
-                name: 'fullscreen',
-                onClick: (e) => fullscreen()
-            }, {
-                type: 'layers',
-                name: 'layers',
-                addLayer,
-                updateLayer,
-                removeLayers,
-                layersHidden: [1],
-                layers: [{
-                    name: '3D Canvas',
-                    type: '3D Canvas',
-                    render: parseFunction(`function({ ctx, gl, alpha, width, height}){
-                        ${window.threejsFunction}
-                    }`),
-                    onToggle: toggleLayerVisible,
-                    getThumb: getLayerThumb,
-                    getLayerSource,
-                    changeLayerAlpha,
-                    changeLayerBlendMode,
-                    changeLayerOrder
+    }) => {
+        const defin = {
+            title: 'Sidebar Demo',
+            pinHandler,
+            hidden: true,
+            pinned: false,
+            sections: [{
+                name: 'live',
+                items: [{
+                    type: 'button',
+                    name: 'reload',
+                    onClick: () => {
+                        window.parent.caches.delete("call");
+                        //TODO: would be nice if this only reloaded DOM/scripts/CSS, not reload page
+                        document.location = document.location;
+                    }
+                }, {
+                    type: 'button',
+                    name: 'filter',
+                    onClick: toggleFilter
                 },{
-                    name: 'Uber Layer',
-                    type: '2D Canvas',
-                    render: 'shape',
-                    onToggle: toggleLayerVisible,
-                    getThumb: getLayerThumb,
-                    getLayerSource,
-                    changeLayerAlpha,
-                    changeLayerBlendMode,
-                    changeLayerOrder
+                    type: 'button',
+                    name: 'fullscreen',
+                    onClick: (e) => fullscreen()
                 }, {
-                    name: 'Middle Layer',
-                    type: '2D Canvas',
-                    render: 'circle',
-                    onToggle: toggleLayerVisible,
-                    getThumb: getLayerThumb,
-                    getLayerSource,
-                    changeLayerAlpha,
-                    changeLayerBlendMode,
-                    changeLayerOrder
+                    type: 'layers',
+                    name: 'layers',
+                    addLayer,
+                    updateLayer,
+                    removeLayers,
+                    layersHidden: [1],
+                    layers: [{
+                        name: '3D Canvas',
+                        type: '3D Canvas',
+                        render: parseFunction(`function({ ctx, gl, alpha, width, height}){
+                            ${window.threejsFunction}
+                        }`)
+                    },{
+                        name: 'Uber Layer',
+                        type: '2D Canvas',
+                        render: 'shape'
+                    }, {
+                        name: 'Middle Layer',
+                        type: '2D Canvas',
+                        render: 'circle'
+                    }, {
+                        name: 'Top Layer',
+                        type: '2D Canvas',
+                        render: 'triangle'
+                    }, {
+                        name: 'Bottom Layer',
+                        type: '2D Canvas',
+                        render: 'square'
+                    }]
+                }]
+            }, {
+                name: 'dummy',
+                collapsed: true,
+                items: [{
+                    type: 'text',
+                    name: 'Current Layer Alpha',
+                    default: '100',
+                    onChange: (currentLayer, value) => {
+                        debugger;
+                        // TODO: so much to do here, where do I begin?
+                        currentLayer.changeLayerArgs(currentLayer.number, Number(value));
+                    }
                 }, {
-                    name: 'Top Layer',
-                    type: '2D Canvas',
-                    render: 'triangle',
-                    onToggle: toggleLayerVisible,
-                    getLayerSource,
-                    getThumb: getLayerThumb,
-                    changeLayerAlpha,
-                    changeLayerBlendMode,
-                    changeLayerOrder
+                    type: 'slider',
+                    name: 'slider',
+                    default: 30,
+                    min: 0,
+                    max: 100,
+                    step: 5,
+                    onChange: value => { console.log(value); }
                 }, {
-                    name: 'Bottom Layer',
-                    type: '2D Canvas',
-                    render: 'square',
-                    onToggle: toggleLayerVisible,
-                    getThumb: getLayerThumb,
-                    getLayerSource,
-                    changeLayerAlpha,
-                    changeLayerBlendMode,
-                    changeLayerOrder
+                    type: 'boolean',
+                    name: 'boolean',
+                    default: 'FALSE',
+                    onChange: e => { console.log(e.target.value); }
+                }, {
+                    type: 'select',
+                    name: 'select',
+                    default: 'blue',
+                    options: ['red', 'green', 'blue', 'yellow', 'orange'],
+                    onChange: (value) => { console.log(value); }
+                }, {
+                    type: 'button',
+                    name: 'button',
+                    onClick: () => { console.log('button clicked'); }
                 }]
             }]
-        }, {
-            name: 'dummy',
-            collapsed: true,
-            items: [{
-                type: 'text',
-                name: 'Current Layer Alpha',
-                default: '100',
-                onChange: (currentLayer, value) => {
-                    debugger;
-                    // TODO: so much to do here, where do I begin?
-                    currentLayer.changeLayerArgs(currentLayer.number, Number(value));
-                }
-            }, {
-                type: 'slider',
-                name: 'slider',
-                default: 30,
-                min: 0,
-                max: 100,
-                step: 5,
-                onChange: value => { console.log(value); }
-            }, {
-                type: 'boolean',
-                name: 'boolean',
-                default: 'FALSE',
-                onChange: e => { console.log(e.target.value); }
-            }, {
-                type: 'select',
-                name: 'select',
-                default: 'blue',
-                options: ['red', 'green', 'blue', 'yellow', 'orange'],
-                onChange: (value) => { console.log(value); }
-            }, {
-                type: 'button',
-                name: 'button',
-                onClick: () => { console.log('button clicked'); }
-            }]
-        }]
-    });
+        };
+
+        // connect layer functions to definition
+        defin.sections.forEach(sec => {
+            sec.items.forEach(ite => {
+                if (ite.type !== 'layers'){ return; }
+                ite.layers.forEach(lay => {
+                    lay.onToggle = toggleLayerVisible;
+                    lay.getLayerSource = getLayerSource;
+                    lay.getThumb = getLayerThumb;
+                    lay.changeLayerAlpha = changeLayerAlpha;
+                    lay.changeLayerBlendMode = changeLayerBlendMode;
+                    lay.changeLayerOrder = changeLayerOrder;
+                });
+            })
+        });
+
+        return defin;
+    };
 
     var thumbs = [];
 
@@ -587,7 +580,8 @@
             return;
         }
 
-        const canvas = setupCanvas({ sideBarDef: sidebarDef({})});
+        const minimalDef = sidebarDef({});
+        const canvas = setupCanvas({ sideBarDef: minimalDef});
         const toggleLayerVisible = ({ number, visible }) => {
             canvas.layers[number].visible = visible;
             canvas.viewport.render();
