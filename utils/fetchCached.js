@@ -1,3 +1,10 @@
+/*
+ DONE, but some features are WIP
+ - setup test to fire off multiple calls to fetchCached and make fetchCached do debouncing
+ - not 100% generalized just yet
+ - use some other method for envs that don't support local storage
+*/
+
 
 function rejectStatusError(response) {
 	if (!response.ok) {
