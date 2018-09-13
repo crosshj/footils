@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>sidebar</title>
+    <meta name="description" content="Add a sidebar!">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="mobile-web-app-capable" content="yes">
+
+    <script src="../models/Lowpoly_tree_sample.obj.js"></script>
+    <script src="../models/Low_Poly_Bunny.obj.js"></script>
+
+    <script src="../vendor/three.min.js"></script>
+    <script src="../vendor/three.subdmod.js"></script>
+    <script src="../vendor/three.OBJLoader.js"></script>
+
+    <script src="../vendor/gl-matrix.js"></script>
+    <script src="../vendor/concrete3d.js"></script>
+    <script src="../web-foo.js"></script>
+</head>
+
+<script type="application/javascript" src="sidebar-terrain/vertShader.webgl"></script>
+<script type="application/javascript" src="sidebar-terrain/fragShader.webgl"></script>
+<script src="sidebar-terrain/model.js"></script>
+<script id="gl-function" src="sidebar-terrain/glFunction.js"></script>
+
+<style>
+    body {
+        background: #888;
+        margin: 0px;
+        background-image: url(data:image/png;base64,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) !important;    background-clip: border-box !important;
+        overflow: hidden;
+    }
+
+    #canvasContainer {
+        width: 100vw;
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    #canvasContainer canvas {
+        background-image: linear-gradient(45deg, #808080 25%, transparent 25%), linear-gradient(-45deg, #808080 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #808080 75%), linear-gradient(-45deg, transparent 75%, #808080 75%);
+        background-size: 20px 20px;
+        background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+        background-color: #bbb;
+    }
+
+    #canvasContainer canvas {
+        max-width: 97%;
+        max-height: 97%;
+        width: unset !important;
+        height: unset !important;
+        /* image-rendering: pixelated; */
+        /* background: #7e7e7e; */
+
+        /* below to deal with weird border artifacts */
+        outline: 2px solid #292828;
+        outline-offset: -2px;
+
+    }
+
+    .layers .image, #canvasContainer canvas {
+        filter: invert(20%) grayscale(80%);
+    }
+
+    .layers .image, #canvasContainer canvas {
+        filter: unset;
+    }
+
+    #loading-spinner {
+        position: absolute;
+        left: 0px;
+        right: 0px;
+        top: 0px;
+        bottom: 0px;
+        z-index: 999;
+        background: #333;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        visibility: visible;
+        opacity: 1;
+        transition: visibility 0s 0.8s, opacity 0.8s;
+    }
+
+    #loading-spinner .icon {
+        width: 9em;
+        fill: #0afff1;
+        shape-rendering: geometricprecision;
+        filter: blur(1px);
+    }
+
+    #loading-spinner .icon-pulse {
+        animation: spin 1s infinite steps(8);
+    }
+
+    #loading-spinner .text {
+        color: white;
+    }
+
+    #loading-spinner .spacer {
+        /* box-shadow: 0px -75px 60px 18px #ffffff47; */
+        width: 0px;
+        height: 0px;
+        margin-bottom: 23%;
+    }
+
+    @keyframes spin {
+        0% {
+            transform: rotate(0deg)
+        }
+
+        100% {
+            transform: rotate(359deg)
+        }
+    }
+</style>
+
+<body>
+    <div id="loading-spinner">
+        <!-- modded from https://loading.io/ -->
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid" class="icon icon-pulse">
+            <path stroke="none" d="M10 50A40 40 0 0 0 90 50A40 42 0 0 1 10 50"></path>
+        </svg>
+        <div class="spacer"></div>
+    </div>
+
+    <div id="canvasContainer"></div>
+
+    <div style="display: none">
+        <img id="pattern-needles" src="">
+        <img id="pattern-hatch" src="" >
+        <img id="pattern-stones" src="" >
+        <img id="pattern-leaves" src="" >
+        <img id="pattern-displace" src="" >
+    </div>
+</body>
+<script src="sidebar-terrain/injectImages.js"></script>
+<script src="sidebar-terrain/threejsFunction.js"></script>
+
+<script>
+
+    const isNumeric = n => !isNaN(parseFloat(n)) && isFinite(n);
+
+    var hideWhenFocusLost = true;
+
+    // when sidebar is pinned, don't show canvas under sidebar
+    const pinHandler = ({ pinned }) => {
+        hideWhenFocusLost = !pinned;
+        document.getElementById('canvasContainer').style.width = pinned ? 'calc(100vw - 220px)' : '';
+    };
+
+    // clicking on canvasContainer should trigger hide of sidebar if not pinned
+    document.getElementById('canvasContainer').addEventListener('click', () => {
+        if (hideWhenFocusLost && document.getElementById('sidebar').style.display !== 'none') {
+            document.getElementById('closeSettings').click();
+        }
+    });
+
+    function fullscreen(el){
+        // TODO: illegal invocation? wtf?
+        //const requestFullScreen = document.documentElement.webkitRequestFullScreen || document.body.mozRequestFullScreen || document.body.msRequestFullscreen;
+        //const exitFullscreen = document.webkitExitFullscreen || document.exitFullscreen;
+
+        if(document.fullscreen || document.webkitIsFullScreen){
+            document.webkitExitFullscreen();
+        } else {
+            document.documentElement.webkitRequestFullScreen();
+        }
+    }
+    const toggleFilter = ({ test, set }) => {
+        const allFilteredNodes = document.querySelectorAll('.layers .image, #canvasContainer canvas');
+        const someFilterNull = Array.from(allFilteredNodes).some(node => !node.style.filter);
+
+        Array.from(allFilteredNodes)
+            .forEach(node => node.style.filter = someFilterNull ? 'unset' : null);
+    };
+
+    const matchCanvasFilter = () => {
+        const canvasFilterUnset = document.querySelectorAll('#canvasContainer canvas');
+        const allFilteredNodes = document.querySelectorAll('.layers .image, #canvasContainer canvas');
+        const someFilterNull = Array.from(canvasFilterUnset).some(node => !node.style.filter);
+        Array.from(allFilteredNodes)
+            .forEach(node => node.style.filter = someFilterNull ? 'null' : 'unset');
+    };
+
+    const parseFunction = func => new Function("return " + func)();
+
+    const sidebarDef = ({
+        toggleLayerVisible,
+        getLayerThumb,
+        getLayerSource,
+        changeLayerAlpha,
+        changeLayerBlendMode,
+        changeLayerOrder,
+        addLayer,
+        updateLayer,
+        removeLayers
+    }) => {
+        const defin = {
+            title: 'Sidebar Demo',
+            pinHandler,
+            hidden: true,
+            pinned: false,
+            sections: [{
+                name: 'live',
+                items: [{
+                    type: 'button',
+                    name: 'reload',
+                    onClick: () => {
+                        window.parent.caches.delete("call");
+                        //TODO: would be nice if this only reloaded DOM/scripts/CSS, not reload page
+                        document.location = document.location;
+                    }
+                }, {
+                    type: 'button',
+                    name: 'filter',
+                    onClick: toggleFilter
+                },{
+                    type: 'button',
+                    name: 'fullscreen',
+                    onClick: (e) => fullscreen()
+                }, {
+                    type: 'layers',
+                    name: 'layers',
+                    addLayer,
+                    updateLayer,
+                    removeLayers,
+                    layersHidden: [1],
+                    layers: [{
+                        name: '3D Canvas',
+                        type: '3D Canvas',
+                        render: parseFunction(`function({ ctx, gl, alpha, width, height}){
+                            ${window.threejsFunction}
+                        }`)
+                    },{
+                        name: 'Uber Layer',
+                        type: '2D Canvas',
+                        render: 'shape'
+                    }, {
+                        name: 'Middle Layer',
+                        type: '2D Canvas',
+                        render: 'circle'
+                    }, {
+                        name: 'Top Layer',
+                        type: '2D Canvas',
+                        render: 'triangle'
+                    }, {
+                        name: 'Bottom Layer',
+                        type: '2D Canvas',
+                        render: 'square'
+                    }]
+                }]
+            }, {
+                name: 'dummy',
+                collapsed: true,
+                items: [{
+                    type: 'text',
+                    name: 'Current Layer Alpha',
+                    default: '100',
+                    onChange: (currentLayer, value) => {
+                        debugger;
+                        // TODO: so much to do here, where do I begin?
+                        currentLayer.changeLayerArgs(currentLayer.number, Number(value));
+                    }
+                }, {
+                    type: 'slider',
+                    name: 'slider',
+                    default: 30,
+                    min: 0,
+                    max: 100,
+                    step: 5,
+                    onChange: value => { console.log(value); }
+                }, {
+                    type: 'boolean',
+                    name: 'boolean',
+                    default: 'FALSE',
+                    onChange: e => { console.log(e.target.value); }
+                }, {
+                    type: 'select',
+                    name: 'select',
+                    default: 'blue',
+                    options: ['red', 'green', 'blue', 'yellow', 'orange'],
+                    onChange: (value) => { console.log(value); }
+                }, {
+                    type: 'button',
+                    name: 'button',
+                    onClick: () => { console.log('button clicked'); }
+                }]
+            }]
+        };
+
+        // connect layer functions to definition
+        defin.sections.forEach(sec => {
+            sec.items.forEach(ite => {
+                if (ite.type !== 'layers'){ return; }
+                ite.layers.forEach(lay => {
+                    lay.onToggle = toggleLayerVisible;
+                    lay.getLayerSource = getLayerSource;
+                    lay.getThumb = getLayerThumb;
+                    lay.changeLayerAlpha = changeLayerAlpha;
+                    lay.changeLayerBlendMode = changeLayerBlendMode;
+                    lay.changeLayerOrder = changeLayerOrder;
+                });
+            })
+        });
+
+        return defin;
+    };
+
+    var thumbs = [];
+
+    const renderContext = (thumbNumber, fn) => ({ layer, alpha, width, height }) => {
+        const ctx = layer.scene.context;
+        ctx.clearRect(0, 0, width, height);
+        ctx.globalAlpha = alpha == 0
+            ? 0
+            : alpha || 1.0;
+        fn({ ctx, width, height});
+        thumbs[thumbNumber] = layer.scene.canvas.toDataURL('image/png');
+    };
+
+    const render3dContext = (thumbNumber, fn) => ({ layer, alpha, width, height }) => {
+        const gl = layer.scene.context;
+        //ctx.clearRect(0, 0, width, height);
+        // ctx.globalAlpha = alpha == 0
+        //      ? 0
+        //      : alpha || 1.0;
+        if(!gl){
+            console.error('WebGL not currently supported!');
+            return;
+        }
+
+        fn({
+            gl,
+            alpha,
+            width: width*(layer.scene.pixelRatio || 1),
+            height: height*(layer.scene.pixelRatio || 1)
+        });
+        thumbs[thumbNumber] = layer.scene.canvas.toDataURL('image/png');
+    };
+
+    const renderShape = ({ ctx, width, height }) => {
+        //ctx.globalAlpha /= 3;
+        //ctx.fillStyle = '#880';
+        ctx.fillStyle = '#888';
+
+        var numberOfSides = 10;
+            size = 400;
+            Xcenter = width / 2;
+            Ycenter = height * 0.5;
+
+        ctx.beginPath();
+        ctx.moveTo (Xcenter +  size * Math.cos(0), Ycenter +  size *  Math.sin(0));
+
+        for (var i = 1; i <= numberOfSides; i += 1)
+        {
+            ctx.lineTo (Xcenter + size * Math.cos(i * 2 * Math.PI / numberOfSides), Ycenter + size * Math.sin(i * 2 * Math.PI / numberOfSides));
+        }
+        ctx.fill();
+    };
+
+    var hatchPat;
+    const renderTriangle = ({ ctx, width, height }) => {
+        const originX = width/2;
+        const twidth = 695; //-300;
+        const theight = 0.866 * twidth;
+        const originY = (height/2) - (theight/1.5);
+
+        if (!hatchPat){
+            var texture = document.getElementById('pattern-leaves');
+            hatchPat=ctx.createPattern(texture, "repeat");
+        }
+
+        ctx.fillStyle=hatchPat;
+
+        //ctx.fillStyle = '#0700d6';
+        //ctx.filter = "hue-rotate(180deg) grayscale(100%)";
+        //ctx.filter = "grayscale(100%)"
+
+        ctx.beginPath();
+        // ctx.moveTo(originX    , originY);
+        // ctx.lineTo(originX+twidth/2, originY + theight);
+        // ctx.lineTo(originX-twidth/2, originY + theight);
+        ctx.moveTo(0,0);
+        ctx.lineTo(width, 0);
+        ctx.lineTo(width, height);
+        ctx.lineTo(0, height);
+        ctx.fill();
+
+                ctx.fillStyle = '#555';
+        ctx.font = 'bold 120px sans-serif';
+
+        const kanji = ' 丳 临 丵 丧 乶 不 擄 ㍼ 书';
+        const braille = "⠁⠂⠃⠄⠅⠆⠇⠈⠉⠊⠋⠌⠍⠎⠏⠐⠑⠒⠓⠔⠕⠖⠗⠘⠙⠚⠛⠜⠝⠞⠟⠠⠡⠢⠣⠤⠥⠦⠧⠨⠩⠪⠫⠬⠭⠮⠯⠰⠱⠲⠳⠴⠵⠶⠷⠸⠹⠺⠻⠼⠽⠾⠿⡀⡁⡂⡃⡄⡅⡆⡇⡈⡉⡊⡋⡌⡍⡎⡏⡐⡑⡒⡓⡔⡕⡖⡗⡘⡙⡚⡛⡜⡝⡞⡟⡠⡡⡢⡣⡤⡥⡦⡧⡨⡩⡪⡫⡬⡭";
+        const omg = ' ꙭꙮ꙯꙰꙱꙲꙳ꙴꙵꙶꙷꙸꙹꙺꙻ꙼꙽꙾ꙿ';
+        const indic = 'ﶝﶞﶟﶢﶣﶤﶥﶩﶯ';
+        const blocks ='▒▓▒▒▓▒▒▒▓▒▒▒▓▒▓▒▒▒▓▒▒▒▓▒▒▒▒▒';
+        const cool = ' ☫〄〠☬ 〯☫㉲☬༖☫☬☫☬';
+        const tibetan = 'ༀ ༁ ༂ ༃ ༄ ༅ ༆ ༇ ༈ ༉ ༊ ་ ༌ ། ༎ ༏ ༐ ༑ ༒ ༓ ༔ ༕ ༖ ༗ ༘ ༙ ༚ ༛ ༜ ༝ ༞ ༟ ༠ ༡ ༢ ༣ ༤ ༥ ༦ ༧ ༨ ༩ ༪ ༫ ༬ ༭ ༮ ༯ ༰ ༱ ༲ ༳ ༴ ༵ ༶ ༷ ༸ ༹ ༺ ༻ ༼ ༽ ༾ ༿ ཀ ཁ ག གྷ ང ཅ ཆ ཇ ཉ ཊ ཋ ཌ ཌྷ ཎ ཏ ཐ ད དྷ ན པ ཕ བ བྷ མ ཙ ཚ ཛ ཛྷ ཝ ཞ ཟ འ ཡ ར ལ ཤ ཥ ས ཧ ཨ ཀྵ ཱ ི ཱི ུ ཱུ ྲྀ ཷ ླྀ ཹ ེ ཻ ོ ཽ ཾ ཿ ྀ ཱྀ ྂ ྃ ྄ ྅ ྆ ྇ ';
+        const tamil = 'ஂ ஃ அ ஆ இ ஈ உ ஊ எ ஏ ஐ ஒ ஓ ஔ க ங ச ஜ ஞ ட ண த ந ன ப ம ய ர ற ல ள ழ வ ஷ ஸ ஹ ா ி ீ ு ூ ெ ே ை ொ ோ ௌ ் ௗ ௧ ௨ ௩ ௪ ௫ ௬ ௭ ௮ ௯ ௰ ௱ ௲';
+        const choice = braille;
+        ctx.fillText(choice.slice(choice.length-60,-1).replace(' ', ''), 0, height-110, width);
+    };
+
+    var needlesPat;
+    const renderCircle = ({ ctx, width, height }) => {
+        if (!needlesPat){
+            var texture = document.getElementById('pattern-needles');
+            needlesPat = ctx.createPattern(texture, "repeat");
+            ctx.fillStyle = needlesPat;
+        }
+
+        //ctx.globalAlpha /= 3;
+        var my_gradient=ctx.createLinearGradient(0,0,0,700);
+        my_gradient.addColorStop(1,"#330000ee");
+        my_gradient.addColorStop(0,"#331177dd");
+        ctx.fillStyle=my_gradient;
+        //ctx.fillStyle = 'red';
+        //ctx.filter = "grayscale(10) blur(100px)"
+        ctx.filter = "blur(100px)";
+        ctx.arc(width/2, height-400, 800, 0, 2*Math.PI, false);
+        ctx.fill();
+        //ctx.drawImage(texture, 0, 0);
+    };
+
+    const renderSquare = ({ ctx, width, height }) => {
+        var grd=ctx.createLinearGradient(0,0,0,height);
+        grd.addColorStop(0,"rgba(170, 0, 170, 1)"); //top
+        grd.addColorStop(0.6, 'rgba(170, 0, 0, 0.8)'); //middle
+        grd.addColorStop(1, 'rgba(0, 0, 170, 1)'); //bottom
+        //ctx.fillStyle=grd;
+        ctx.fillStyle = 'rgb(0,0,0)';
+        ctx.fillRect(0, 0, width, height);
+    };
+
+    const width = 1300;
+    const height = 850;
+    function setupCanvas({ sideBarDef }){
+        var container = document.getElementById('canvasContainer');
+        var viewport = new Concrete.Viewport({
+            width,
+            height,
+            container
+        });
+
+        const _renderFuncs = {
+            'square': renderSquare,
+            'circle': renderCircle,
+            'triangle': renderTriangle,
+            'shape': renderShape
+        };
+        var renderFunctions = [];
+
+        var layers = sideBarDef.sections[0].items
+            .find(x => x.type === 'layers');
+
+        const renderQueue = [];
+        const initLayer = (all, current, i) => {
+            const layerType = current.type.toLowerCase().includes('3d')
+                ? 'webgl'
+                : '2d';
+            const _layer = new Concrete.Layer({ type: layerType });
+            viewport.add(_layer);
+
+            var renderFunc = renderContext(i, () => {});
+            _layer.def = '';
+            //var renderFunc = renderContext(i, _renderFuncs.square);
+
+            var pushThumb = true;
+            if(typeof current.render === "function"){
+                pushThumb = false;
+                renderFunc = layerType === 'webgl'
+                    ? render3dContext(current.number, current.render)
+                    : renderContext(current.number, current.render);
+                renderFunc.def = current.render.toString()
+
+            }
+            if(typeof current.render === "string"
+                && _renderFuncs[current.render]
+            ){
+                pushThumb = false;
+                renderFunc = _renderFuncs[current.render];
+                renderFunc = renderContext(current.number, renderFunc);
+                renderFunc.def = _renderFuncs[current.render].toString();
+            }
+            renderFunctions[current.number] = renderFunc;
+            renderFunc({ layer: _layer, alpha: 1.0, width, height });
+
+            // for case where render not defined
+            if(pushThumb){
+                thumbs[current.number] = _layer.scene.canvas.toDataURL('image/png');
+            }
+            all.push(_layer);
+
+            return all;
+        };
+        layers = (layers.layers || [])
+            .map((x, i) => {
+                x.number = i;
+                return x;
+            })
+            .reverse()
+            .reduce(initLayer, [])
+            .reverse() || [];
+
+        const hiddenLayers = sideBarDef.sections[0].items
+            .find(x => x.type === 'layers').layersHidden;
+        hiddenLayers.forEach(x => layers[x].visible=false);
+
+        viewport.render();
+        return { viewport, layers, renderFunctions };
+    }
+
+    function sidebarReady(err, { start } = {}) {
+        if (err || !start) {
+            console.error(`Error in sidebarReady: ${err}`)
+            return;
+        }
+
+        const minimalDef = sidebarDef({});
+        const canvas = setupCanvas({ sideBarDef: minimalDef});
+        const toggleLayerVisible = ({ number, visible }) => {
+            canvas.layers[number].visible = visible;
+            canvas.viewport.render();
+        };
+
+        const getLayerThumb = ({ number }) => {
+            return thumbs[number];
+        };
+
+        const getLayerSource = ({ number }) => {
+            const renderFunction = canvas.renderFunctions[number];
+            var renderFunctionSource = renderFunction.def || '';
+            // remove function header and trailing curly brace
+            //var match = renderFunctionSource.match(/function[^{]+\{([\s\S]*)\}$/);
+            //return match ? match[1] : renderFunctionSource;
+            var renderFuncLines = renderFunctionSource.split('\n');
+            var unIndent = renderFuncLines.map(x => x.replace('        ', ''));
+            var minusFirstLast = unIndent.slice(1, -1);
+            var rejoin = minusFirstLast.join('\n');
+
+            return rejoin;
+        };
+
+        const changeLayerAlpha = ({ number, alpha }) => {
+            //console.log(number);
+            const renderFunction = canvas.renderFunctions[number];
+
+            renderFunction({
+                layer: canvas.layers[number],
+                alpha, width, height
+            });
+
+            canvas.viewport.render();
+        }
+
+        const changeLayerBlendMode = ({ number, mode }) => {
+            canvas.layers[number].blendMode = mode;
+            canvas.viewport.render();
+        };
+
+        const addLayer = ({ name, def, type, update, number, callback }) => {
+            const isUpdating = isNumeric(number) && update;
+
+            //console.log({ name, def, type, callback });
+            const layerType = type.toLowerCase().includes('3d')
+                ? 'webgl'
+                : '2d';
+            const newLayer = isUpdating
+                ? canvas.layers[number]
+                : new Concrete.Layer({ type: layerType });
+
+            if(!isUpdating){
+                canvas.viewport.add(newLayer);
+            }
+
+            const newLayerRender = type.toLowerCase().includes('3d')
+                ? render3dContext(canvas.layers.length, def)
+                : renderContext(canvas.layers.length, def)
+            newLayerRender.def = def.toString();
+            if(!isUpdating){
+                canvas.layers.push(newLayer);
+                canvas.renderFunctions.push(newLayerRender);
+            } else {
+                //canvas.layers[number] = newLayer;
+                thumbs[number] = canvas.layers[number].scene.canvas.toDataURL('image/png');
+                canvas.renderFunctions[number] = newLayerRender;
+            }
+
+            newLayerRender({ layer: newLayer, width, height });
+            if(isUpdating){
+                thumbs[number] = canvas.layers[number].scene.canvas.toDataURL('image/png');
+            }
+            canvas.viewport.render();
+
+            const newSidebarLayer = {
+                name,
+                number: isUpdating ? number : canvas.layers.length-1,
+                onToggle: toggleLayerVisible,
+                getThumb: getLayerThumb,
+                getLayerSource,
+                changeLayerAlpha,
+                changeLayerBlendMode,
+                changeLayerOrder
+            };
+            setTimeout(matchCanvasFilter, 150);
+            callback(newSidebarLayer);
+        };
+
+        const updateLayer = ({ name, def, type, number, callback }) => {
+            addLayer({ name, def, type, update: true, number, callback });
+        };
+
+
+        const removeLayers = ({ numbers, callback }) => {
+            //console.log({ numbers, callback });
+            canvas.layers.forEach((layer, i) => {
+                if(numbers.includes(i)){
+                    layer.destroy();
+                }
+            });
+            //canvas.layers = canvas.layers.filter((layer, i) => !numbers.includes(i));
+            //thumbs = thumbs.filter((thumb, i)=>!numbers.includes(i))
+            //thumbs.map((thumb, i) => numbers.includes(i) ? ()=>{} : thumb);
+            canvas.viewport.render();
+            callback();
+        };
+
+        const changeLayerOrder = ({
+            number, operation, repeat=1
+        }) => {
+            //console.log({number, operation, repeat});
+            (new Array(repeat)).fill().forEach(x => {
+                canvas.layers[number][operation]();
+            });
+            canvas.viewport.render();
+        };
+
+        const definition = sidebarDef({
+            toggleLayerVisible,
+            getLayerThumb,
+            getLayerSource,
+            changeLayerAlpha,
+            changeLayerBlendMode,
+            changeLayerOrder,
+            addLayer,
+            updateLayer,
+            removeLayers
+        });
+
+        // number each layer
+        definition.sections.forEach(section => {
+            section.items
+                .filter(item => item.type === 'layers')
+                .forEach(item => {
+                    item.layers.forEach((layer, i) => {
+                        layer.number = i;
+                    })
+                })
+        })
+
+        start({ sidebarDef: definition }, () => {
+            const loaderStyle = document.getElementById('loading-spinner').style
+            loaderStyle.visibility = 'hidden';
+            loaderStyle.opacity = 0;
+        });
+    }
+    footils.sidebar.init(sidebarReady);
+
+    // maybe not doing this because of loading spinner (dunno)
+    // document.addEventListener("DOMContentLoaded", function(event) {
+    //     footils.sidebar.init(sidebarReady);
+    // });
+</script>
+
+</html>
