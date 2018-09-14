@@ -24,7 +24,7 @@
         scene.add( light );
 
         var light2 = new THREE.PointLight( 0xffaa22, 2, 120);
-        light2.position.set( 20, 70, 20 );
+        light2.position.set( 20, 700, 20 );
         light2.castShadow = true;
         light2.shadow.mapSize.width = 1024;
         light2.shadow.mapSize.height = 1024;
@@ -41,7 +41,7 @@
         scene.add( light3 );
 
         // add subtle ambient lighting
-        var ambientLight = new THREE.AmbientLight(0x303030);
+        var ambientLight = new THREE.AmbientLight(0xffffff);
         scene.add(ambientLight);
 
         // add spotlight for the shadows
@@ -61,7 +61,7 @@
         //var mat_lambert = new THREE.MeshLambertMaterial({color: 0xffffff, shading: THREE.FlatShading});
         //var cubeMaterial = [ mat_wireframe, mat_lambert ];
 
-        var t = new THREE.Texture(document.getElementById('pattern-leaves'));
+        var t = new THREE.Texture(document.getElementById('pattern-needles'));
         t.repeat.set(1, 1);
         t.needsUpdate = true;
         t.anisotropy = 32;
@@ -91,25 +91,27 @@
         // var parameters = { fragmentShader: shader.fragmentShader, vertexShader: shader.vertexShader, uniforms: uniforms, lights: true, wireframe: true };
         //var groundMaterial = new THREE.ShaderMaterial( parameters );
 
-        var dMap = new THREE.Texture(document.getElementById('pattern-leaves'));
-        dMap.needsUpdate = true;
+        var dMap = new THREE.Texture(document.getElementById('pattern-displace'));
+				dMap.repeat.set(1, 1);
+				dMap.needsUpdate = true;
+				dMap.anisotropy = 32;
 
         var groundMaterial = new THREE.MeshStandardMaterial( {
-            //color: 0x888888,
+            //color: 0x333333,
             displacementMap: dMap,
-            map: dMap,
-            displacementScale: 10,
-            //displacementBias: 0, // from original model
-            side: THREE.DoubleSide
+            map: t,
+            displacementScale: 250,
+            displacementBias: -1, // from original model
+            //side: THREE.DoubleSide
         } );
 
-        var groundGeom = new THREE.PlaneGeometry(1000, 1000, 4, 4);
+        var groundGeom = new THREE.PlaneGeometry(2000, 1000, 500, 500);
         //groundGeom.computeTangents();
 
         var groundMesh = new THREE.Mesh(groundGeom, groundMaterial);
         groundMesh.rotation.x = -Math.PI / 2;
         groundMesh.position.y = -20;
-        groundMesh.position.z = 400;
+        groundMesh.position.z = 0;
         groundMesh.receiveShadow = true;
         groundMesh.castShadow = true;
 

@@ -203,8 +203,8 @@
         const defin = {
             title: 'Sidebar Demo',
             pinHandler,
-            hidden: true,
-            pinned: false,
+            hidden: false,
+            pinned: true,
             sections: [{
                 name: 'live',
                 items: [{
@@ -229,7 +229,7 @@
                     addLayer,
                     updateLayer,
                     removeLayers,
-                    layersHidden: [1],
+                    layersHidden: [1, 3],
                     layers: [{
                         name: '3D Canvas',
                         type: '3D Canvas',
@@ -408,23 +408,23 @@
 
     var needlesPat;
     const renderCircle = ({ ctx, width, height }) => {
-        if (!needlesPat){
-            var texture = document.getElementById('pattern-needles');
-            needlesPat = ctx.createPattern(texture, "repeat");
-            ctx.fillStyle = needlesPat;
-        }
+      if (!needlesPat){
+          var texture = document.getElementById('pattern-needles');
+          needlesPat = ctx.createPattern(texture, "repeat");
+          ctx.fillStyle = needlesPat;
+      }
 
-        //ctx.globalAlpha /= 3;
-        var my_gradient=ctx.createLinearGradient(0,0,0,700);
-        my_gradient.addColorStop(1,"#330000ee");
-        my_gradient.addColorStop(0,"#331177dd");
-        ctx.fillStyle=my_gradient;
-        //ctx.fillStyle = 'red';
-        //ctx.filter = "grayscale(10) blur(100px)"
-        ctx.filter = "blur(100px)";
-        ctx.arc(width/2, height-400, 800, 0, 2*Math.PI, false);
-        ctx.fill();
-        //ctx.drawImage(texture, 0, 0);
+      //ctx.globalAlpha /= 3;
+      var my_gradient=ctx.createLinearGradient(0,0,0,700);
+      my_gradient.addColorStop(1,"#660000ee"); //dark
+      my_gradient.addColorStop(0,"#722288dd"); //light
+      ctx.fillStyle=my_gradient;
+      //ctx.fillStyle = 'red';
+      //ctx.filter = "grayscale(10) blur(100px)"
+      ctx.filter = "blur(100px)";
+      ctx.arc(width/2, height-400, 800, 0, 2*Math.PI, false);
+      ctx.fill();
+      //ctx.drawImage(texture, 0, 0);
     };
 
     const renderSquare = ({ ctx, width, height }) => {
