@@ -43,18 +43,11 @@
         var ambientLight = new THREE.AmbientLight(0xffffff);
         scene.add(ambientLight);
 
-
         var t = new THREE.Texture(document.getElementById('pattern-needles'));
         t.repeat.set(1, 1);
         t.needsUpdate = true;
         t.anisotropy = 32;
 
-        var cubeMaterial = new THREE.MeshPhongMaterial( {
-            color: 0x8899dd, specular: 0x8bc34a, shininess: 1,
-            map: t
-        } );
-
-        // trunk
         var myTexture = new THREE.Texture(document.getElementById('pattern-stones'));
         myTexture.needsUpdate = true;
 
@@ -73,7 +66,6 @@
         } );
 
         var groundGeom = new THREE.PlaneGeometry(2000, 1000, 500, 500);
-        //groundGeom.computeTangents();
 
         var groundMesh = new THREE.Mesh(groundGeom, groundMaterial);
         groundMesh.rotation.x = -Math.PI / 2;
@@ -83,7 +75,6 @@
         groundMesh.castShadow = true;
 
         scene.add(groundMesh);
-
 
         // position and point the camera to the center of the scene
         camera.position.x = 0;
