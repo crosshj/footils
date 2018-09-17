@@ -25,54 +25,49 @@
         //back lights
         var sunColor = 0x884466;
 
-        var light2 = new THREE.PointLight( sunColor, 3, 500);
-        light2.position.set( -120, 475, -550 );
-        light2.castShadow = true;
-        light2.shadow.mapSize.width = 1024;
-        light2.shadow.mapSize.height = 1024;
-        light2.shadow.camera.left = 0;
-        scene.add( light2 );
+        var width = 2000;
+        var height = 100;
+        var intensity = 5;
+        var rectLight = new THREE.RectAreaLight( sunColor, intensity,  width, height );
+        rectLight.position.set( 0, 300, -350 );
+        rectLight.lookAt( 0, 0, -950 );
+        scene.add( rectLight )
 
-        var light22 = new THREE.PointLight( sunColor, 3, 500);
-        light22.position.set( 250, 430, -400 );
-        light22.castShadow = true;
-        light22.shadow.mapSize.width = 1024;
-        light22.shadow.mapSize.height = 1024;
-        light22.shadow.camera.left = 0;
-        scene.add( light22 );
-
-        var light23 = new THREE.PointLight( sunColor, 3, 500);
-        light23.position.set( -680, 550, -550 );
-        light23.castShadow = true;
-        light23.shadow.mapSize.width = 1024;
-        light23.shadow.mapSize.height = 1024;
-        light23.shadow.camera.left = 0;
-        scene.add( light23 );
+        // var rectLightHelper = new THREE.RectAreaLightHelper( rectLight );
+        // scene.add( rectLightHelper );
 
         // front lights
-        var light3 = new THREE.PointLight( sunColor, 2, 240);
-        light3.position.set( 0, 170, 50 );
-        light3.castShadow = false;
-        light3.shadow.mapSize.width = 1024;
-        light3.shadow.mapSize.height = 1024;
-        light3.shadow.camera.left = 0;
-        scene.add( light3 );
+        var frontLight = new THREE.RectAreaLight( sunColor, intensity/2,  width, height );
+        frontLight.position.set( 0,  200, 100 );
+        frontLight.lookAt( 0, 0, 100 );
+        scene.add( frontLight )
 
-        var light31 = new THREE.PointLight( sunColor, 2, 240);
-        light31.position.set( -190, 170, 150 );
-        light31.castShadow = false;
-        light31.shadow.mapSize.width = 1024;
-        light31.shadow.mapSize.height = 1024;
-        light31.shadow.camera.left = 0;
-        scene.add( light31 );
+        // var frontLightHelper = new THREE.RectAreaLightHelper( frontLight );
+        // scene.add( frontLightHelper );
 
-        var light32 = new THREE.PointLight( sunColor, 2, 240);
-        light32.position.set( 190, 170, 150 );
-        light32.castShadow = false;
-        light32.shadow.mapSize.width = 1024;
-        light32.shadow.mapSize.height = 1024;
-        light32.shadow.camera.left = 0;
-        scene.add( light32 );
+        // var light3 = new THREE.PointLight( sunColor, 2, 240);
+        // light3.position.set( 0, 170, 50 );
+        // light3.castShadow = false;
+        // light3.shadow.mapSize.width = 1024;
+        // light3.shadow.mapSize.height = 1024;
+        // light3.shadow.camera.left = 0;
+        // scene.add( light3 );
+
+        // var light31 = new THREE.PointLight( sunColor, 2, 240);
+        // light31.position.set( -190, 170, 150 );
+        // light31.castShadow = false;
+        // light31.shadow.mapSize.width = 1024;
+        // light31.shadow.mapSize.height = 1024;
+        // light31.shadow.camera.left = 0;
+        // scene.add( light31 );
+
+        // var light32 = new THREE.PointLight( sunColor, 2, 240);
+        // light32.position.set( 190, 170, 150 );
+        // light32.castShadow = false;
+        // light32.shadow.mapSize.width = 1024;
+        // light32.shadow.mapSize.height = 1024;
+        // light32.shadow.camera.left = 0;
+        // scene.add( light32 );
 
 
         //add subtle ambient lighting
