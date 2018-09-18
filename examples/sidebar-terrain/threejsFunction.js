@@ -37,7 +37,7 @@
         // scene.add( rectLightHelper );
 
         // front lights
-        var frontLight = new THREE.RectAreaLight( sunColor, intensity/2,  width, height );
+        var frontLight = new THREE.RectAreaLight( sunColor, intensity/1.8,  width, height );
         frontLight.position.set( 0,  200, 100 );
         frontLight.lookAt( 0, 0, 100 );
         scene.add( frontLight )
