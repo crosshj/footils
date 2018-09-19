@@ -27,17 +27,18 @@
 
         var width = 2000;
         var height = 100;
-        var intensity = 5;
-        var rectLight = new THREE.RectAreaLight( sunColor, intensity,  width, height );
-        rectLight.position.set( 0, 300, -350 );
-        rectLight.lookAt( 0, 0, -950 );
+        var intensity = 4;
+        var rectLight = new THREE.RectAreaLight( 0xff00aa, intensity,  width, height );
+        rectLight.position.set( 0, 200, -350 );
+        rectLight.lookAt( 0, 0, -850 );
         scene.add( rectLight )
 
         // var rectLightHelper = new THREE.RectAreaLightHelper( rectLight );
         // scene.add( rectLightHelper );
 
         // front lights
-        var frontLight = new THREE.RectAreaLight( sunColor, intensity/1.8,  width, height );
+        var frontLightIntensity = 3;
+        var frontLight = new THREE.RectAreaLight( sunColor, frontLightIntensity,  width, height );
         frontLight.position.set( 0,  200, 100 );
         frontLight.lookAt( 0, 0, 100 );
         scene.add( frontLight )
@@ -90,7 +91,7 @@
         var mountMaterial = new THREE.MeshStandardMaterial( {
             //color: 0xffffff,
             displacementMap: mountMap,
-            //map: t,
+            map: t,
             displacementScale: 250,
             displacementBias: -1, // from original model
             //side: THREE.DoubleSide
