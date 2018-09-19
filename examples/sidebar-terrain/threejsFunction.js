@@ -1,7 +1,7 @@
 (function(){
 
     const glFunction = (() => {
-        console.log({ ctx, gl, alpha, width, height});
+        //console.log({ ctx, gl, alpha, width, height});
         const canvas = gl.canvas;
         const renderer = new THREE.WebGLRenderer({ canvas });
         //renderer.setClearColor("#000000");
@@ -115,7 +115,7 @@
         groundMesh.position.y = 1;
         groundMesh.position.z = 400;
         groundMesh.receiveShadow = true;
-        groundMesh.castShadow = true;
+        //groundMesh.castShadow = true;
         scene.add(groundMesh);
 
         // position and point the camera to the center of the scene
