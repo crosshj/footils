@@ -28,7 +28,7 @@
         var width = 2000;
         var height = 100;
         var intensity = 4;
-        var rectLight = new THREE.RectAreaLight( 0xff00aa, intensity,  width, height );
+        var rectLight = new THREE.RectAreaLight( 0xbb2288, intensity,  width, height );
         rectLight.position.set( 0, 200, -350 );
         rectLight.lookAt( 0, 0, -850 );
         scene.add( rectLight )
@@ -40,7 +40,7 @@
         var frontLightIntensity = 3;
         var frontLight = new THREE.RectAreaLight( sunColor, frontLightIntensity,  width, height );
         frontLight.position.set( 0,  200, 100 );
-        frontLight.lookAt( 0, 0, 100 );
+        frontLight.lookAt( 0, 0, 350 );
         scene.add( frontLight )
 
         // var frontLightHelper = new THREE.RectAreaLightHelper( frontLight );
