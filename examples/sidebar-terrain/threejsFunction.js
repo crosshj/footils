@@ -38,6 +38,14 @@
         // var frontLightHelper = new THREE.RectAreaLightHelper( frontLight );
         // scene.add( frontLightHelper );
 
+        var light = new THREE.PointLight( sunColor, .7, 100, 1.4);
+        light.position.set( 0, 30, 170 );
+        light.castShadow = true;
+        light.shadow.mapSize.width = 1024;
+        light.shadow.mapSize.height = 1024;
+        light.shadow.camera.left = 0;
+        scene.add( light );
+
         var t = new THREE.Texture(document.getElementById('pattern-needles'));
         t.repeat.set(1, 1);
         t.needsUpdate = true;
@@ -79,11 +87,29 @@
         //groundMesh.castShadow = true;
         scene.add(groundMesh);
 
+
+        var sphereMat = new THREE.MeshPhongMaterial( {
+            //color: 0xdddddd,
+            //specular: 0x009900,
+            shininess: 30,
+            transparent: false
+        });
+        var sphereGeom = new THREE.SphereGeometry(3, 64, 64);
+        var sphereMesh = new THREE.Mesh(sphereGeom, sphereMat);
+        sphereMesh.position.x = 0;
+        sphereMesh.position.y = 8;
+        sphereMesh.position.z = 140;
+        sphereMesh.receiveShadow = true;
+        sphereMesh.castShadow = true;
+        scene.add(sphereMesh);
+
+
         // position and point the camera to the center of the scene
         camera.position.x = 0;
-        camera.position.y = 50;
+        camera.position.y = 10;
         camera.position.z = 160;
         camera.lookAt(new THREE.Vector3(0, 35, 5));
+
 
         renderer.render(scene, camera);
 
