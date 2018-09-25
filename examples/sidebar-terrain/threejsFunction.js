@@ -39,6 +39,7 @@
         // scene.add( frontLightHelper );
 
         var light = new THREE.PointLight( sunColor, 1.1, 400, 1.4);
+        //var light = new THREE.PointLight( sunColor, .8, 100, 1.4);>>>>>>> 90f762598e82043ecb88490d14a1577030193094
         light.position.set( 0, 30, 170 );
         light.castShadow = true;
         light.shadow.mapSize.width = 1024;
