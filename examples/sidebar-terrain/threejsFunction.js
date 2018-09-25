@@ -29,16 +29,16 @@
         // scene.add( rectLightHelper );
 
         // front lights
-        var frontLightIntensity = 3;
-        var frontLight = new THREE.RectAreaLight( sunColor, frontLightIntensity,  width, height );
-        frontLight.position.set( 0,  200, 100 );
-        frontLight.lookAt( 0, 0, 350 );
-        scene.add( frontLight )
+        // var frontLightIntensity = 3;
+        // var frontLight = new THREE.RectAreaLight( sunColor, frontLightIntensity,  width, height );
+        // frontLight.position.set( 0,  200, 100 );
+        // frontLight.lookAt( 0, 0, 350 );
+        // scene.add( frontLight )
 
         // var frontLightHelper = new THREE.RectAreaLightHelper( frontLight );
         // scene.add( frontLightHelper );
 
-        var light = new THREE.PointLight( sunColor, .7, 100, 1.4);
+        var light = new THREE.PointLight( sunColor, 1.1, 400, 1.4);
         light.position.set( 0, 30, 170 );
         light.castShadow = true;
         light.shadow.mapSize.width = 1024;
@@ -88,10 +88,13 @@
         scene.add(groundMesh);
 
 
-        var sphereMat = new THREE.MeshPhongMaterial( {
+        var sphereMat = new THREE.MeshStandardMaterial( {
             //color: 0xdddddd,
             //specular: 0x009900,
-            shininess: 30,
+            emissive: 0x001100,
+            metalness: 0.6,
+            //shininess: 1,
+            roughness: 0.6,
             transparent: false
         });
         var sphereGeom = new THREE.SphereGeometry(3, 64, 64);
