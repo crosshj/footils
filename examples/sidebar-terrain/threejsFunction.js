@@ -96,16 +96,70 @@
             metalness: 0.6,
             //shininess: 1,
             roughness: 0.6,
-            transparent: false
+            transparent: false,
+            skinning : true
         });
         var sphereGeom = new THREE.SphereGeometry(3, 64, 64);
-        var sphereMesh = new THREE.Mesh(sphereGeom, sphereMat);
+        var sphereMesh = new THREE.SkinnedMesh(sphereGeom, sphereMat);
         sphereMesh.position.x = 0;
         sphereMesh.position.y = 8;
         sphereMesh.position.z = 140;
         sphereMesh.receiveShadow = true;
         sphereMesh.castShadow = true;
+
+        function createBones ( sizing ) {
+            bones = [];
+            var prevBone = new THREE.Bone();
+            bones.push( prevBone );
+            prevBone.position.y = - sizing.halfHeight;
+            for ( var i = 0; i < sizing.segmentCount; i ++ ) {
+                var bone = new THREE.Bone();
+                bone.position.y = sizing.segmentHeight;
+                bones.push( bone );
+                prevBone.add( bone );
+                prevBone = bone;
+
+            }
+            return bones;
+        }
+        function getBones(){
+            var segmentHeight = 1.4;
+            var segmentCount = 4;
+            var height = segmentHeight * segmentCount;
+            var halfHeight = height * 0.5;
+
+            var sizing = {
+                segmentHeight : segmentHeight,
+                segmentCount : segmentCount,
+                height : height,
+                halfHeight : halfHeight
+            };
+
+            var bones = createBones( sizing );
+            return bones;
+        }
+
+        var bones = getBones();
+        var skeleton = new THREE.Skeleton( bones );
+
+        sphereMesh.add( bones[ 0 ] );
+        sphereMesh.bind( skeleton );
+
+
+        skeletonHelper = new THREE.SkeletonHelper( sphereMesh );
+        skeletonHelper.material.linewidth = 2;
+        scene.add( skeletonHelper );
+
+        sphereMesh.scale.multiplyScalar(1);
         scene.add(sphereMesh);
+
+        //sphereMesh.skeleton.bones[2].position.y = -120;
+        sphereMesh.skeleton.bones[2].position.x = -20;
+        // sphereMesh.skeleton.bones[2].matrixWorldNeedsUpdate = true;
+
+        //skeletonHelper.update();
+        console.log(sphereMesh)
+
 
 
         // position and point the camera to the center of the scene
@@ -116,6 +170,9 @@
 
 
         renderer.render(scene, camera);
+
+        window.sphere = sphereMesh;
+        window.renderer = () => renderer.render(scene, camera);
 
     }).toString().split('\n').slice(1, -1).join('\n');
     window.threejsFunction = glFunction;
