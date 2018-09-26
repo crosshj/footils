@@ -38,7 +38,7 @@
         // var frontLightHelper = new THREE.RectAreaLightHelper( frontLight );
         // scene.add( frontLightHelper );
 
-        var light = new THREE.PointLight( sunColor, 1.1, 400, 1.4);
+        var light = new THREE.PointLight( sunColor, 1.4, 400, 1.4);
         //var light = new THREE.PointLight( sunColor, .8, 100, 1.4);>>>>>>> 90f762598e82043ecb88490d14a1577030193094
         light.position.set( 0, 30, 170 );
         light.castShadow = true;
@@ -122,8 +122,8 @@
             }
             return bones;
         }
-        function getBones(){
-            var segmentHeight = 1.4;
+        function getBones(geometry){
+            var segmentHeight = 1.6;
             var segmentCount = 4;
             var height = segmentHeight * segmentCount;
             var halfHeight = height * 0.5;
@@ -136,31 +136,61 @@
             };
 
             var bones = createBones( sizing );
+
+            for (let i = 0; i < geometry.vertices.length; i += 1) {
+                const vertex = geometry.vertices[i];
+                const y = (vertex.y + halfHeight);
+                const skinIndex = Math.floor(y / segmentHeight);
+                const skinWeight = (y % segmentHeight) / segmentHeight;
+
+                geometry.skinIndices.push(new THREE.Vector4(skinIndex, skinIndex + 1, 0, 0));
+                geometry.skinWeights.push(new THREE.Vector4(1 - skinWeight, skinWeight, 0, 0));
+            }
+
             return bones;
         }
 
-        var bones = getBones();
+        var bones = getBones(sphereGeom);
         var skeleton = new THREE.Skeleton( bones );
 
         sphereMesh.add( bones[ 0 ] );
         sphereMesh.bind( skeleton );
 
-
         skeletonHelper = new THREE.SkeletonHelper( sphereMesh );
         skeletonHelper.material.linewidth = 2;
-        scene.add( skeletonHelper );
+        //scene.add( skeletonHelper );
 
         sphereMesh.scale.multiplyScalar(1);
+
+
         scene.add(sphereMesh);
 
-        //sphereMesh.skeleton.bones[2].position.y = -120;
-        sphereMesh.skeleton.bones[2].position.x = -20;
-        // sphereMesh.skeleton.bones[2].matrixWorldNeedsUpdate = true;
+        // TODO: hate that I have to do two renders to see this
+        sphereMesh.skeleton.bones[1].rotation.z = .2;
+        sphereMesh.skeleton.bones[1].position.y = 3;
 
-        //skeletonHelper.update();
-        console.log(sphereMesh)
+        sphereMesh.skeleton.bones[1].scale.x = .7;
+        sphereMesh.skeleton.bones[1].scale.z = .7;
 
 
+        sphereMesh.skeleton.bones[2].scale.x = .7;
+        sphereMesh.skeleton.bones[2].scale.z = .7;
+        sphereMesh.skeleton.bones[2].rotation.z = .3;
+
+        sphereMesh.skeleton.bones[3].rotation.z = .8;
+        sphereMesh.skeleton.bones[3].position.y = 4;
+
+        sphereMesh.skeleton.bones[3].scale.x = 0.8;
+        sphereMesh.skeleton.bones[3].scale.z = 0.8;
+
+        sphereMesh.skeleton.bones[3].position.x = -1;
+        sphereMesh.skeleton.bones[4].rotation.z = .45;
+        sphereMesh.skeleton.bones[4].position.y = 3;
+
+        sphereMesh.skeleton.bones[4].scale.x = 1.2;
+        sphereMesh.skeleton.bones[4].scale.z = 1.2;
+
+        sphereMesh.rotation.y = .8;
 
         // position and point the camera to the center of the scene
         camera.position.x = 0;
@@ -170,7 +200,8 @@
 
 
         renderer.render(scene, camera);
-
+        renderer.render(scene, camera);
+        window.scene = scene;
         window.sphere = sphereMesh;
         window.renderer = () => renderer.render(scene, camera);
 
