@@ -12,7 +12,11 @@
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
         var scene = new THREE.Scene();
-        var camera = new THREE.PerspectiveCamera( 75, width/height, 0.1, 1000 );
+        const fov = 75;
+        const aspect = width/height;
+        const near = 0.1;
+        const far = 1000;
+        var camera = new THREE.PerspectiveCamera( fov, aspect, near, far );
 
         //back lights
         var sunColor = 0x884466;
@@ -38,9 +42,9 @@
         // var frontLightHelper = new THREE.RectAreaLightHelper( frontLight );
         // scene.add( frontLightHelper );
 
-        var light = new THREE.PointLight( sunColor, 1.4, 400, 1.4);
+        var light = new THREE.PointLight( sunColor, 2, 400, 1.4);
         //var light = new THREE.PointLight( sunColor, .8, 100, 1.4);>>>>>>> 90f762598e82043ecb88490d14a1577030193094
-        light.position.set( 0, 30, 170 );
+        light.position.set( 0, 15, 170 );
         light.castShadow = true;
         light.shadow.mapSize.width = 1024;
         light.shadow.mapSize.height = 1024;
@@ -88,24 +92,17 @@
         //groundMesh.castShadow = true;
         scene.add(groundMesh);
 
-
         var sphereMat = new THREE.MeshStandardMaterial( {
             //color: 0xdddddd,
             //specular: 0x009900,
-            emissive: 0x001100,
-            metalness: 0.6,
+            emissive: 0x111900,
+            metalness: 0.9,
             //shininess: 1,
-            roughness: 0.6,
+            roughness: 0.75,
             transparent: false,
             skinning : true
         });
-        var sphereGeom = new THREE.SphereGeometry(3, 64, 64);
-        var sphereMesh = new THREE.SkinnedMesh(sphereGeom, sphereMat);
-        sphereMesh.position.x = 0;
-        sphereMesh.position.y = 8;
-        sphereMesh.position.z = 140;
-        sphereMesh.receiveShadow = true;
-        sphereMesh.castShadow = true;
+
 
         function createBones ( sizing ) {
             bones = [];
@@ -150,47 +147,66 @@
             return bones;
         }
 
-        var bones = getBones(sphereGeom);
-        var skeleton = new THREE.Skeleton( bones );
 
-        sphereMesh.add( bones[ 0 ] );
-        sphereMesh.bind( skeleton );
+        function getMesh(index) {
 
-        skeletonHelper = new THREE.SkeletonHelper( sphereMesh );
-        skeletonHelper.material.linewidth = 2;
-        //scene.add( skeletonHelper );
+            var sphereGeom = new THREE.SphereGeometry(3, 64, 64);
+            var sphereMesh = new THREE.SkinnedMesh(sphereGeom, sphereMat);
 
-        sphereMesh.scale.multiplyScalar(1);
+            sphereMesh.position.x = 0;
+            sphereMesh.position.y = 8;
+            sphereMesh.position.z = 142;
+            sphereMesh.receiveShadow = true;
+            sphereMesh.castShadow = true;
+
+            var bones = getBones(sphereGeom);
+            var skeleton = new THREE.Skeleton( bones );
+
+            sphereMesh.add( bones[ 0 ] );
+            sphereMesh.bind( skeleton );
+
+            skeletonHelper = new THREE.SkeletonHelper( sphereMesh );
+            skeletonHelper.material.linewidth = 2;
+            //scene.add( skeletonHelper );
+
+            sphereMesh.scale.multiplyScalar(1);
+
+            scene.add(sphereMesh);
+
+            // TODO: hate that I have to do two renders to see this
+            //sphereMesh.skeleton.bones[1].rotation.z = .2;
+            sphereMesh.skeleton.bones[1].position.y = 3;
+
+            sphereMesh.skeleton.bones[1].scale.x = 0.35;
+            sphereMesh.skeleton.bones[1].scale.z = 0.35;
 
 
-        scene.add(sphereMesh);
+            sphereMesh.skeleton.bones[2].scale.x = 1.5;
+            sphereMesh.skeleton.bones[2].scale.z = 1.5;
+            sphereMesh.skeleton.bones[2].position.y = 3;
+            //sphereMesh.skeleton.bones[2].rotation.z = .3;
 
-        // TODO: hate that I have to do two renders to see this
-        sphereMesh.skeleton.bones[1].rotation.z = .2;
-        sphereMesh.skeleton.bones[1].position.y = 3;
+            //sphereMesh.skeleton.bones[3].rotation.z = -.8;
+            sphereMesh.skeleton.bones[3].position.y = 4;
+            // sphereMesh.skeleton.bones[3].scale.x = 1.1;
+            // sphereMesh.skeleton.bones[3].scale.z = 1.1;
+            //sphereMesh.skeleton.bones[3].position.x = -1;
 
-        sphereMesh.skeleton.bones[1].scale.x = .7;
-        sphereMesh.skeleton.bones[1].scale.z = .7;
+            //sphereMesh.skeleton.bones[4].rotation.z = .45;
+            sphereMesh.skeleton.bones[4].position.y = 2;
 
+            sphereMesh.rotation.y = 0;
+            sphereMesh.position.x = -17;
+            return sphereMesh;
+        }
 
-        sphereMesh.skeleton.bones[2].scale.x = .7;
-        sphereMesh.skeleton.bones[2].scale.z = .7;
-        sphereMesh.skeleton.bones[2].rotation.z = .3;
+        const meshes = (new Array(8)).fill().map( x => getMesh() );
 
-        sphereMesh.skeleton.bones[3].rotation.z = .8;
-        sphereMesh.skeleton.bones[3].position.y = 4;
+        meshes.forEach((x, i) => {
+            x.position.x = x.position.x + i * 5;
+            x.rotation.y = x.rotation.y + i * -.75;
+        });
 
-        sphereMesh.skeleton.bones[3].scale.x = 0.8;
-        sphereMesh.skeleton.bones[3].scale.z = 0.8;
-
-        sphereMesh.skeleton.bones[3].position.x = -1;
-        sphereMesh.skeleton.bones[4].rotation.z = .45;
-        sphereMesh.skeleton.bones[4].position.y = 3;
-
-        sphereMesh.skeleton.bones[4].scale.x = 1.2;
-        sphereMesh.skeleton.bones[4].scale.z = 1.2;
-
-        sphereMesh.rotation.y = .8;
 
         // position and point the camera to the center of the scene
         camera.position.x = 0;
@@ -200,10 +216,10 @@
 
 
         renderer.render(scene, camera);
-        renderer.render(scene, camera);
-        window.scene = scene;
-        window.sphere = sphereMesh;
-        window.renderer = () => renderer.render(scene, camera);
+        // renderer.render(scene, camera);
+        //window.scene = scene;
+        //window.sphere = sphereMesh;
+        //window.renderer = () => renderer.render(scene, camera);
 
     }).toString().split('\n').slice(1, -1).join('\n');
     window.threejsFunction = glFunction;
