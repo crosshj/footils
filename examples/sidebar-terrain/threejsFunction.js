@@ -150,7 +150,15 @@
 
         function getMesh(index) {
 
-            var sphereGeom = new THREE.SphereGeometry(3, 64, 64);
+            var sphereGeom;
+
+            if(index === 0){
+                //radius : Float, height : Float, radialSegments : Integer, heightSegments
+                sphereGeom = new THREE.ConeGeometry( 3, 6, 64, 64 )
+            } else {
+                // radius : Float, widthSegments : Integer, heightSegments
+                sphereGeom = new THREE.SphereGeometry(3, 64, 64);
+            }
             var sphereMesh = new THREE.SkinnedMesh(sphereGeom, sphereMat);
 
             sphereMesh.position.x = 0;
@@ -174,11 +182,14 @@
             scene.add(sphereMesh);
 
             // TODO: hate that I have to do two renders to see this
+            sphereMesh.skeleton.bones[0].scale.x = 0.35;
+            sphereMesh.skeleton.bones[0].scale.z = 0.35;
+
             //sphereMesh.skeleton.bones[1].rotation.z = .2;
             sphereMesh.skeleton.bones[1].position.y = 3;
 
-            sphereMesh.skeleton.bones[1].scale.x = 0.35;
-            sphereMesh.skeleton.bones[1].scale.z = 0.35;
+            sphereMesh.skeleton.bones[1].scale.x = 1.1;
+            sphereMesh.skeleton.bones[1].scale.z = 1.1;
 
 
             sphereMesh.skeleton.bones[2].scale.x = 1.25;
@@ -200,7 +211,7 @@
             return sphereMesh;
         }
 
-        const meshes = (new Array(8)).fill().map( x => getMesh() );
+        const meshes = (new Array(8)).fill().map( (x, i ) => getMesh(i) );
 
         meshes.forEach((x, i) => {
             x.position.x = x.position.x + i * 5;
