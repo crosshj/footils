@@ -1,5 +1,12 @@
 (function(){
 
+    /*
+        ideas:
+
+        create shapes by mutating simpler shapes (using bones)
+        generative geometry
+    */
+
     const glFunction = (() => {
         //console.log({ ctx, gl, alpha, width, height});
         const canvas = gl.canvas;
