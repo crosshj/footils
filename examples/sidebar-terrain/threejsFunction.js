@@ -5,6 +5,8 @@
 
         create shapes by mutating simpler shapes (using bones)
         generative geometry
+
+        I'm doing this just to count as a daily check-in at github
     */
 
     const glFunction = (() => {
