@@ -109,32 +109,6 @@ const runTests = debounce(() => {
 	_QUnit.start();
 }, debounceTimeout);
 
-//TODO: these should follow the same debounce pattern as above
-export const describe = (desc, test) => {
-	suites.push({ desc, test });
-	runTests();
-};
-describe.skip = (desc, test) => {
-	suites.push({ desc, test, skip: true });
-	runTests();
-};
-describe.only = (desc, test) => {
-	suites.push({ desc, test, only: true });
-	runTests();
-};
-
-
-export const it = (desc, cb) => {
-	if(!cb) return _QUnit.test.bind(QUnit)(desc, () => {})
-	_QUnit.test.bind(QUnit)( desc, () => {
-		cb();
-		expect(true).toEqual(true)
-	});
-}
-it.todo = (desc, cb) => _QUnit.todo(desc, cb || (() => {}));
-it.skip = _QUnit.skip;
-it.only = _QUnit.only;
-
 export class Mock {
 	history = [];
 
@@ -160,6 +134,17 @@ export class Mock {
 	}
 }
 
+export const it = (desc, cb) => {
+	if(!cb) return _QUnit.test.bind(QUnit)(desc, () => {})
+	_QUnit.test.bind(QUnit)( desc, () => {
+		cb();
+		expect(true).toEqual(true)
+	});
+}
+it.todo = (desc, cb) => _QUnit.todo(desc, cb || (() => {}));
+it.skip = _QUnit.skip;
+it.only = _QUnit.only;
+
 export const expect = (actual) => {
 	return {
 		toEqual: (expected) => {
@@ -168,6 +153,20 @@ export const expect = (actual) => {
 		}
 	}
 }
+
+//TODO: these should follow the same debounce pattern as above
+export const describe = (desc, test) => {
+	suites.push({ desc, test });
+	runTests();
+};
+describe.skip = (desc, test) => {
+	suites.push({ desc, test, skip: true });
+	runTests();
+};
+describe.only = (desc, test) => {
+	suites.push({ desc, test, only: true });
+	runTests();
+};
 
 if(document){
 document.head.innerHTML += `
